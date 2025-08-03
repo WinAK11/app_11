@@ -13,11 +13,14 @@
         "bezhansalleh/filament-shield": "^3.3",
         "dinushchathurya/nationality-list": "^1.0",
         "filament/filament": "^3.2",
+        "http-interop/http-factory-guzzle": "^1.2",
         "intervention/image-laravel": "^1.2",
         "laravel/framework": "^11.31",
+        "laravel/scout": "^10.17",
         "laravel/tinker": "^2.9",
         "laravel/ui": "^4.6",
         "livewire/livewire": "^3.6",
+        "meilisearch/meilisearch-php": "^1.15",
         "surfsidemedia/shoppingcart": "^2.0"
     },
     "require-dev": {

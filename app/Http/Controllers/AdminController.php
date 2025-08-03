@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Http;
 
 class AdminController extends Controller {
     public function index() {
@@ -696,4 +697,55 @@ $monthlyDatas = DB::select("
         $slide->delete();
         return redirect()->route('admin.slides')->with("status", "Slide has been deleted successfully.");
     }
+
+    // public function store(Request $request)
+    // {
+    //     // 1. Validate and create the product
+    //     $product = Product::create([
+    //         'name' => $request->name,
+    //         'slug' => Str::slug($request->name),
+    //         'short_description' => $request->short_description,
+    //         'description' => $request->description,
+    //         'regular_price' => $request->regular_price,
+    //         'sale_price' => $request->sale_price,
+    //         'SKU' => $request->SKU,
+    //         'stock_status' => $request->stock_status,
+    //         'featured' => $request->featured,
+    //         'quantity' => $request->quantity,
+    //         'image' => $request->image,
+    //         'category_id' => $request->category_id,
+    //         'author_id' => $request->author_id,
+    //     ]);
+
+    //     // 2. Generate embedding with OpenAI
+    //     $text = $product->name . ' ' . $product->description;
+    //     $embeddingResponse = Http::withHeaders([
+    //         'Authorization' => 'Bearer ' . env('OPENAI_API_KEY'),
+    //     ])->post('https://api.openai.com/v1/embeddings', [
+    //         'input' => $text,
+    //         'model' => 'text-embedding-ada-002',
+    //     ]);
+    //     $embedding = $embeddingResponse->json('data.0.embedding');
+    //     $product->vector = json_encode($embedding);
+    //     $product->save();
+
+    //     // 3. Upsert to Pinecone
+    //     $pineconeUrl = "https://" . env('PINECONE_INDEX') . ".svc." . env('PINECONE_ENVIRONMENT') . ".pinecone.io/vectors/upsert";
+    //     Http::withHeaders([
+    //         'Api-Key' => env('PINECONE_API_KEY'),
+    //         'Content-Type' => 'application/json',
+    //     ])->post($pineconeUrl, [
+    //         'vectors' => [
+    //             [
+    //                 'id' => (string)$product->id,
+    //                 'values' => $embedding,
+    //                 'metadata' => [
+    //                     'id' => $product->id,
+    //                 ],
+    //             ],
+    //         ],
+    //     ]);
+
+    //     // ...rest of your logic...
+    // }
 }

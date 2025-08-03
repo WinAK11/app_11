@@ -57,8 +57,27 @@ class HomeController extends Controller {
     }
 
     public function search( Request $request ) {
-        $query = $request->input( 'query' );
-        $result = Product::where( 'name', 'LIKE', "%{$query}%" )->get()->take( 8 );
-        return response()->json( $result );
+        $query = mb_strtolower( $request->input( 'query' ) );
+        $products = Product::all();
+        $results = [];
+
+        foreach ( $products as $product ) {
+            $productName = mb_strtolower( $product->name );
+
+            // Similar text between keyword and results
+            similar_text( $query, $productName, $percent );
+
+            // Levenshtein distance
+            $distance = levenshtein( $query, $productName );
+
+            // Fuzzy
+            if ( $percent >= 60 || $distance <= 2 || stripos( $productName, $query ) !== false ) {
+                $results[] = $product;
+            }
+
+            if ( count( $results ) >= 8 ) break;
+        }
+
+        return response()->json( $results );
     }
 }

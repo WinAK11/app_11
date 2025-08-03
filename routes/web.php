@@ -12,7 +12,7 @@ use App\Http\Middleware\AuthAdmin;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\FreeProductController;
-
+use App\Http\Controllers\ProductController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -157,3 +157,5 @@ Route::post('/ai/generate-description', [AIController::class, 'generateDescripti
 Route::get('/test-audio', function () {
     return view('test-audio');
 });
+
+Route::get('/api/products', [ProductController::class, 'index']);

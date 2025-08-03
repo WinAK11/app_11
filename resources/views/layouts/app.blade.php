@@ -284,6 +284,18 @@
         #box-content-search .product-item {
             margin-bottom: 10px;
         }
+
+        .container {
+            max-width: 100% !important;
+            padding-left: 10px !important;
+            padding-right: 10px !important;
+        }
+
+        @media (min-width: 1200px) {
+            .container {
+                max-width: 1200px !important;
+            }
+        }
     </style>
     <div class="header-mobile header_sticky">
         <div class="container d-flex align-items-center h-100">
@@ -746,7 +758,7 @@
         $(function() {
             $("#search-input").on('keyup', function() {
                 var searchQuery = $(this).val();
-                if (searchQuery.length > 2) {
+                if (searchQuery.length > 0) {
                     $.ajax({
                         type: "GET",
                         url: "{{ route('home.search') }}",
@@ -825,9 +837,8 @@
     </script>
 
     {{-- Chatbot script --}}
-    <script src="https://cdn.botpress.cloud/webchat/v3.0/inject.js" defer></script>
-    <script src="https://files.bpcontent.cloud/2025/07/06/07/20250706075525-UCOIAEJK.js" defer></script>
-    
+    <script src="https://cdn.botpress.cloud/webchat/v3.2/inject.js"></script>
+    <script src="https://files.bpcontent.cloud/2025/08/03/08/20250803083409-3WIT2L2F.js"></script>
 
     <script src={{ asset('js/sweetalert.min.js') }}></script>
     <!--Start of Tawk.to Script-->
