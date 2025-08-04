@@ -281,10 +281,16 @@
                                     <a href="{{route('shop.product.details', ['product_slug'=>$product->slug])}}">{{$product->name}}</a>
                                 </h6>
                                 <div class="product-card__price d-flex align-items-center">
+                                    @if ($product->sale_price != '')
                                     <span class="money price text-secondary">
                                         <span class="money price-old">{{ number_format($product->regular_price, 0, ',', ',') }}đ</span>
                                         <span class="money price text-secondary">{{ number_format($product->sale_price, 0, ',', ',') }}đ</span>
                                     </span>
+                                    @else
+                                    <span class="money price text-secondary">
+                                        <span class="money price text-secondary">{{ number_format($product->regular_price, 0, ',', ',') }}đ</span>
+                                    </span>
+                                    @endif
                                 </div>
 
                                 <div
