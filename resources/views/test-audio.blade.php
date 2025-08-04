@@ -1,4 +1,4 @@
-<html lang="pt-br">
+{{-- <html lang="pt-br">
 
 <head>
     <meta charset="UTF-8">
@@ -12,7 +12,9 @@
 <body>
 
 
+    <!-- Controles do player fixados na parte inferior -->
     <div class="player-controls">
+        <!-- Informações da faixa -->
         <div class="control-track-info">
             <img src="https://via.placeholder.com/48" alt="Pequena capa do álbum" class="control-cover">
             <div>
@@ -100,15 +102,18 @@
                 }
             }
 
+            // Alternar reprodução (play/pause)
             function togglePlayback() {
                 isPlaying = !isPlaying;
 
                 if (isPlaying) {
                     playPauseIcon.classList.remove('fa-play');
                     playPauseIcon.classList.add('fa-pause');
+                    // Aqui você adicionaria lógica para iniciar a reprodução do áudio
                 } else {
                     playPauseIcon.classList.remove('fa-pause');
                     playPauseIcon.classList.add('fa-play');
+                    // Aqui você adicionaria lógica para pausar a reprodução do áudio
                 }
             }
 
@@ -208,4 +213,4 @@
     </script>
 </body>
 
-</html>
+</html> --}}

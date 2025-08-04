@@ -35,8 +35,8 @@
                     <fieldset class="name">
                         <div class="body-title mb-10">Product name <span class="tf-color-1">*</span>
                         </div>
-                        <input class="mb-10" id="title" type="text" placeholder="Enter product name" name="name"
-                            tabindex="0" value="{{ old('name') }}" aria-required="true" required="">
+                        <input class="mb-10" type="text" placeholder="Enter product name" name="name" tabindex="0"
+                            value="{{ old('name') }}" aria-required="true" required="">
                         <div class="text-tiny">Do not exceed 100 characters when entering the
                             product name.</div>
                     </fieldset>
@@ -99,25 +99,13 @@
                         <span class="alert alert-danger text-center">{{ $message }}</span>
                     @enderror
 
-                    {{-- <fieldset class="description">
+                    <fieldset class="description">
                         <div class="body-title mb-10">Description <span class="tf-color-1">*</span>
                         </div>
                         <textarea class="mb-10" name="description" placeholder="Description" tabindex="0" aria-required="true"
                             required="">{{ old('description') }}</textarea>
                         <div class="text-tiny">Do not exceed 100 characters when entering the
                             product name.</div>
-                    </fieldset> --}}
-                    <fieldset class="description">
-                        <div class="flex items-center gap10 mb-5">
-                            <label class="body-title mb-0">Description <span class="tf-color-1">*</span></label>
-                            <button type="button" id="ai-desc-btn" class="tf-button-small tf-button-outline"
-                                style="padding: 4px 8px;">
-                                <i class="icon-star"></i> AI Assist
-                            </button>
-                        </div>
-                        <textarea id="description" name="description" class="mb-10" placeholder="Description" tabindex="0"
-                            aria-required="true" required>{{ old('description') }}</textarea>
-                        <div class="text-tiny">Do not exceed 100 characters when entering the product name.</div>
                     </fieldset>
                     @error('description')
                         <span class="alert alert-danger text-center">{{ $message }}</span>
@@ -152,8 +140,8 @@
                         <div class="body-title mb-10">Upload Gallery Images</div>
                         <div class="upload-image mb-16">
                             <!-- <div class="item">
-                                                                                                                                                                                                                                                                <img src="images/upload/upload-1.png" alt="">
-                                                                                                                                                                                                                                                            </div>                                                 -->
+                                                                                                                                                                        <img src="images/upload/upload-1.png" alt="">
+                                                                                                                                                                    </div>                                                 -->
                             <div id="galUpload" class="item up-load">
                                 <label class="uploadfile" for="gFile">
                                     <span class="icon">
@@ -285,70 +273,5 @@
             return Text.toLowerCase()
                 .replace(/[^\w ]+/g, "").replace(/ +/g, "-");
         }
-    </script>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const aiDescBtn = document.getElementById('ai-desc-btn');
-            const nameInput = document.getElementById('title');
-            const authorInput = document.querySelector("select[name='author_id']");
-            const descInput = document.getElementById('description');
-
-            aiDescBtn?.addEventListener('click', async () => {
-                const name = nameInput?.value?.trim();
-                const authorId = authorInput?.value;
-
-                const authorName = authorInput?.options[authorInput.selectedIndex]?.text?.trim();
-
-                if (!name || !authorId) {
-                    alert("Please fill in both the product name and author.");
-                    return;
-                }
-
-                try {
-                    aiDescBtn.innerHTML = '<i class="icon-spinner spinner"></i> Generating...';
-                    aiDescBtn.disabled = true;
-
-                    const response = await fetch('/ai/generate-description', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                        },
-                        body: JSON.stringify({
-                            title: name,
-                            author: authorName
-                        })
-                    });
-
-                    const data = await response.json();
-                    const descriptionText = data.description || 'No description generated.';
-
-                    typeText(descInput, descriptionText, 10, 5);
-
-                } catch (error) {
-                    console.error("AI description generation failed:", error);
-                    alert("Failed to generate description. Please try again.");
-                } finally {
-                    aiDescBtn.innerHTML = '<i class="icon-star"></i> AI Assist';
-                    aiDescBtn.disabled = false;
-                }
-            });
-
-            function typeText(element, text, speed = 10, step = 5) {
-                element.value = '';
-                let index = 0;
-
-                function typeChar() {
-                    if (index < text.length) {
-                        element.value += text.substr(index, step);
-                        index += step;
-                        setTimeout(typeChar, speed);
-                    }
-                }
-                typeChar();
-            }
-        });
     </script>
 @endpush

@@ -180,7 +180,7 @@ $monthlyDatas = DB::select("
             'slug' => 'required|unique:products,slug',
             'short_description' => 'required',
             'regular_price' => 'required',
-            'sale_price' => 'nullable|numeric',
+            'sale_price',
             'SKU' => 'required',
             'stock_status' => 'required',
             'featured' => 'required',
@@ -195,8 +195,7 @@ $monthlyDatas = DB::select("
         $product->short_description = $request->short_description;
         $product->description = $request->description;
         $product->regular_price = $request->regular_price;
-        // $product->sale_price = $request->sale_price;
-        $product->sale_price = $request->filled('sale_price') ? $request->sale_price : null;
+        $product->sale_price = $request->sale_price;
         $product->SKU = $request->SKU;
         $product->stock_status = $request->stock_status;
         $product->featured = $request->featured;
@@ -220,6 +219,8 @@ $monthlyDatas = DB::select("
         if($request->hasFile('images')){
             $allowedfileExtion = ['jpg', 'png', 'jpeg'];
             $files = $request->file('images');
+            // Log::info('Request::UploadMultipleImage' . $request); // Debug line
+            Log::info($request->file('images')); // Debug line
             foreach ($files as $file) {
                 $gextension = $file->getClientOriginalExtension();
                 $gcheck = in_array($gextension, $allowedfileExtion);
@@ -239,32 +240,18 @@ $monthlyDatas = DB::select("
 
     public function GenerateProductThumbnailImage($image, $imageName)
     {
-        $destinationPath = public_path('uploads/products');
         $destinationPathThumbnail = public_path('uploads/products/thumbnails');
-
-        // Create directories if they do not exist
-        if (!File::exists($destinationPath)) {
-            File::makeDirectory($destinationPath, 0755, true);
-        }
-
-        if (!File::exists($destinationPathThumbnail)) {
-            File::makeDirectory($destinationPathThumbnail, 0755, true);
-        }
-
+        $destinationPath = public_path('uploads/products');
         $img = Image::read($image->path());
-
-        // Resize to main image dimensions
         $img->cover(540, 689, 'top');
-        $img->resize(540, 689, function ($constraint) {
+        $img->resize(540, 689, function ($constraint){
             $constraint->aspectRatio();
         })->save($destinationPath.'/'.$imageName);
 
-        // Resize to thumbnail dimensions
-        $img->resize(104, 104, function ($constraint) {
+        $img->resize(104, 104, function ($constraint){
             $constraint->aspectRatio();
         })->save($destinationPathThumbnail.'/'.$imageName);
     }
-
 
     public function product_edit($id)
     {
@@ -399,12 +386,10 @@ $monthlyDatas = DB::select("
         $author->nationality = $request->nationality;
         $author->biography = $request->biography;
         $image = $request->file('image');
-        if($image){
-            $file_extension = $request->file('image')->extension();
-            $file_name = Carbon::now()->timestamp.'.'.$file_extension;
-            $this->GenerateAuthorThumbnailsImage($image, $file_name);
-            $author->image = $file_name;
-        }
+        $file_extension = $request->file('image')->extension();
+        $file_name = Carbon::now()->timestamp.'.'.$file_extension;
+        $this->GenerateAuthorThumbnailsImage($image, $file_name);
+        $author->image = $file_name;
         $author->save();
         return redirect()->route('admin.authors')->with('status', 'Author has been add successfully!');
     }
