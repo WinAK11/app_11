@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\DeliveryConfirmationMail;
 use App\Models\Author;
 use App\Models\Category;
 use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
+use App\Models\Slide;
 use App\Models\Transaction;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -18,6 +20,8 @@ use Intervention\Image\Laravel\Facades\Image;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Http;
 
 class AdminController extends Controller {
     public function index() {
@@ -590,6 +594,8 @@ $monthlyDatas = DB::select("
        $order->status = $request->order_status;
        if($request->order_status == 'delivered'){
         $order->delivered_date = Carbon::now();
+        // Send delivery confirmation email
+        Mail::to($order->user->email)->send(new DeliveryConfirmationMail($order));
        }
        else if($request->order_status == 'canceled'){
         $order->canceled_date = Carbon::now();
@@ -610,4 +616,151 @@ $monthlyDatas = DB::select("
         $result = Product::where( 'name', 'LIKE', "%{$query}%" )->get()->take( 8 );
         return response()->json( $result );
     }
+
+    public function slides()
+    {
+        $slides = Slide::orderBy('id', 'DESC')->paginate(12);
+        return view('admin.slides', compact('slides'));
+    }
+
+    public function slide_add()
+    {
+        return view('admin.slide-add');
+    }
+
+    public function slide_store(Request $request)
+    {
+        $request->validate([
+            'tagline'=>'required',
+            'title'=>'required',
+            'subtitle'=>'required',
+            'link'=>'required',
+            'status'=>'required',
+            'image'=>'required|mimes:png,jpg,jpeg|max:2038',
+        ]);
+        $slide = new Slide();
+        $slide->tagline = $request->tagline;
+        $slide->title = $request->title;
+        $slide->subtitle = $request->subtitle;
+        $slide->link = $request->link;
+        $slide->status = $request->status;
+
+        $image = $request->file('image');
+        $imageName = Carbon::now()->timestamp . '.' . $image->extension();
+        $this->GenerateSlideThumbnailImage($image, $imageName);
+        $slide->image = $imageName;
+        $slide->save();
+        return redirect()->route('admin.slides')->with('status', 'Slide has been added successfully.');
+    }
+
+    public function GenerateSlideThumbnailImage($image, $imageName)
+    {
+        $destinationPath = public_path('uploads/slides');
+        $img = Image::read($image->path());
+        $img->cover(400, 690, "top");
+        $img->resize(400, 690, function($constraint)
+        {
+            $constraint->aspectRatio();
+        })->save($destinationPath.'/'.$imageName);
+    }
+
+    public function slide_edit($id)
+    {
+        $slide = Slide::find($id);
+        return view('admin.slide-edit', compact('slide'));
+    }
+
+    public function slide_update(Request $request)
+    {
+        $request->validate([
+            'tagline'=>'required',
+            'title'=>'required',
+            'subtitle'=>'required',
+            'link'=>'required',
+            'status'=>'required',
+            'image'=>'mimes:png,jpg,jpeg|max:2038',
+        ]);
+        $slide = Slide::find($request->id);
+        $slide->tagline = $request->tagline;
+        $slide->title = $request->title;
+        $slide->subtitle = $request->subtitle;
+        $slide->link = $request->link;
+        $slide->status = $request->status;
+
+        if ($request->hasFile('image'))
+        {
+            if (File::exists(public_path('uploads/slides').'/'.$slide->image))
+            {
+                File::delete(public_path('uploads/slides').'/'.$slide->image);
+            }
+            $image = $request->file('image');
+            $imageName = Carbon::now()->timestamp . '.' . $image->extension();
+            $this->GenerateSlideThumbnailImage($image, $imageName);
+            $slide->image = $imageName;
+        }
+        $slide->save();
+        return redirect()->route('admin.slides')->with('status', 'Slide has been updated successfully.');
+    }
+
+    public function slide_delete($id)
+    {
+        $slide = Slide::find($id);
+        if (File::exists(public_path('uploads/slides').'/'.$slide->image))
+        {
+            File::delete(public_path('uploads/slides').'/'.$slide->image);
+        }
+        $slide->delete();
+        return redirect()->route('admin.slides')->with("status", "Slide has been deleted successfully.");
+    }
+
+    // public function store(Request $request)
+    // {
+    //     // 1. Validate and create the product
+    //     $product = Product::create([
+    //         'name' => $request->name,
+    //         'slug' => Str::slug($request->name),
+    //         'short_description' => $request->short_description,
+    //         'description' => $request->description,
+    //         'regular_price' => $request->regular_price,
+    //         'sale_price' => $request->sale_price,
+    //         'SKU' => $request->SKU,
+    //         'stock_status' => $request->stock_status,
+    //         'featured' => $request->featured,
+    //         'quantity' => $request->quantity,
+    //         'image' => $request->image,
+    //         'category_id' => $request->category_id,
+    //         'author_id' => $request->author_id,
+    //     ]);
+
+    //     // 2. Generate embedding with OpenAI
+    //     $text = $product->name . ' ' . $product->description;
+    //     $embeddingResponse = Http::withHeaders([
+    //         'Authorization' => 'Bearer ' . env('OPENAI_API_KEY'),
+    //     ])->post('https://api.openai.com/v1/embeddings', [
+    //         'input' => $text,
+    //         'model' => 'text-embedding-ada-002',
+    //     ]);
+    //     $embedding = $embeddingResponse->json('data.0.embedding');
+    //     $product->vector = json_encode($embedding);
+    //     $product->save();
+
+    //     // 3. Upsert to Pinecone
+    //     $pineconeUrl = "https://" . env('PINECONE_INDEX') . ".svc." . env('PINECONE_ENVIRONMENT') . ".pinecone.io/vectors/upsert";
+    //     Http::withHeaders([
+    //         'Api-Key' => env('PINECONE_API_KEY'),
+    //         'Content-Type' => 'application/json',
+    //     ])->post($pineconeUrl, [
+    //         'vectors' => [
+    //             [
+    //                 'id' => (string)$product->id,
+    //                 'values' => $embedding,
+    //                 'metadata' => [
+    //                     'id' => $product->id,
+    //                 ],
+    //             ],
+    //         ],
+    //     ]);
+
+    //     // ...rest of your logic...
+    // }
 }

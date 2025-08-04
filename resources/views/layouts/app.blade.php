@@ -148,11 +148,6 @@
                 d="M53 28.4375C53 24.2062 49.9411 20.7319 46.0792 20.4368C45.6211 18.9222 44.3835 17.7338 42.824 17.3216C41.7841 8.93425 34.8423 2.53906 26.5 2.53906C18.1577 2.53906 11.2159 8.93425 10.1761 17.3216C8.61664 17.7338 7.3789 18.9221 6.92095 20.4368C6.7868 20.4471 6.65367 20.4612 6.52159 20.4791V10.5625C6.52159 9.72116 5.82638 9.03906 4.96885 9.03906C4.11133 9.03906 3.41612 9.72116 3.41612 10.5625V21.6984C1.36268 23.1288 0 25.6143 0 28.4375C0 32.6688 3.05889 36.1432 6.92085 36.4382C7.37746 37.948 8.60867 39.1334 10.1612 39.5492C10.8227 43.3268 14.1828 46.2109 18.2188 46.2109H18.5778C19.2275 48.098 21.0477 49.4609 23.1875 49.4609H29.8125C32.4952 49.4609 34.6777 47.3196 34.6777 44.6875C34.6777 42.0554 32.4952 39.9141 29.8125 39.9141H23.1875C21.0477 39.9141 19.2275 41.277 18.5778 43.1641H18.2188C15.8707 43.1641 13.8908 41.5903 13.3156 39.4615C15.1425 38.8432 16.459 37.1404 16.459 35.1406V21.7344C16.459 19.7276 15.1334 18.02 13.2966 17.4072C14.2665 10.6781 19.8332 5.58594 26.5 5.58594C33.1668 5.58594 38.7335 10.6781 39.7034 17.4072C37.8666 18.02 36.541 19.7276 36.541 21.7344V35.1406C36.541 37.6607 38.6307 39.7109 41.1992 39.7109H41.6133C43.7224 39.7109 45.5076 38.3281 46.0792 36.4382C49.9411 36.1432 53 32.6688 53 28.4375ZM23.1875 42.9609H29.8125C30.7829 42.9609 31.5723 43.7355 31.5723 44.6875C31.5723 45.6395 30.7829 46.4141 29.8125 46.4141H23.1875C22.2171 46.4141 21.4277 45.6395 21.4277 44.6875C21.4277 43.7355 22.2171 42.9609 23.1875 42.9609ZM3.10547 28.4375C3.10547 26.0216 4.7022 23.9415 6.72852 23.5334V33.3415C4.7022 32.9335 3.10547 30.8534 3.10547 28.4375ZM13.3535 35.1406C13.3535 35.9806 12.657 36.6641 11.8008 36.6641H11.3867C10.5305 36.6641 9.83398 35.9806 9.83398 35.1406C9.83398 30.252 9.83398 26.2535 9.83398 21.7344C9.83398 20.8944 10.5305 20.2109 11.3867 20.2109H11.8008C12.657 20.2109 13.3535 20.8944 13.3535 21.7344V35.1406ZM43.166 35.1406C43.166 35.9806 42.4695 36.6641 41.6133 36.6641H41.1992C40.343 36.6641 39.6465 35.9806 39.6465 35.1406V21.7344C39.6465 20.8944 40.343 20.2109 41.1992 20.2109H41.6133C42.4695 20.2109 43.166 20.8944 43.166 21.7344V35.1406ZM46.2715 33.3416V23.5335C48.2978 23.9416 49.8945 26.0217 49.8945 28.4376C49.8945 30.8535 48.2978 32.9335 46.2715 33.3416Z"
                 fill="currentColor" />
         </symbol>
-        <symbol id="icon_shipping" viewBox="0 0 52 52">
-            <path
-                d="M47.125 43.875H43.875V21.125C43.875 20.2276 43.1475 19.5 42.25 19.5H33.3125H25.1875H17.875V7.3125C17.875 5.36027 17.1146 3.52402 15.7328 2.14104C14.3509 0.760398 12.5146 0 10.5625 0C6.53037 0 3.25 3.28037 3.25 7.3125C3.25 8.20991 3.97749 8.9375 4.875 8.9375C5.77251 8.9375 6.5 8.20991 6.5 7.3125C6.5 5.07244 8.32244 3.25 10.5625 3.25C11.6472 3.25 12.6676 3.6727 13.4347 4.43909C14.2023 5.20731 14.625 6.22781 14.625 7.3125V21.125V39.2057C11.8246 39.9291 9.75 42.4768 9.75 45.5C9.75 49.0841 12.6659 52 16.25 52C19.2732 52 21.8209 49.9254 22.5443 47.125H42.25H47.125C48.0225 47.125 48.75 46.3974 48.75 45.5C48.75 44.6026 48.0225 43.875 47.125 43.875ZM31.6875 22.75V26H26.8125V22.75H31.6875ZM16.25 48.75C14.4579 48.75 13 47.2921 13 45.5C13 43.7079 14.4579 42.25 16.25 42.25C18.0421 42.25 19.5 43.7079 19.5 45.5C19.5 47.2921 18.0421 48.75 16.25 48.75ZM22.5443 43.875C21.9552 41.5942 20.1558 39.7948 17.875 39.2057V22.75H23.5625V27.625C23.5625 28.5224 24.29 29.25 25.1875 29.25H33.3125C34.21 29.25 34.9375 28.5224 34.9375 27.625V22.75H40.625V43.875H22.5443Z"
-                fill="currentColor" />
-        </symbol>
         <symbol id="icon_home" viewBox="0 0 18 18">
             <g clip-path="url(#clip0_171_682)">
                 <path
@@ -291,6 +286,18 @@
         #box-content-search .product-item {
             margin-bottom: 10px;
         }
+
+        .container {
+            max-width: 100% !important;
+            padding-left: 10px !important;
+            padding-right: 10px !important;
+        }
+
+        @media (min-width: 1200px) {
+            .container {
+                max-width: 1200px !important;
+            }
+        }
     </style>
 
     @include('layouts.navbar')
@@ -322,7 +329,7 @@
         $(function() {
             $("#search-input").on('keyup', function() {
                 var searchQuery = $(this).val();
-                if (searchQuery.length > 2) {
+                if (searchQuery.length > 0) {
                     $.ajax({
                         type: "GET",
                         url: "{{ route('home.search') }}",
@@ -357,9 +364,54 @@
                         }
                     });
                 }
-            })
+            });
+
+            // Speech-to-text functionality
+            const micBtn = document.getElementById('mic-btn');
+            const searchInput = document.getElementById('search-input');
+            const langSelect = document.getElementById('lang-select');
+            let recognition;
+            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                recognition = new SpeechRecognition();
+                recognition.lang = langSelect ? langSelect.value : 'vi-VN';
+                recognition.interimResults = false;
+                recognition.maxAlternatives = 1;
+
+                if (langSelect) {
+                    langSelect.addEventListener('change', function() {
+                        recognition.lang = langSelect.value;
+                    });
+                }
+
+                micBtn.addEventListener('click', function() {
+                    recognition.lang = langSelect ? langSelect.value : 'vi-VN';
+                    recognition.start();
+                    micBtn.classList.add('active');
+                });
+
+                recognition.onresult = function(event) {
+                    let transcript = event.results[0][0].transcript;
+                    transcript = transcript.replace(/\.$/, ''); // Remove trailing dot if present
+                    searchInput.value = transcript;
+                    $(searchInput).trigger('keyup');
+                    micBtn.classList.remove('active');
+                };
+
+                recognition.onend = function() {
+                    micBtn.classList.remove('active');
+                };
+            } else {
+                micBtn.style.display = 'none';
+            }
         })
     </script>
+
+    {{-- Chatbot script --}}
+    <script src="https://cdn.botpress.cloud/webchat/v3.2/inject.js"></script>
+    <script src="https://files.bpcontent.cloud/2025/08/03/08/20250803083409-3WIT2L2F.js"></script>
+
+    <script src={{ asset('js/sweetalert.min.js') }}></script>
     <!--Start of Tawk.to Script-->
     {{-- <script type="text/javascript">
         var Tawk_API = Tawk_API || {},

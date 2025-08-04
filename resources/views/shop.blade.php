@@ -320,9 +320,9 @@
                                     <div class="product-card__price d-flex">
                                         <span class="money price">
                                             @if ($product->sale_price)
-                                                <s>{{ $product->regular_price }}đ</s>{{ $product->sale_price }}đ
+                                                <s>{{ number_format($product->regular_price, 0, ',', ',') }}đ</s> {{ number_format($product->sale_price, 0, ',', ',') }}đ
                                             @else
-                                                {{ $product->regular_price }}đ
+                                                {{ number_format($product->regular_price, 0, ',', ',') }}đ
                                             @endif
                                         </span>
                                     </div>

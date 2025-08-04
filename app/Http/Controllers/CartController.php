@@ -7,11 +7,12 @@ use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Transaction;
-// use Illuminate\Container\Attributes\Log;
+use App\Mail\OrderPlacedMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Session;
 use Surfsidemedia\Shoppingcart\Facades\Cart;
 
@@ -185,6 +186,22 @@ class CartController extends Controller
             $orderItem->quantity = $item->qty;
             $orderItem->save();
         }
+
+        // Prepare order data for the email
+        $orderData = [
+            'name' => $request->name ?? $address->name,
+            'address' => $request->address ?? $address->address,
+            'city' => $request->city ?? $address->city,
+            'state' => $request->state ?? $address->state,
+            'country' => $request->country ?? $address->country,
+            'zip' => $request->zip ?? $address->zip,
+            'total' => Cart::instance('cart')->total(),
+        ];
+
+        $cart = Cart::instance('cart')->content();
+
+        // Send email
+        Mail::to(Auth::user()->email)->send(new OrderPlacedMail($orderData, $cart));
 
         if ($request->mode == "momo")
         {

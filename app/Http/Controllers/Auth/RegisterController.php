@@ -27,7 +27,7 @@ class RegisterController extends Controller {
     *
     * @var string
     */
-    protected $redirectTo = '/home';
+    protected $redirectTo = '/email/verify';
 
     /**
     * Create a new controller instance.
@@ -62,11 +62,15 @@ class RegisterController extends Controller {
     * @return \App\Models\User
     */
     protected function create( array $data ) {
-        return User::create( [
+        $user = User::create( [
             'name' => $data[ 'name' ],
             'email' => $data[ 'email' ],
             'mobile' => $data[ 'mobile' ],
             'password' => Hash::make( $data[ 'password' ] ),
         ] );
+        
+        $user->sendEmailVerificationNotification();
+
+        return $user;
     }
 }

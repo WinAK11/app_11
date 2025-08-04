@@ -83,11 +83,11 @@
               <tbody>
                 <tr>
                   <th>SUBTOTAL</th>
-                  <td class="text-right">{{$order->subtotal}}đ</td>
+                  <td class="text-right">{{ number_format($order->subtotal, 0, ',', ',') }}đ</td>
                 </tr>
                 <tr>
                   <th>DISCOUNT</th>
-                  <td class="text-right">{{$order->discount}}đ</td>
+                  <td class="text-right">{{ number_format($order->discount, 0, ',', ',') }}đ</td>
                 </tr>
                 <tr>
                   <th>SHIPPING</th>
@@ -95,11 +95,11 @@
                 </tr>
                 <tr>
                   <th>VAT</th>
-                  <td class="text-right">{{$order->tax}}đ</td>
+                  <td class="text-right">{{ number_format($order->tax, 0, ',', ',') }}đ</td>
                 </tr>
                 <tr>
                   <th>TOTAL</th>
-                  <td class="text-right">{{$order->total}}đ</td>
+                  <td class="text-right">{{ number_format($order->total, 0, ',', ',') }}đ</td>
                 </tr>
               </tbody>
             </table>
