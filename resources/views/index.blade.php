@@ -327,3 +327,7 @@
         <div class="mb-3 mb-xl-5 pt-1 pb-4"></div>
     </main>
 @endsection
+
+@push('scripts')
+    <script src="{{ asset('assets/js/plugins/swiper.min.js') }}"></script>
+@endpush

@@ -1,7 +1,17 @@
-import './bootstrap';
+import "./bootstrap";
 
-import Alpine from 'alpinejs';
+// import * as Turbo from "@hotwired/turbo";
+// window.Turbo = Turbo;
+// Turbo.session.drive = true;
 
-window.Alpine = Alpine;
+// document.addEventListener("DOMContentLoaded", () => {
+//     const player = document.getElementById("player");
 
-Alpine.start();
+//     // Check if player exists (on first load or after navigation)
+//     if (player) {
+//         window.setTrack = function (src) {
+//             player.src = src;
+//             player.play();
+//         };
+//     }
+// });

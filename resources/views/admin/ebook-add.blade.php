@@ -134,9 +134,9 @@
                     titleInput.value = metadata.title || '';
                     authorInput.value = metadata.creator || '';
 
-                    if (titleInput.value && authorInput.value) {
-                        await suggestCategory();
-                    }
+                    // if (titleInput.value && authorInput.value) {
+                    //     await suggestCategory();
+                    // }
 
                     const coverUrl = await book.coverUrl();
                     if (coverUrl) {
@@ -236,7 +236,9 @@
                     const descriptionText = data.description || 'No description generated.';
 
                     // Typewriter effect
-                    typeText(descInput, descriptionText, 30);
+                    // typeText(descInput, descriptionText, 30);
+                    typeText(descInput, descriptionText, 10, 5); // 5 characters every 10ms
+
                 } catch (error) {
                     console.error("Description generation failed:", error);
                     alert("Failed to generate description. Please try again.");
@@ -245,14 +247,14 @@
                 }
             }
 
-            function typeText(element, text, speed = 10) {
+            function typeText(element, text, speed = 10, step = 3) {
                 element.value = '';
                 let index = 0;
 
                 function typeChar() {
                     if (index < text.length) {
-                        element.value += text.charAt(index);
-                        index++;
+                        element.value += text.substr(index, step);
+                        index += step;
                         setTimeout(typeChar, speed);
                     }
                 }

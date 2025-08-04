@@ -1,6 +1,5 @@
 <?php
 namespace App\Http\Controllers;
-
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
@@ -13,12 +12,10 @@ class AIController extends Controller {
         ] );
 
         $prompt = "Suggest the most fitting book category (like Fantasy, Romance, Biography, etc.) for the book titled '{$request->title}' by {$request->author}. Respond with only the category name.";
-
         $aiCategory = trim( $this->callOpenAI( $prompt ) );
 
         // Get all categories from the database
         $categories = Category::all();
-
         $bestMatch = null;
         $highestScore = 0;
 
@@ -53,14 +50,43 @@ class AIController extends Controller {
             'author' => 'required|string',
         ] );
 
-        $prompt = "Write a short and engaging description for a book titled ' {
-                    $request->title}
-                    ' by {$request->author}. Make it appealing for potential readers.";
+        $prompt = "Write a detailed and engaging description for a book titled '{$request->title}' by {$request->author}. Make it appealing for potential readers, include what the book might be about, its themes, and why someone should read it. Keep it between 150-300 words.";
 
         $response = $this->callOpenAI( $prompt );
 
         return response()->json( [
             'description' => trim( $response )
+        ] );
+    }
+
+    public function generateShortDescription( Request $request ) {
+        $request->validate( [
+            'title' => 'required|string',
+            'author' => 'required|string',
+        ] );
+
+        $prompt = "Write a short, catchy description (50-100 words) for a book titled '{$request->title}' by {$request->author}. Make it concise but engaging for potential readers.";
+
+        $response = $this->callOpenAI( $prompt );
+
+        return response()->json( [
+            'short_description' => trim( $response )
+        ] );
+    }
+
+    public function generateAuthorBiography( Request $request ) {
+        $request->validate( [
+            'name' => 'required|string',
+            'nationality' => 'nullable|string',
+        ] );
+
+        $nationalityText = $request->nationality ? " from {$request->nationality}" : '';
+        $prompt = "Write a professional author biography for {$request->name}{$nationalityText}. Include information about their writing style, notable works, background, and achievements. Keep it informative and engaging, around 100-200 words. If this is a real author, use factual information. If fictional, create a realistic biography.";
+
+        $response = $this->callOpenAI( $prompt );
+
+        return response()->json( [
+            'biography' => trim( $response )
         ] );
     }
 
@@ -70,7 +96,7 @@ class AIController extends Controller {
         $response = Http::withToken( $apiKey )->post( 'https://api.openai.com/v1/chat/completions', [
             'model' => 'gpt-4o',
             'messages' => [
-                [ 'role' => 'system', 'content' => 'You are a helpful assistant that categorizes books and writes descriptions.' ],
+                [ 'role' => 'system', 'content' => 'You are a helpful assistant that categorizes books, writes descriptions, and creates author biographies.' ],
                 [ 'role' => 'user', 'content' => $prompt ]
             ],
             'temperature' => 0.7,

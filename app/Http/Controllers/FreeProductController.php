@@ -10,10 +10,49 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class FreeProductController extends Controller {
-    public function index() {
-        $ebooks = Ebook::orderBy( 'id', 'ASC' )->paginate( 10 );
-        // dd( $ebooks );
-        return view( 'free-products', compact( 'ebooks' ) );
+    public function index( Request $request ) {
+        // Get filter parameters
+        $order = $request->query( 'order', -1 );
+        $f_categories = $request->query( 'categories', '' );
+
+        // Get all categories that have ebooks
+        $categories = Category::whereHas( 'ebooks' )->withCount( 'ebooks' )->orderBy( 'name', 'ASC' )->get();
+
+        // Start building the query
+        $query = Ebook::query();
+
+        // Apply category filter if provided
+        if ( $f_categories != '' ) {
+            $categoryIds = explode( ',', $f_categories );
+            $query->whereIn( 'category_id', $categoryIds );
+        }
+
+        // Apply sorting
+        switch ( $order ) {
+            case 1: // Title Z-A
+            $query->orderBy( 'title', 'DESC' );
+            break;
+            case 2: // Author A-Z
+            $query->orderBy( 'author', 'ASC' );
+            break;
+            case 3: // Author Z-A
+            $query->orderBy( 'author', 'DESC' );
+            break;
+            case -1: // Title A-Z ( default )
+            default:
+            $query->orderBy( 'title', 'ASC' );
+            break;
+        }
+
+        // Load relationships and paginate
+        $ebooks = $query->with( 'category' )->paginate( 12 );
+
+        return view( 'free-products', compact(
+            'ebooks',
+            'categories',
+            'order',
+            'f_categories'
+        ) );
     }
 
     public function ebooks() {

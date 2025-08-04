@@ -38,7 +38,7 @@ Route::middleware(['auth', 'verified'])->group(function()
     Route::get('/account-orders', [UserController::class, 'orders'])->name('user.orders');
     Route::get('/account-order/{order_id}/details', [UserController::class, 'order_details'])->name('user.order.details');
     Route::put('/account-order/cancel-order', [UserController::class, 'order_cancel'])->name('user.order.cancel');
-    
+
     Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
     Route::post('/cart/add', [CartController::class, 'add_to_cart'])->name('cart.add');
     Route::put('/cart/increase-quantity/{rowId}', [CartController::class, 'increase_cart_quantity'])->name('cart.quantity.increase');
@@ -146,16 +146,11 @@ Auth::routes();
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
-Route::get('/read/sherlock-holmes', function () {
-    return view('epub-reader');
-})->name('epub.read.sherlock');
 Route::get('/read/ebook/{id}', [FreeProductController::class, 'ebook_read'])->name('epub.reader');
 
 Route::post('/ai/suggest-category', [AIController::class, 'suggestCategory']);
 Route::post('/ai/generate-description', [AIController::class, 'generateDescription']);
+Route::post('/ai/generate-author-biography', [AIController::class, 'generateAuthorBiography']);
 
-Route::get('/test-audio', function () {
-    return view('test-audio');
-});
 
 Route::get('/api/products', [ProductController::class, 'index']);
