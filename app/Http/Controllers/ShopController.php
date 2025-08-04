@@ -37,7 +37,8 @@ class ShopController extends Controller
                 $o_order='ASC';
                 break;
         }
-        $categories = Category::orderBy('name', 'ASC')->get();
+        // $categories = Category::orderBy('name', 'ASC')->get();
+        $categories = Category::whereHas( 'products' )->withCount( 'products' )->orderBy( 'name', 'ASC' )->get();
         $authors = Author::orderBy('name', 'ASC')->get();
         $products = Product::when($f_authors, function ($query) use ($f_authors) {
             $author_ids = explode(',', $f_authors);
