@@ -6,7 +6,7 @@ body {
     max-width: 190px;
 }
 
-.wg-table.table-all-user>* {
+.wg-table.table-all-user > * {
     min-width: 1260px;
 }
 
@@ -34,7 +34,7 @@ body {
 
 .swal-button--confirm.active,
 .swal-button--confirm:active,
-.show>.swal-button--confirm.dropdown-toggle,
+.show > .swal-button--confirm.dropdown-toggle,
 .swal-button--confirm:hover {
     background-color: #b02a37 !important;
     border-color: #a52834 !important;
@@ -45,7 +45,7 @@ body {
     text-align: center;
 }
 
-.table-bordered>:not(caption)>*>* {
+.table-bordered > :not(caption) > * > * {
     border-width: inherit;
     line-height: 32px;
     font-size: 14px;
@@ -65,7 +65,7 @@ body {
 }
 
 .table-striped {
-    min-width: 1200px;
+    min-width: 1000px;
 }
 
 .table-striped th:nth-child(2),
@@ -83,7 +83,7 @@ body {
     width: 20px;
     margin: 0 auto;
 }
-.wg-table.table-all-user>* {
+.wg-table.table-all-user > * {
     min-width: 1260px;
 }
 
@@ -112,7 +112,7 @@ body {
 
 .swal-button--confirm.active,
 .swal-button--confirm:active,
-.show>.swal-button--confirm.dropdown-toggle,
+.show > .swal-button--confirm.dropdown-toggle,
 .swal-button--confirm:hover {
     background-color: #b02a37 !important;
     border-color: #a52834 !important;
@@ -123,7 +123,7 @@ body {
     text-align: center;
 }
 
-.table-bordered>:not(caption)>*>* {
+.table-bordered > :not(caption) > * > * {
     border-width: inherit;
     line-height: 32px;
     font-size: 14px;
@@ -143,7 +143,7 @@ body {
 }
 
 .table-striped {
-    min-width: 1200px;
+    min-width: 1000px;
 }
 
 .table-striped th:nth-child(2),

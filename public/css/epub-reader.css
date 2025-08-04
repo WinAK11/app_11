@@ -1,0 +1,629 @@
+@import url(https://fonts.googleapis.com/css?family=Open+Sans:400,600);
+body {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: block;
+    height: 100%;
+    width: 100%;
+    margin: 0 auto;
+    overflow: hidden;
+    padding: 0em;
+    background-color: #999;
+    font-family: "Open Sans", sans-serif;
+    font-weight: 400;
+    font-size: 15px;
+    line-height: 1.75em;
+    background-image: url("https://images.unsplash.com/photo-1519681393784-d120267933ba?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1124&q=100");
+}
+
+* {
+    box-sizing: border-box;
+}
+
+.book-reader header,
+.book-reader nav {
+    user-select: none;
+}
+.book-reader header {
+    height: 3.5em;
+    z-index: 99;
+    position: fixed;
+    width: 100%;
+
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    background-color: rgba(17, 25, 40, 0.75);
+    border: 1px solid rgba(255, 255, 255, 0.125);
+}
+.book-reader header a {
+    line-height: 3.5em;
+    text-decoration: none;
+    display: inline-block;
+    color: #ccc;
+}
+.book-reader header a:hover {
+    color: white;
+}
+.book-reader header h1 {
+    position: absolute;
+    top: 0;
+    /* margin-left: -3em; */
+    text-align: center;
+    font-weight: 600;
+    width: 100%;
+    font-size: 1.1666666667em;
+    line-height: 1.75em;
+}
+.book-reader header h1 a {
+    padding: 0 1em;
+    line-height: 1.75em;
+    display: inline;
+    z-index: 9;
+    box-shadow: none;
+}
+.book-reader header a[href="#home"] {
+    z-index: 9;
+    position: relative;
+    box-shadow: inset -1px 0 rgba(255, 255, 255, 0.2),
+        inset -2px 0 rgba(0, 0, 0, 0.24);
+    text-align: center;
+    background-color: rgba(0, 0, 0, 0.13);
+    display: block;
+    width: 8em;
+}
+.book-reader header a[href="#home"]:hover {
+    color: white;
+}
+.book-reader nav {
+    position: absolute;
+    z-index: 8;
+    bottom: 0;
+    /* background: linear-gradient(
+        to bottom,
+        rgba(0, 0, 0, 0) 0%,
+        rgba(0, 0, 0, 0.4) 100%
+    ); */
+    display: table;
+    width: 100%;
+    padding: 0;
+    line-height: 3.5em;
+    height: 3.5em;
+    background-color: #ccc;
+    /* box-shadow: 0 -0.2em rgba(0, 0, 0, 0.2), 0 -1px rgba(0, 0, 0, 0.16),
+        inset 0 1px rgba(255, 255, 255, 0.3); */
+    color: white;
+    text-transform: capitalize;
+
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    background-color: rgba(17, 25, 40, 0.75);
+    border: 1px solid rgba(255, 255, 255, 0.125);
+}
+.book-reader nav ul {
+    display: table-row;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+.book-reader nav ul li {
+    display: table-cell;
+    width: 33.3333%;
+}
+.book-reader nav ul li a {
+    color: #e1d2d2;
+    text-shadow: 0 1px rgba(255, 255, 255, 0.1);
+    text-decoration: none;
+    display: block;
+    width: 100%;
+    text-align: center;
+}
+.book-reader nav ul li a:hover,
+.book-reader nav ul li select {
+    color: white;
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+.book-reader header,
+.book-reader nav {
+    transition: all 0.2s ease;
+    -webkit-transform: translate3d(0, 0, 0);
+}
+.book-reader section {
+    box-shadow: 0 0 1em rgba(0, 0, 0, 0.4);
+    background: linear-gradient(
+        to right,
+        #ddd 0%,
+        #fafafa 9%,
+        #fafafa 91%,
+        #ddd 100%
+    );
+    -webkit-overflow-scrolling: touch;
+    transition: all 0.13s ease;
+    background-color: #fafafa;
+    text-shadow: 0 1px #fff;
+    position: absolute;
+    /* padding: 2em; */
+    overflow: auto;
+    top: 3.5em;
+    bottom: 3.5em;
+    width: 90%;
+    left: 5%;
+    -webkit-transform: translate3d(0, 0, 0);
+}
+.book-reader section * {
+    -webkit-transform: translate3d(0, 0, 0);
+}
+.book-reader section .page {
+    max-width: 40em;
+    margin: 1.75em auto;
+}
+.book-reader section p {
+    margin: 1.75em auto;
+    color: #888;
+}
+.book-reader section h1 {
+    font-size: 2.625em;
+    color: #555;
+    line-height: 1.75em;
+    font-weight: 300;
+}
+.book-reader img {
+    padding: 1em;
+    background-color: white;
+    box-shadow: 0 0.2em 0.5em rgba(0, 0, 0, 0.2);
+    width: 100%;
+}
+.book-reader a {
+    transition: all 0.15s ease;
+    box-shadow: inset -1px 0 rgba(255, 255, 255, 0.2),
+        inset 1px 0 rgba(0, 0, 0, 0.12);
+}
+.book-reader a,
+.book-reader label,
+.book-reader input {
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+    outline: 0;
+}
+.book-reader nav,
+.book-reader header {
+    -webkit-transform: translate3d(0, 0, 0);
+}
+.book-reader nav label,
+.book-reader nav a,
+.book-reader header label,
+.book-reader header a {
+    -webkit-transform: translate3d(0, 0, 0);
+}
+
+label[for="fullscreen"],
+label[for="invert"] {
+    transition: all 0.2s ease;
+    background-color: rgba(255, 255, 255, 0.05);
+    position: absolute;
+    top: 0;
+    right: 0%;
+    text-align: center;
+    padding: 0 2em;
+    z-index: 100;
+    color: #aaa;
+    height: 3.5em;
+    cursor: pointer;
+    width: 11em;
+    line-height: 3.5em;
+    user-select: none;
+    box-shadow: inset 1px 0 rgba(255, 255, 255, 0.2),
+        inset 2px 0 rgba(0, 0, 0, 0.2);
+}
+label[for="fullscreen"]:hover,
+label[for="invert"]:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+#fullscreen {
+    position: absolute;
+    top: 0;
+    z-index: -1;
+    opacity: 0;
+}
+#fullscreen:checked ~ nav {
+    bottom: -3.5em;
+}
+#fullscreen:checked ~ header {
+    top: -3.5em;
+}
+#fullscreen:checked ~ section {
+    top: 0;
+    bottom: 0;
+}
+#fullscreen:checked ~ label[for="invert"] {
+    top: -3.5em;
+}
+#fullscreen:checked ~ label[for="fullscreen"] {
+    width: 7em;
+    padding: 0;
+    color: #aaa;
+    background-color: #fff;
+    box-shadow: inset 0 0 0 1px #fff, inset 0 0 0 2px #eee,
+        0 0.2em 0.4em rgba(0, 0, 0, 0.2);
+}
+#fullscreen:checked ~ label[for="fullscreen"]:before {
+    content: "Exit";
+}
+
+label[for="invert"] {
+    right: 11em;
+    width: 6em;
+}
+
+#invert {
+    position: absolute;
+    top: 2em;
+    z-index: -1;
+    opacity: 0;
+}
+#invert:checked ~ label[for="invert"] {
+    background-color: rgba(0, 0, 0, 0.35);
+}
+#invert:checked ~ label[for="invert"]:before {
+    content: "Day";
+}
+#invert:checked ~ section {
+    background-image: none;
+    background-color: #121212;
+    box-shadow: 0 0 0 5.5em #111;
+    color: white;
+    text-shadow: none;
+}
+#invert:checked ~ section p,
+#invert:checked ~ section h1 {
+    color: white;
+}
+#invert:checked ~ nav,
+#invert:checked ~ header {
+    box-shadow: none;
+    background-color: #222;
+    color: #777;
+}
+#invert:checked ~ header a,
+#invert:checked ~ label,
+#invert:checked ~ nav select#toc-select,
+#invert:checked ~ nav a {
+    color: #777;
+}
+
+label[for="fullscreen"]:before {
+    content: "Fullscreen";
+}
+
+label[for="invert"]:before {
+    content: "Night";
+}
+
+@media (max-width: 50em), (max-height: 25em) {
+    body {
+        font-size: 12px;
+    }
+}
+@media (max-width: 30em) {
+    .book-reader header h1 {
+        display: none;
+    }
+    .book-reader header a[href="#home"] {
+        padding: 0;
+        width: 5em;
+    }
+}
+
+/*# sourceMappingURL=des.css.map */
+
+#toc-select {
+    display: block;
+    padding: 0.4rem 0.75rem;
+    font-size: 1rem;
+    background: none;
+    border: none;
+    color: inherit;
+    text-align: center;
+    font-family: inherit;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    color: white;
+    width: 100%;
+    height: 100%;
+    box-shadow: inset -1px 0 rgba(255, 255, 255, 0.2),
+        inset 1px 0 rgba(0, 0, 0, 0.12);
+    background-color: rgba(17, 25, 40, 0.75);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+}
+
+#toc-select:focus {
+    outline: none;
+}
+
+#viewer {
+    width: 100%;
+    height: 100%;
+    border: 1px solid #ccc;
+    margin-top: auto;
+}
+
+.audio-toggle {
+    background: linear-gradient(135deg, #111928 0%, #1f2a44 100%);
+    color: #ccc;
+    border: none;
+    padding: 0 1.5em;
+    cursor: pointer;
+    /* font-size: 14px; */
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+    position: absolute;
+    top: -1%;
+    right: 17em;
+    text-align: center;
+    z-index: 100;
+    height: 3.5em;
+    line-height: 3.5em;
+    user-select: none;
+    backdrop-filter: blur(12px) saturate(150%);
+    background-color: rgba(17, 25, 40, 0.75);
+    box-shadow: inset 1px 0 rgba(255, 255, 255, 0.05),
+        inset 2px 0 rgba(0, 0, 0, 0.5);
+}
+
+.audio-toggle:hover {
+    background: linear-gradient(135deg, #1c2d4a 0%, #2a3e65 100%);
+    color: white;
+}
+
+.audio-toggle.playing {
+    background: linear-gradient(135deg, #ff4e4e 0%, #d64500 100%);
+    color: white;
+}
+
+.audio-player {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(17, 25, 40, 0.85);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    color: #eee;
+    padding: 15px 20px;
+    box-shadow: 0 -2px 20px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+    display: none;
+    transition: all 0.3s ease;
+}
+
+.audio-player.show {
+    display: block;
+}
+
+.audio-controls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.audio-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+    min-width: 0;
+}
+
+.audio-cover {
+    width: 40px;
+    height: 40px;
+    border-radius: 5px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.audio-details {
+    flex: 1;
+    min-width: 0;
+}
+
+.audio-title {
+    font-weight: 600;
+    font-size: 14px;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: #fff;
+}
+
+.audio-author {
+    font-size: 12px;
+    opacity: 0.7;
+    margin: 0;
+    color: #bbb;
+}
+
+.playback-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.control-btn {
+    background: rgba(255, 255, 255, 0.08);
+    border: none;
+    color: white;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.control-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: scale(1.05);
+}
+
+.play-pause-btn {
+    width: 45px;
+    height: 45px;
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.progress-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+
+.time {
+    font-size: 12px;
+    opacity: 0.6;
+    white-space: nowrap;
+    color: #ccc;
+}
+
+.progress-bar {
+    flex: 1;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 2px;
+    cursor: pointer;
+    position: relative;
+    min-width: 0;
+}
+
+.progress-fill {
+    height: 100%;
+    background: #ffffff;
+    border-radius: 2px;
+    width: 0%;
+    transition: width 0.1s ease;
+}
+
+.volume-control {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.volume-bar {
+    width: 60px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 2px;
+    cursor: pointer;
+    position: relative;
+}
+
+.volume-fill {
+    height: 100%;
+    background: white;
+    border-radius: 2px;
+    width: 70%;
+}
+
+.close-audio {
+    background: rgba(255, 255, 255, 0.08);
+    border: none;
+    color: white;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.close-audio:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+/* Adjust book reader to account for audio player */
+.book-reader.with-audio section {
+    bottom: calc(3.5em + 50px);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .audio-controls {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .audio-info {
+        justify-content: center;
+    }
+
+    .progress-container {
+        order: 3;
+    }
+
+    .playback-controls {
+        order: 2;
+    }
+
+    .volume-control {
+        order: 4;
+    }
+
+    .audio-toggle {
+        right: 17em;
+        padding: 0 1em;
+    }
+
+    .audio-toggle span {
+        display: none;
+    }
+}
+
+@media (max-width: 30em) {
+    .audio-toggle {
+        /* right: 18em; */
+        width: 5em;
+        padding: 0;
+    }
+
+    .audio-toggle span {
+        display: none;
+    }
+}
+
+.audio-toggle {
+    /* display: inline-flex; */
+    align-items: center;
+    justify-content: center;
+    /* gap: 0.5em; */
+    /* height: 3.5em; */
+    /* width: 11em; */
+    color: white;
+    cursor: pointer;
+    font-size: 1em;
+    /* font-weight: bold; */
+    transition: background 0.3s ease;
+    user-select: none;
+}
+
+#audio-toggle:checked + label.audio-toggle {
+    background: #4caf50; /* Green for active */
+}

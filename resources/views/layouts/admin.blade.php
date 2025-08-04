@@ -45,10 +45,10 @@
                 <div class="section-menu-left">
                     <div class="box-logo">
                         <a href={{ route('admin.index') }} id="site-logo-inner">
-                            <img class="" id="logo_header_1" alt=""
-                                src="{{ asset('images/logo/bookstore.jpg') }}"
-                                data-light="{{ asset('images/logo/bookstore.jpg') }}"
-                                data-dark="{{ asset('images/logo/bookstore.jpg') }}">
+                            <img style="height: 60px" class="" id="logo_header_1" alt=""
+                                src="{{ asset('assets/images/bookstore.jpg') }}"
+                                data-light="{{ asset('assets/images/bookstore.jpg') }}"
+                                data-dark="{{ asset('assets/images/bookstore.jpg') }}">
                         </a>
                         <div class="button-show-hide">
                             <i class="icon-menu-left"></i>
@@ -82,6 +82,16 @@
                                         <li class="sub-menu-item">
                                             <a href="{{ route('admin.products') }}" class="">
                                                 <div class="text">Products</div>
+                                            </a>
+                                        </li>
+                                        <li class="sub-menu-item">
+                                            <a href="{{ route('admin.ebook.add') }}" class="">
+                                                <div class="text">Add Ebook</div>
+                                            </a>
+                                        </li>
+                                        <li class="sub-menu-item">
+                                            <a href="{{ route('admin.ebooks') }}" class="">
+                                                <div class="text">Ebooks</div>
                                             </a>
                                         </li>
                                     </ul>
@@ -189,8 +199,9 @@
                             <div class="header-left">
                                 <a href="index-2.html">
                                     <img class="" id="logo_header_mobile" alt=""
-                                        src="images/logo/bookstore.jpg" data-light="images/logo/bookstore.jpg"
-                                        data-dark="images/logo/bookstore.jpg" data-width="154px" data-height="52px"
+                                        src="{{ asset('assets/images/bookstore.jpg') }}"
+                                        data-light="images/logo/bookstore.jpg" data-dark="images/logo/bookstore.jpg"
+                                        data-width="154px" data-height="52px"
                                         data-retina="images/logo/bookstore.jpg">
                                 </a>
                                 <div class="button-show-hide">
@@ -296,7 +307,7 @@
                                                         alt="">
                                                 </span>
                                                 <span class="flex flex-column">
-                                                    <span class="body-title mb-2">Khanh Hung</span>
+                                                    <span class="body-title mb-2">{{ Auth::user()->name }}</span>
                                                     <span class="text-tiny">Admin</span>
                                                 </span>
                                             </span>
@@ -366,6 +377,8 @@
     <script src={{ asset('js/sweetalert.min.js') }}></script>
     <script src={{ asset('js/apexcharts/apexcharts.js') }}></script>
     <script src={{ asset('js/main.js') }}></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.5/jszip.min.js"></script>
+    <script src="https://unpkg.com/epubjs/dist/epub.min.js"></script>
     <script>
         $(function() {
             $("#search-input").on('keyup', function() {

@@ -74,28 +74,37 @@ $monthlyDatas = DB::select("
         return view( 'admin.categories', compact( 'categories' ) );
     }
 
-    public function category_add() {
-        return view( 'admin.category-add' );
+    public function category_add(Request $request) {
+        $suggestedName = $request->query('name', '');
+        return view( 'admin.category-add', compact('suggestedName') );
     }
 
-    public function category_store( Request $request ) {
-        $request->validate( [
-            'name'=> 'required',
-            'slug'=> 'required|unique:categories, slug',
-            'image'=> 'mimes:png, jpg, jpeg|max:2048'
-        ] );
+    public function category_store(Request $request) {
+        $request->validate([
+            'name'  => 'required',
+            'slug'  => 'required|unique:categories,slug',
+            'image' => 'nullable|mimes:png,jpg,jpeg|max:2048',
+        ]);
 
         $category = new Category();
         $category->name = $request->name;
-        $category->slug = Str::slug( $request->name );
-        $image = $request->file( 'image' );
-        $file_extension = $request->file( 'image' )->extension();
-        $file_name = Carbon::now()->timestamp.'.'.$file_extension;
-        $this->GenerateCategoryThumbailsImage( $image, $file_name );
-        $category->image = $file_name;
+        $category->slug = Str::slug($request->slug);
+
+        $image = $request->file('image');
+
+        if ($image) {
+            $file_extension = $image->extension();
+            $file_name = Carbon::now()->timestamp . '.' . $file_extension;
+
+            $this->GenerateCategoryThumbailsImage($image, $file_name);
+            $category->image = $file_name;
+        }
+
         $category->save();
-        return redirect()->route( 'admin.categories' )->with( 'status', 'Category has been added successfully.' );
+
+        return redirect()->route('admin.categories')->with('status', 'Category has been added successfully.');
     }
+
 
     public function GenerateCategoryThumbailsImage($image, $imageName)
     {
@@ -117,7 +126,7 @@ $monthlyDatas = DB::select("
     {
         $request->validate( [
             'name'=> 'required',
-            'slug'=> 'required|unique:categories, slug, '.$request->id,
+            'slug'=> 'required|unique:categories,slug, '.$request->id,
             'image'=> 'mimes:png, jpg, jpeg|max:2048'
         ] );
         $category = Category::find($request->id);
@@ -164,15 +173,15 @@ $monthlyDatas = DB::select("
     {
         $request->validate([
             'name' => 'required',
-            'slug' => 'required|unique:products, slug',
+            'slug' => 'required|unique:products,slug',
             'short_description' => 'required',
             'regular_price' => 'required',
-            'sale_price',
+            'sale_price' => 'nullable|numeric',
             'SKU' => 'required',
             'stock_status' => 'required',
             'featured' => 'required',
             'quantity' => 'required',
-            'image' => 'required|mimes:png, jpg, jpeg|max:2048',
+            'image' => 'required|mimes:png,jpg,jpeg|max:2048',
             'category_id' => 'required',
             'author_id' => 'required'
         ]);
@@ -182,7 +191,8 @@ $monthlyDatas = DB::select("
         $product->short_description = $request->short_description;
         $product->description = $request->description;
         $product->regular_price = $request->regular_price;
-        $product->sale_price = $request->sale_price;
+        // $product->sale_price = $request->sale_price;
+        $product->sale_price = $request->filled('sale_price') ? $request->sale_price : null;
         $product->SKU = $request->SKU;
         $product->stock_status = $request->stock_status;
         $product->featured = $request->featured;
@@ -206,8 +216,6 @@ $monthlyDatas = DB::select("
         if($request->hasFile('images')){
             $allowedfileExtion = ['jpg', 'png', 'jpeg'];
             $files = $request->file('images');
-            // Log::info('Request::UploadMultipleImage' . $request); // Debug line
-            Log::info($request->file('images')); // Debug line
             foreach ($files as $file) {
                 $gextension = $file->getClientOriginalExtension();
                 $gcheck = in_array($gextension, $allowedfileExtion);
@@ -227,18 +235,32 @@ $monthlyDatas = DB::select("
 
     public function GenerateProductThumbnailImage($image, $imageName)
     {
-        $destinationPathThumbnail = public_path('uploads/products/thumbnails');
         $destinationPath = public_path('uploads/products');
+        $destinationPathThumbnail = public_path('uploads/products/thumbnails');
+
+        // Create directories if they do not exist
+        if (!File::exists($destinationPath)) {
+            File::makeDirectory($destinationPath, 0755, true);
+        }
+
+        if (!File::exists($destinationPathThumbnail)) {
+            File::makeDirectory($destinationPathThumbnail, 0755, true);
+        }
+
         $img = Image::read($image->path());
+
+        // Resize to main image dimensions
         $img->cover(540, 689, 'top');
-        $img->resize(540, 689, function ($constraint){
+        $img->resize(540, 689, function ($constraint) {
             $constraint->aspectRatio();
         })->save($destinationPath.'/'.$imageName);
 
-        $img->resize(104, 104, function ($constraint){
+        // Resize to thumbnail dimensions
+        $img->resize(104, 104, function ($constraint) {
             $constraint->aspectRatio();
         })->save($destinationPathThumbnail.'/'.$imageName);
     }
+
 
     public function product_edit($id)
     {
@@ -252,7 +274,7 @@ $monthlyDatas = DB::select("
     {
         $request->validate([
             'name' => 'required',
-            'slug' => 'required|unique:products, slug, '.$request->id,
+            'slug' => 'required|unique:products,slug,' .$request->id,
             'short_description' => 'required',
             'regular_price' => 'required',
             'sale_price' => 'nullable',
@@ -260,7 +282,7 @@ $monthlyDatas = DB::select("
             'stock_status' => 'required',
             'featured' => 'required',
             'quantity' => 'required',
-            'image' => 'mimes:png, jpg, jpeg|max:2048',
+            'image' => 'mimes:png,jpg,jpeg|max:2048',
             'category_id' => 'required',
             'author_id' => 'required'
         ]);
@@ -362,10 +384,10 @@ $monthlyDatas = DB::select("
     {
         $request->validate([
             'name'=>'required',
-            'slug'=>'required|unique:authors, slug',
+            'slug'=>'required|unique:authors,slug',
             'nationality',
             'biography',
-            'image'=>'mimes:png, jpg, jpeg|max:2048'
+            'image'=>'mimes:png,jpg,jpeg|max:2048'
         ]);
         $author = new Author();
         $author->name=$request->name;
@@ -373,10 +395,12 @@ $monthlyDatas = DB::select("
         $author->nationality = $request->nationality;
         $author->biography = $request->biography;
         $image = $request->file('image');
-        $file_extension = $request->file('image')->extension();
-        $file_name = Carbon::now()->timestamp.'.'.$file_extension;
-        $this->GenerateAuthorThumbnailsImage($image, $file_name);
-        $author->image = $file_name;
+        if($image){
+            $file_extension = $request->file('image')->extension();
+            $file_name = Carbon::now()->timestamp.'.'.$file_extension;
+            $this->GenerateAuthorThumbnailsImage($image, $file_name);
+            $author->image = $file_name;
+        }
         $author->save();
         return redirect()->route('admin.authors')->with('status', 'Author has been add successfully!');
     }
@@ -391,10 +415,10 @@ $monthlyDatas = DB::select("
     {
         $request->validate([
             'name'=>'required',
-            'slug'=>'required|unique:authors, slug, '.$request->id,
+            'slug'=>'required|unique:authors,slug,'.$request->id,
             'nationality',
             'biography',
-            'image'=>'mimes:png, jpg, jpeg|max:2048'
+            'image'=>'mimes:png,jpg,jpeg|max:2048'
         ]);
         $author=Author::find($request->id);
         $author->name=$request->name;
@@ -455,7 +479,7 @@ $monthlyDatas = DB::select("
         $request->validate( [
             'name' => 'required|string|max:255',
             'mobile' => 'nullable|string|max:20',
-            'email' => 'required|email|unique:users, email, ' . $user->id,
+            'email' => 'required|email|unique:users,email,' . $user->id,
         ] );
 
         // Update general info
@@ -544,6 +568,7 @@ $monthlyDatas = DB::select("
         return redirect()->route('admin.coupons')->with('status', 'Coupon has been deleted successfully!');
     }
 
+
     public function orders()
     {
         $orders = Order::orderBy('created_at', 'DESC')->paginate(12);
@@ -580,12 +605,9 @@ $monthlyDatas = DB::select("
        return back()->with('status', 'Status changed successfully.');
     }
 
-    public function search(Request $request)
-    {
-        $query = $request->input('query');
-        $result = Product::where('name', 'LIKE', "% {
-            $query}
-            %" )->get()->take( 8 );
-            return response()->json( $result );
-        }
+    public function search( Request $request ) {
+        $query = $request->input( 'query' );
+        $result = Product::where( 'name', 'LIKE', "%{$query}%" )->get()->take( 8 );
+        return response()->json( $result );
     }
+}

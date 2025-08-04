@@ -1,0 +1,316 @@
+ <!DOCTYPE html>
+ <html lang="en">
+
+ <head>
+     <meta charset="UTF-8" />
+     <title>EPUB Reader with Chapters</title>
+     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+         integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg=="
+         crossorigin="anonymous" referrerpolicy="no-referrer" />
+     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.5/jszip.min.js"></script>
+     <script src="https://unpkg.com/epubjs/dist/epub.min.js"></script>
+     <style>
+         body {
+             top: 0;
+             bottom: 0;
+             left: 0;
+             right: 0;
+             position: absolute;
+             display: block;
+             height: 100%;
+             width: 100%;
+             margin: 0 auto;
+             overflow: hidden;
+
+             position: relative;
+             position: fixed;
+             padding: 0em;
+             background-color: #999;
+
+             font: {
+                 family: "Open Sans", sans-serif;
+                 weight: 400;
+                 size: 15px;
+             }
+
+             line-height: 1.75em;
+         }
+
+         * {
+             box-sizing: border-box;
+         }
+
+
+         html,
+         body {
+             margin: 0;
+             padding: 0;
+             height: 100%;
+             overflow: hidden;
+             font-family: sans-serif;
+             background: #f9f9f9;
+         }
+
+         .pages {
+             border-radius: 4px;
+             box-shadow: 0 0 8px rgba(0, 0, 0, 0.16), 0 3px 8px rgba(0, 0, 0, 0.23);
+             margin: 10px auto;
+             padding: 0 3px;
+             max-width: 800px;
+             height: 100%;
+             background: white;
+         }
+
+         #viewer {
+             position: absolute;
+             top: 50px;
+             /* Space for top control */
+             bottom: 60px;
+             /* Space for bottom controls */
+             left: 0;
+             right: 0;
+             overflow: hidden;
+         }
+
+         #top-bar {
+             position: fixed;
+             top: 0;
+             left: 0;
+             right: 0;
+             height: 50px;
+             display: flex;
+             justify-content: center;
+             align-items: center;
+             background: #fff;
+             border-bottom: 1px solid #ddd;
+             z-index: 1000;
+         }
+
+         #toc {
+             padding: 6px 10px;
+             border: 1px solid #ccc;
+             border-radius: 4px;
+             background: #007bff;
+             color: white;
+             cursor: pointer;
+         }
+
+         #toc:hover {
+             background: #0056b3;
+         }
+
+         #controls {
+             position: fixed;
+             bottom: 0;
+             left: 0;
+             right: 0;
+             height: 60px;
+             display: flex;
+             align-items: center;
+             justify-content: space-around;
+             background: #fff;
+             border-top: 1px solid #ddd;
+             padding: 0 20px;
+             z-index: 1000;
+         }
+
+         button {
+             padding: 6px 10px;
+             border: 1px solid #ccc;
+             border-radius: 4px;
+             background: #007bff;
+             color: white;
+             cursor: pointer;
+         }
+
+         button:hover {
+             background: #0056b3;
+         }
+
+         #progress-container {
+             flex-grow: 1;
+             margin: 0 10px;
+         }
+
+         #progress-bar {
+             width: 100%;
+             height: 6px;
+             background-color: #ddd;
+             border-radius: 3px;
+             overflow: hidden;
+             position: relative;
+         }
+
+         #progress {
+             height: 100%;
+             background-color: #28a745;
+             width: 0%;
+         }
+
+         #page-info {
+             font-size: 14px;
+             white-space: nowrap;
+             margin-left: 10px;
+         }
+
+         #page {
+             border-radius: 4px;
+             box-shadow: 0 0 8px rgba(0, 0, 0, 0.16), 0 3px 8px rgba(0, 0, 0, 0.23); // TODO
+             margin: 0 -3px;
+             padding: 0 3px;
+         }
+     </style>
+
+ </head>
+
+ <body>
+
+     <div id="top-bar">
+         <button id="back-button" style="margin-right: 10px;">⬅ Back</button>
+         <select id="toc">
+             <option disabled selected>Jump to Chapter</option>
+         </select>
+         <button id="theme-toggle" style="margin-left: 10px;">🌙 Dark Mode</button>
+
+     </div>
+
+     <div id="viewer"></div>
+
+     <div id="controls">
+         <button id="prev"><i class="fa-solid fa-backward"></i> Prev</button>
+
+         <div id="progress-container">
+             <div id="progress-bar">
+                 <div id="progress"></div>
+             </div>
+         </div>
+
+         <button id="next">Next <i class="fa-solid fa-forward"></i></button>
+
+         <span id="page-info">Page -- / --</span>
+     </div>
+
+     <script>
+         const book = ePub("/uploads/ebooks/mobydick.epub");
+         const rendition = book.renderTo("viewer", {
+             width: "100%",
+             height: "100%",
+         });
+
+         let currentLocation = null;
+
+         // Display the first page
+         rendition.display();
+
+         // Prev/Next page buttons
+         document.getElementById("prev").addEventListener("click", () => rendition.prev());
+         document.getElementById("next").addEventListener("click", () => rendition.next());
+
+         // Update progress and page info
+         rendition.on("relocated", (location) => {
+             currentLocation = location;
+
+             const percentage = book.locations.percentageFromCfi(location.start.cfi);
+             document.getElementById("progress").style.width = `${(percentage * 100).toFixed(2)}%`;
+
+             const currentPage = book.locations.locationFromCfi(location.start.cfi);
+             const totalPages = book.locations.length();
+             document.getElementById("page-info").textContent = `Page ${currentPage} / ${totalPages}`;
+         });
+
+         // Generate locations
+         book.ready.then(() => {
+             return book.locations.generate(1600);
+         }).then(() => {
+             rendition.display();
+         });
+
+         let currentTheme = "light";
+
+         // Inject styles for each content document
+         rendition.hooks.content.register(function(contents) {
+             const doc = contents.document;
+
+             const style = doc.createElement("style");
+             style.id = "theme-style";
+             doc.head.appendChild(style);
+
+             applyTheme(currentTheme, style, doc);
+         });
+
+         // Toggle button logic
+         document.getElementById("theme-toggle").addEventListener("click", () => {
+             currentTheme = currentTheme === "light" ? "dark" : "light";
+             document.getElementById("theme-toggle").textContent = currentTheme === "dark" ? "☀️ Light Mode" :
+                 "🌙 Dark Mode";
+
+             rendition.getContents().forEach((contents) => {
+                 const doc = contents.document;
+                 const style = doc.getElementById("theme-style");
+                 applyTheme(currentTheme, style, doc);
+             });
+         });
+
+         // Function to apply theme CSS
+         function applyTheme(theme, styleElement, doc) {
+             // Apply inside the EPUB iframe
+             if (theme === "dark") {
+                 styleElement.textContent = `
+            body {
+                background: #121212 !important;
+                color: #e0e0e0 !important;
+            }
+            a { color: #90caf9 !important; }
+        `;
+             } else {
+                 styleElement.textContent = `
+            body {
+                background: #ffffff !important;
+                color: #000000 !important;
+            }
+            a { color: #007bff !important; }
+        `;
+             }
+
+             // Also change outer top-bar and controls
+             const topBar = document.getElementById("top-bar");
+             const controls = document.getElementById("controls");
+
+             if (theme === "dark") {
+                 topBar.style.backgroundColor = "#1e1e1e";
+                 topBar.style.color = "#ffffff";
+                 controls.style.backgroundColor = "#1e1e1e";
+                 controls.style.color = "#ffffff";
+             } else {
+                 topBar.style.backgroundColor = "#ffffff";
+                 topBar.style.color = "#000000";
+                 controls.style.backgroundColor = "#ffffff";
+                 controls.style.color = "#000000";
+             }
+         }
+
+
+         // Populate chapter dropdown
+         book.loaded.navigation.then(toc => {
+             const tocSelect = document.getElementById("toc");
+             toc.forEach((chapter) => {
+                 const option = document.createElement("option");
+                 option.textContent = chapter.label;
+                 option.value = chapter.href;
+                 tocSelect.appendChild(option);
+             });
+
+             tocSelect.addEventListener("change", (e) => {
+                 const href = e.target.value;
+                 rendition.display(href);
+             });
+         });
+
+         document.getElementById("back-button").addEventListener("click", () => {
+             //  window.history.back();
+             window.location.href = "/free-products";
+         });
+     </script>
+ </body>
+
+ </html>

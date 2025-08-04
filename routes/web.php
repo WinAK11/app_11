@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\AIController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\CartController;
@@ -10,6 +11,8 @@ use App\Http\Controllers\WishlistController;
 use App\Http\Middleware\AuthAdmin;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\FreeProductController;
+
 
 Route::get('/', function () {
     return view('welcome');
@@ -85,6 +88,15 @@ Route::middleware(['auth', AuthAdmin::class])->group(function()
     Route::get('/admin/search', [AdminController::class, 'search'])->name('admin.search');
 });
 
+Route::prefix('admin/free-products')->middleware(['auth', AuthAdmin::class])->group(function() {
+    Route::get('ebooks', [FreeProductController::class, 'ebooks'])->name('admin.ebooks');
+    Route::get('ebook/add', [FreeProductController::class, 'ebook_add'])->name('admin.ebook.add');
+    Route::post('ebook/store', [FreeProductController::class, 'ebook_store'])->name('admin.ebook.store');
+    Route::get('ebook/{id}/edit', [FreeProductController::class, 'ebook_edit'])->name('admin.ebook.edit');
+    Route::put('/admin/ebook/update', [FreeProductController::class, 'ebook_update'])->name('admin.ebook.update');
+    Route::delete('/admin/ebook/{id}/delete', [FreeProductController::class, 'ebook_delete'])->name('admin.ebook.delete');
+});
+
 // Route::get('/{product_slug}', [ShopController::class, 'product_details'])->name('product.details');
 Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
 Route::post('/cart/add', [CartController::class, 'add_to_cart'])->name('cart.add');
@@ -120,9 +132,16 @@ Route::get('/account', [HomeController::class, 'account'])->name('home.account')
 Route::get('/account-wishlist', [HomeController::class, 'accountWishlist'])->name('home.accountWishlist');
 Route::get('/account-order', [HomeController::class, 'accountOrder'])->name('home.accountOrder');
 Route::get('/search', [HomeController::class, 'search'])->name('home.search');
+Route::get('/free-products', [FreeProductController::class, 'index'])->name('free.products');
+
 
 Auth::routes();
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
+Route::get('/read/ebook/{id}', [FreeProductController::class, 'ebook_read'])->name('epub.reader');
+
+Route::post('/ai/suggest-category', [AIController::class, 'suggestCategory']);
+Route::post('/ai/generate-description', [AIController::class, 'generateDescription']);
+Route::post('/ai/generate-author-biography', [AIController::class, 'generateAuthorBiography']);
 

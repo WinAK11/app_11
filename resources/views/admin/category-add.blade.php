@@ -36,7 +36,7 @@
                         <div class="body-title">Category Name <span class="tf-color-1">*</span>
                         </div>
                         <input class="flex-grow" type="text" placeholder="Category name" name="name" tabindex="0"
-                            value="{{ old('name') }}" aria-required="true" required="">
+                            value="{{ old('name', $suggestedName ?? '') }}" aria-required="true" required="">
                     </fieldset>
                     <fieldset class="name">
                         <div class="body-title">Category Slug <span class="tf-color-1">*</span>
@@ -80,6 +80,36 @@
 @endsection
 @push('scripts')
     <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            const nameInput = document.querySelector("input[name='name'][placeholder='Category name']");
+            const slugInput = document.querySelector("input[name='slug']");
+
+            if (!nameInput || !slugInput) return;
+
+            // Auto-generate slug if name exists and slug is empty
+            if (nameInput.value && !slugInput.value) {
+                slugInput.value = stringToSlug(nameInput.value);
+            }
+
+            // Flag to detect manual slug edits
+            slugInput.dataset.edited = 'false';
+
+            nameInput.addEventListener("input", function() {
+                if (slugInput.dataset.edited === 'false') {
+                    slugInput.value = stringToSlug(nameInput.value);
+                }
+            });
+
+            slugInput.addEventListener("input", function() {
+                slugInput.dataset.edited = 'true';
+            });
+
+            function stringToSlug(text) {
+                return text.toLowerCase()
+                    .replace(/[^\w ]+/g, '')
+                    .replace(/ +/g, '-');
+            }
+        });
         $(function() {
             $("#myFile").on("change", function(e) {
                 const photoInp = $("#myFile");
@@ -89,11 +119,6 @@
                     $('#imgpreview').show();
                 }
             });
-
-            $("input[name='name']").on("change", function() {
-                $("input[name='slug']").val(StringToSlug($(this).val()));
-            });
-
         });
 
         function StringToSlug(Text) {
