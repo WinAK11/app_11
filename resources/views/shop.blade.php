@@ -110,11 +110,11 @@
                             <div class="price-range__info d-flex align-items-center mt-2">
                                 <div class="me-auto">
                                     <span class="text-secondary">Min Price: </span>
-                                    <span class="price-range__min">0đ</span>
+                                    <span class="price-range__min">{{$min_price}}đ</span>
                                 </div>
                                 <div>
                                     <span class="text-secondary">Max Price: </span>
-                                    <span class="price-range__max">1.000.000đ</span>
+                                    <span class="price-range__max">{{$max_price}}đ</span>
                                 </div>
                             </div>
                         </div>
@@ -444,7 +444,7 @@
                 $("#frmfilter").submit();
             });
 
-            $("[name='price_range'  ").on("slideStop", function() {
+            $("[name='price_range']  ").on("slideStop", function() {
                 var min = $(this).val().split(',')[0];
                 var max = $(this).val().split(',')[1];
                 $("#hdnMinPrice").val(min);

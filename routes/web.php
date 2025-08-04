@@ -116,6 +116,7 @@ Route::post('/wishlist/add-to-cart/{rowId}', [WishlistController::class, 'add_to
 Route::get('/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
 Route::post('/place-order', [CartController::class, 'place_order'])->name('cart.place.order');
 Route::get('/order-confirm',[CartController::class,'order_confirm'])->name('cart.order.confirm');
+Route::get('/momo-payment',[CartController::class,'momo_payment'])->name('cart.order.momopayment');
 
 require __DIR__.'/auth.php';
 

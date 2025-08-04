@@ -7,9 +7,11 @@ use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Transaction;
+// use Illuminate\Container\Attributes\Log;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 use Surfsidemedia\Shoppingcart\Facades\Cart;
 
@@ -186,11 +188,28 @@ class CartController extends Controller
 
         if ($request->mode == "momo")
         {
-
+            $transaction = new Transaction();
+            $transaction->user_id = $user_id;
+            $transaction->order_id = $order->id;
+            $transaction->mode = $request->mode;
+            $transaction->status = "pending";
+            $transaction->save();
+            return $this->momo_payment($request, $order);
         }
         elseif ($request->mode == "paypal")
         {
-
+            $transaction = new Transaction();
+            $transaction->user_id = $user_id;
+            $transaction->order_id = $order->id;
+            $transaction->mode = $request->mode;
+            $transaction->status = "pending";
+            $transaction->save();
+            Cart::instance('cart')->destroy();
+            Session::forget('checkout');
+            Session::forget('coupon');
+            Session::forget('discounts');
+            Session::put('order_id', $order->id);
+            return redirect()->route('cart.order.confirm');
         }
         elseif ($request->mode == "cod")
         {
@@ -200,14 +219,14 @@ class CartController extends Controller
             $transaction->mode = $request->mode;
             $transaction->status = "pending";
             $transaction->save();
+            Cart::instance('cart')->destroy();
+            Session::forget('checkout');
+            Session::forget('coupon');
+            Session::forget('discounts');
+            Session::put('order_id', $order->id);
+            return redirect()->route('cart.order.confirm');
         }
         
-        Cart::instance('cart')->destroy();
-        Session::forget('checkout');
-        Session::forget('coupon');
-        Session::forget('discounts');
-        Session::put('order_id', $order->id);
-        return redirect()->route('cart.order.confirm');
 
     }
 
@@ -245,5 +264,74 @@ class CartController extends Controller
             return view('order-confirm', compact('order'));
         }
         return redirect()->route('cart.index');
+    }
+
+    public function execPostRequest($url, $data)
+    {
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+                'Content-Type: application/json',
+                'Content-Length: ' . strlen($data))
+        );
+        curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
+        //execute post
+        $result = curl_exec($ch);
+        //close connection
+        curl_close($ch);
+        return $result;
+    }
+
+     public function momo_payment(Request $request, Order $order)
+    {
+
+        $endpoint = "https://test-payment.momo.vn/v2/gateway/api/create";
+
+        $partnerCode = 'MOMOBKUN20180529';
+        $accessKey = 'klm05TvNBzhg7h7j';
+        $secretKey = 'at67qH6mk8w5Y1nAyMoYKMWACiEi2bsa';
+        $orderInfo = "Thanh toán qua ATM MoMo";
+        $amount = (string) Cart::instance('cart')->total(0, '', '');
+        // dd($amount);
+        $orderId = time() . "";
+        $redirectUrl = url('/order-confirm');
+        $ipnUrl = url('/order-confirm');
+        $extraData = "";
+
+        $requestId = time() . "";
+        $requestType = "payWithATM";
+        // $extraData = ($_POST["extraData"] ? $_POST["extraData"] : "");
+        //before sign HMAC SHA256 signature
+        $rawHash = "accessKey=" . $accessKey . "&amount=" . $amount . "&extraData=" . $extraData . "&ipnUrl=" . $ipnUrl . "&orderId=" . $orderId . "&orderInfo=" . $orderInfo . "&partnerCode=" . $partnerCode . "&redirectUrl=" . $redirectUrl . "&requestId=" . $requestId . "&requestType=" . $requestType;
+        $signature = hash_hmac("sha256", $rawHash, $secretKey);
+        $data = array(
+        'partnerCode' => $partnerCode,
+        'partnerName' => "Test",
+        "storeId" => "MomoTestStore",
+        'requestId' => $requestId,
+        'amount' => $amount,
+        'orderId' => $orderId,
+        'orderInfo' => $orderInfo,
+        'redirectUrl' => $redirectUrl,
+        'ipnUrl' => $ipnUrl,
+        'lang' => 'vi',
+        'extraData' => $extraData,
+        'requestType' => $requestType,
+        'signature' => $signature
+        );
+        $result = $this->execPostRequest($endpoint, json_encode($data));
+        $jsonResult = json_decode($result, true);  // decode json
+            Cart::instance('cart')->destroy();
+            Session::forget('checkout');
+            Session::forget('coupon');
+            Session::forget('discounts');
+            Session::put('order_id', $order->id);
+        //Just a example, please check more in there
+        return redirect()->to($jsonResult['payUrl']);
+
+        // header('Location: ' . $jsonResult['payUrl']);
     }
 }
