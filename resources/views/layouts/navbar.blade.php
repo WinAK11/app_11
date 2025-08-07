@@ -184,6 +184,20 @@
                                     </svg>
                                 </button>
                                 <button class="btn-icon btn-close-lg search-popup__reset" type="reset"></button>
+                                <!-- Microphone button for speech-to-text -->
+                                    <button type="button" id="mic-btn" class="btn-icon"
+                                        style="position:absolute;right:25px;top:0px;background:none;border:none;display:flex;align-items:center;justify-content:center;">
+                                        <svg width="24" height="24" viewBox="0 0 20 20" fill="none"
+                                            stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+                                            <rect x="7" y="4" width="6" height="10" rx="3"/>
+                                            <path d="M10 17v-2"/>
+                                            <path d="M7 14a3 3 0 0 0 6 0"/>
+                                        </svg>
+                                    </button>
+                                    <select id="lang-select" style="position:absolute;right:70px;top:3px;">
+                                        <option value="vi-VN">🇻🇳 VN</option>
+                                        <option value="en-US">🇺🇸 EN</option>
+                                    </select>
                             </div>
 
                             <div class="search-popup__results">
