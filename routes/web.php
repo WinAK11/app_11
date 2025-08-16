@@ -5,6 +5,7 @@ use App\Http\Controllers\AIController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\ChatbotController;
 use App\Http\Controllers\ShopController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WishlistController;
@@ -154,3 +155,4 @@ Route::post('/ai/generate-author-biography', [AIController::class, 'generateAuth
 
 
 Route::get('/api/products', [ProductController::class, 'index']);
+Route::post('/chatbot', [ChatbotController::class, 'handle'])->name('chatbot.handle');

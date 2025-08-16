@@ -21,6 +21,7 @@
         "laravel/ui": "^4.6",
         "livewire/livewire": "^3.6",
         "meilisearch/meilisearch-php": "^1.15",
+        "openai-php/client": "^0.15.0",
         "surfsidemedia/shoppingcart": "^2.0"
     },
     "require-dev": {

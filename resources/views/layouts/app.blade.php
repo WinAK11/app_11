@@ -2,6 +2,23 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 
 <head>
+
+<style>
+#chatbot {
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    display: none;
+    z-index: 9999;
+}
+#chatToggle {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 10000;
+}
+</style>
+
     <title>Bookstore</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta http-equiv="content-type" content="text/html; charset=utf-8" />
@@ -289,6 +306,149 @@
                 max-width: 1200px !important;
             }
         }
+        /* === CHATBOT === */
+        .chat-toggle-btn {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        background: #ff6a00;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        font-size: 24px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        cursor: pointer;
+        z-index: 1001;
+        transition: background 0.3s ease;
+        }
+
+        .chat-toggle-btn:hover {
+        background: #e65a00;
+        }
+
+        .chatbot-container {
+        position: fixed;
+        bottom: 100px;
+        right: 30px;
+        width: 350px;
+        max-height: 500px;
+        background: #fff;
+        border-radius: 15px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+        display: none;
+        flex-direction: column;
+        z-index: 1000;
+        overflow: hidden;
+        animation: fadeInUp 0.4s ease;
+        }
+
+        @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        }
+
+        .chat-header {
+        background: #111;
+        color: #fff;
+        padding: 15px;
+        font-weight: bold;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        }
+
+        .chat-header button {
+        background: none;
+        border: none;
+        color: #fff;
+        font-size: 20px;
+        cursor: pointer;
+        }
+
+        .chat-body {
+        padding: 15px;
+        overflow-y: auto;
+        flex: 1;
+        max-height: 300px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        }
+
+        .chat-footer {
+        display: flex;
+        border-top: 1px solid #eee;
+        padding: 10px;
+        gap: 10px;
+        }
+
+        .chat-footer input {
+        flex: 1;
+        padding: 10px 15px;
+        border-radius: 30px;
+        border: 1px solid #ccc;
+        outline: none;
+        }
+
+        .chat-footer button {
+        background: #ff6a00;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        font-size: 18px;
+        cursor: pointer;
+        }
+
+        .user-message, .bot-message {
+        padding: 10px 15px;
+        max-width: 75%;
+        border-radius: 20px;
+        line-height: 1.4;
+        }
+
+        .user-message {
+        align-self: flex-end;
+        background: #f0f0f0;
+        color: #111;
+        }
+
+        .bot-message {
+        align-self: flex-start;
+        background: #ff6a00;
+        color: white;
+        }
+
+        .chatbot-options {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .chatbot-button {
+            background-color: #fff;
+            color: #ff6a00;
+            border: 1px solid #ff6a00;
+            padding: 8px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            text-align: center;
+            font-weight: bold;
+            transition: all 0.2s ease;
+        }
+        .chatbot-button:hover {
+            background-color: #ff6a00;
+            color: #fff;
+        }
     </style>
     <div class="header-mobile header_sticky">
         <div class="container d-flex align-items-center h-100">
@@ -312,7 +472,9 @@
                     xmlns="http://www.w3.org/2000/svg">
                     <use href="#icon_cart" />
                 </svg>
-                <span class="cart-amount d-block position-absolute js-cart-items-count">3</span>
+                <span class="cart-amount d-block position-absolute js-cart-items-count js-cart-count" @if (Cart::instance('cart')->content()->count() == 0) style="display: none;" @endif>
+                    {{ Cart::instance('cart')->content()->count() }}
+                </span>
             </a>
         </div>
 
@@ -543,10 +705,9 @@
                             xmlns="http://www.w3.org/2000/svg">
                             <use href="#icon_cart" />
                         </svg>
-                        @if (Cart::instance('cart')->content()->count() > 0)
-                            <span
-                                class="cart-amount d-block position-absolute js-cart-items-count">{{ Cart::instance('cart')->content()->count() }}</span>
-                        @endif
+                    <span class="cart-amount d-block position-absolute js-cart-items-count js-cart-count" @if (Cart::instance('cart')->content()->count() == 0) style="display: none;" @endif>
+                        {{ Cart::instance('cart')->content()->count() }}
+                    </span>
                     </a>
                 </div>
             </div>
@@ -745,7 +906,21 @@
     <script src="{{ asset('assets/js/plugins/countdown.js') }}"></script>
     <script src="{{ asset('assets/js/theme.js') }}"></script>
 
+    <!-- CHATBOT -->
+    <div class="chatbot-container" id="chatbot">
+    <div class="chat-header">
+        <h4 style="color:#f0f0f0">AI Assistant</h4>
+        <button id="closeChat">×</button>
+    </div>
+    <div class="chat-body" id="chatBody"></div>
+    <div class="chat-footer">
+        <input type="text" id="userInput" placeholder="Type your message..." autocomplete="off" />
+        <button id="sendBtn">➤</button>
+    </div>
+    </div>
 
+    <!-- Floating Button -->
+    <button class="chat-toggle-btn" id="chatToggle">💬</button>
 
     <script>
         $(function() {
@@ -830,11 +1005,17 @@
     </script>
 
     {{-- Chatbot script --}}
-    <script src="https://cdn.botpress.cloud/webchat/v3.2/inject.js"></script>
-    <script src="https://files.bpcontent.cloud/2025/08/03/08/20250803083409-3WIT2L2F.js"></script>
+    {{-- <script src="https://cdn.botpress.cloud/webchat/v3.2/inject.js"></script>
+    <script src="https://files.bpcontent.cloud/2025/08/03/08/20250803083409-3WIT2L2F.js"></script> --}}
     
 
     <script src={{ asset('js/sweetalert.min.js') }}></script>
+    
+    {{-- <script src="script.js"></script> --}}
+    
+    {{-- <script>
+        AOS.init();
+    </script> --}}
     <!--Start of Tawk.to Script-->
     {{-- <script type="text/javascript">
         var Tawk_API = Tawk_API || {},
@@ -853,6 +1034,139 @@
     {{-- @livewire('audio-player') --}}
     @livewireScripts
     @stack('scripts')
+
+<script>
+    // Hàm để thêm tin nhắn vào khung chat
+    function appendMessage(msg, type) {
+        const chatBody = document.getElementById('chatBody');
+        if (!chatBody) return;
+        const el = document.createElement('div');
+        el.className = type === 'user' ? 'user-message' : 'bot-message';
+        el.innerHTML = msg;
+        chatBody.appendChild(el);
+        chatBody.scrollTop = chatBody.scrollHeight;
+    }
+
+    // Hàm để gửi tin nhắn đến backend và nhận phản hồi
+    function postToChatbot(message) {
+        appendMessage('Typing...', 'bot');
+
+        fetch('{{ route("chatbot.handle") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: 'message=' + encodeURIComponent(message)
+        })
+        .then(res => {
+            if (!res.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return res.json();
+        })
+        .then(data => {
+            const chatBody = document.getElementById('chatBody');
+            const typingMsg = chatBody.querySelector('.bot-message:last-child');
+            if (typingMsg && typingMsg.innerText.includes('Typing...')) {
+                typingMsg.remove();
+            }
+
+            if (data.html) {
+                appendMessage(data.html, 'bot');
+            }
+
+            // Update cart count if available
+            if (data.cart_count !== null && typeof data.cart_count !== 'undefined') {
+                const cartCountElements = document.querySelectorAll('.js-cart-count');
+                cartCountElements.forEach(el => {
+                    if (data.cart_count > 0) {
+                        el.innerText = data.cart_count;
+                        el.style.display = 'block';
+                        el.style.transform = 'scale(1.5)';
+                        el.style.transition = 'transform 0.2s ease-out';
+                        setTimeout(() => {
+                            el.style.transform = 'scale(1)';
+                        }, 200);
+                    } else {
+                        el.innerText = 0;
+                        el.style.display = 'none';
+                    }
+                });
+            }
+        })
+        .catch((error) => {
+            console.error('Chatbot fetch error:', error);
+            const chatBody = document.getElementById('chatBody');
+            const typingMsg = chatBody.querySelector('.bot-message:last-child');
+            if (typingMsg && typingMsg.innerText.includes('Typing...')) {
+                typingMsg.remove();
+            }
+            appendMessage("Xin lỗi, tôi không thể kết nối đến máy chủ hoặc đã có lỗi xảy ra.", 'bot');
+        });
+    }
+
+    // Hàm global được gọi bởi các nút bấm (onclick)
+    // action: 'action:search', buttonText: 'Tìm kiếm sản phẩm'
+    function sendChatbotMessage(action, buttonText) {
+        if (buttonText) {
+            appendMessage(buttonText, 'user');
+        }
+        postToChatbot(action);
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const chatToggle = document.getElementById('chatToggle');
+        const chatbotContainer = document.querySelector('.chatbot-container');
+        const closeChat = document.getElementById('closeChat');
+        const sendBtn = document.getElementById('sendBtn');
+        const userInput = document.getElementById('userInput');
+
+        if (!chatToggle || !chatbotContainer) {
+            console.error("Không tìm thấy phần tử chatbot hoặc nút toggle!");
+            return;
+        }
+
+        chatToggle.addEventListener('click', () => {
+            chatbotContainer.style.display = 'flex';
+            chatToggle.style.display = 'none';
+
+            const chatBody = document.getElementById('chatBody');
+            // If the chat is empty, it's the first time opening, so we greet the user.
+            if (chatBody.children.length === 0) {
+                postToChatbot('action:start');
+            }
+        });
+
+        if (closeChat) {
+            closeChat.addEventListener('click', () => {
+                chatbotContainer.style.display = 'none';
+                chatToggle.style.display = 'block';
+            });
+        }
+
+        // Hàm xử lý khi người dùng nhập và gửi tin nhắn
+        function sendMessageFromInput() {
+            const message = userInput.value.trim();
+            if (!message) return;
+
+            appendMessage(message, 'user');
+            userInput.value = '';
+            postToChatbot(message);
+        }
+
+        if (sendBtn && userInput) {
+            sendBtn.addEventListener('click', sendMessageFromInput);
+            userInput.addEventListener('keypress', e => {
+                if (e.key === 'Enter') {
+                    e.preventDefault(); // Ngăn form submit (nếu có)
+                    sendMessageFromInput();
+                }
+            });
+        }
+    });
+</script>
+
 </body>
 
 </html>
