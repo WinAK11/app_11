@@ -11,9 +11,97 @@
     <script src="https://unpkg.com/epubjs/dist/epub.min.js"></script>
     <title>{{ $ebook->title }} Reader</title>
 
-    <!-- Include EPUB.js -->
-    <script src="https://unpkg.com/epubjs/dist/epub.min.js"></script>
+    <style>
+        /* Chapter selection styles */
+        .chapter-selector {
+            position: relative;
+            display: inline-block;
+        }
 
+        .chapter-dropdown {
+            display: none;
+            position: absolute;
+            bottom: 100%;
+            left: 0;
+            background: rgba(0, 0, 0, 0.9);
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 10px;
+            min-width: 250px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+
+        .chapter-dropdown.show {
+            display: block;
+        }
+
+        .chapter-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            border-radius: 4px;
+            margin-bottom: 5px;
+            color: white;
+            font-size: 14px;
+            display: flex;
+            justify-content: between;
+            align-items: center;
+        }
+
+        .chapter-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .chapter-item.active {
+            background: rgba(74, 144, 226, 0.3);
+        }
+
+        .chapter-item.playing {
+            background: rgba(74, 144, 226, 0.5);
+        }
+
+        .chapter-title {
+            flex: 1;
+            margin-right: 10px;
+        }
+
+        .chapter-duration {
+            font-size: 12px;
+            opacity: 0.7;
+        }
+
+        .chapter-selector-btn {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 4px;
+        }
+
+        .chapter-selector-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .no-chapters {
+            color: rgba(255, 255, 255, 0.7);
+            text-align: center;
+            padding: 20px;
+            font-style: italic;
+        }
+
+        .loading-chapters {
+            color: rgba(255, 255, 255, 0.7);
+            text-align: center;
+            padding: 20px;
+        }
+
+        /* Audio player enhancements */
+        .audio-controls {
+            position: relative;
+        }
+    </style>
 </head>
 
 <body>
@@ -90,6 +178,16 @@
                 </div>
             </div>
 
+            <!-- Chapter Selector -->
+            <div class="chapter-selector">
+                <button class="chapter-selector-btn" onclick="toggleChapterDropdown()">
+                    <i class="fas fa-list"></i>
+                </button>
+                <div class="chapter-dropdown" id="chapterDropdown">
+                    <div class="loading-chapters" id="loadingChapters">Loading chapters...</div>
+                </div>
+            </div>
+
             <button class="close-audio" onclick="closeAudioPlayer()">
                 <i class="fas fa-times"></i>
             </button>
@@ -98,21 +196,22 @@
 
     <!-- Hidden audio element -->
     <audio id="audioElement" preload="metadata" style="display: none;">
-        <source src="{{ asset('uploads/audiobook/audio-test.mp3') }}" type="audio/mpeg">
         Your browser does not support the audio element.
     </audio>
 
     <script>
-        // Audio Player State - Initialize first
+        // Audio Player State
         let audioPlayer = {
             audio: null,
             isPlaying: false,
             volume: 0.7,
-            isVisible: false
+            isVisible: false,
+            chapters: [],
+            currentChapterIndex: 0,
+            isLoading: false
         };
 
         // Initialize the book
-        // const book = ePub("/uploads/ebooks/mobydick.epub");
         const book = ePub("{{ asset($ebook->file_path) }}");
         const rendition = book.renderTo("viewer", {
             width: "100%",
@@ -146,61 +245,43 @@
 
         let currentTheme = "light";
 
-        // Inject theme styles into each EPUB content iframe when it's loaded
+        // Theme handling (existing code)
         rendition.hooks.content.register(function(contents) {
             const doc = contents.document;
-
             const style = doc.createElement("style");
             style.id = "theme-style";
             doc.head.appendChild(style);
-
             applyTheme(currentTheme, style, doc);
         });
 
-        // Handle checkbox toggle
         const invertToggle = document.getElementById("invert");
-
         invertToggle.addEventListener("change", (e) => {
             currentTheme = e.target.checked ? "dark" : "light";
-
             rendition.getContents().forEach((contents) => {
                 const doc = contents.document;
                 const style = doc.getElementById("theme-style");
                 applyTheme(currentTheme, style, doc);
             });
-
         });
 
-        // Apply theme styles inside the book (iframe content)
         function applyTheme(theme, styleElement, doc) {
             if (theme === "dark") {
                 styleElement.textContent = `
-            body {
-                background: #121212 !important;
-                color: #e0e0e0 !important;
-            }
-            a { color: #90caf9 !important; }
-        `;
+                    body { background: #121212 !important; color: #e0e0e0 !important; }
+                    a { color: #90caf9 !important; }
+                `;
             } else {
                 styleElement.textContent = `
-            body {
-                background: #ffffff !important;
-                color: #000000 !important;
-            }
-            a { color: #007bff !important; }
-        `;
+                    body { background: #ffffff !important; color: #000000 !important; }
+                    a { color: #007bff !important; }
+                `;
             }
         }
 
         const fullscreenToggle = document.getElementById("fullscreen");
-
         fullscreenToggle.addEventListener("change", (e) => {
             const flowMode = e.target.checked ? "scrolled" : "paginated";
-
-            // Reconfigure the rendition
             rendition.flow(flowMode);
-
-            // Optionally resize to fit screen changes
             rendition.resize();
         });
 
@@ -215,24 +296,6 @@
             rendition.next();
         });
 
-        // Table of Contents
-        document.getElementById("toc").addEventListener("click", (e) => {
-            e.preventDefault();
-            book.loaded.navigation.then((toc) => {
-                const tocList = toc.toc.map(item =>
-                    `<li><a href="#" data-href="${item.href}">${item.label}</a></li>`).join("");
-                const tocWindow = window.open("", "Table of Contents", "width=300,height=600");
-                tocWindow.document.write(`<ul>${tocList}</ul>`);
-                tocWindow.document.querySelectorAll('a[data-href]').forEach(link => {
-                    link.addEventListener("click", (ev) => {
-                        ev.preventDefault();
-                        rendition.display(link.dataset.href);
-                        tocWindow.close();
-                    });
-                });
-            });
-        });
-
         // Audio Player Functions
 
         function initAudio() {
@@ -242,9 +305,6 @@
                 console.error('Audio element not found');
                 return false;
             }
-
-            console.log('Audio element found:', audioPlayer.audio);
-            console.log('Audio source:', audioPlayer.audio.src);
 
             // Set initial volume
             audioPlayer.audio.volume = audioPlayer.volume;
@@ -264,9 +324,8 @@
             });
 
             audioPlayer.audio.addEventListener('ended', () => {
-                console.log('Audio ended');
-                audioPlayer.isPlaying = false;
-                updatePlayButton();
+                console.log('Audio ended, playing next chapter');
+                playNextChapter();
             });
 
             audioPlayer.audio.addEventListener('play', () => {
@@ -286,18 +345,149 @@
                 console.error('Audio error details:', audioPlayer.audio.error);
             });
 
-            audioPlayer.audio.addEventListener('canplay', () => {
-                console.log('Audio can play');
-            });
-
-            audioPlayer.audio.addEventListener('loadstart', () => {
-                console.log('Audio loading started');
-            });
-
-            // Try to load the audio
-            audioPlayer.audio.load();
             console.log('Audio initialized successfully');
             return true;
+        }
+
+        // Load audiobook chapters
+        async function loadChapters() {
+            try {
+                console.log('Loading chapters for ebook ID: {{ $ebook->id }}');
+
+                // You'll need to create this endpoint in your Laravel routes
+                const response = await fetch('/api/ebook/{{ $ebook->id }}/chapters');
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch chapters');
+                }
+
+                const data = await response.json();
+                audioPlayer.chapters = data.chapters || [];
+
+                console.log('Chapters loaded:', audioPlayer.chapters.length);
+                renderChapterDropdown();
+
+            } catch (error) {
+                console.error('Error loading chapters:', error);
+                renderNoChapters();
+            }
+        }
+
+        function renderChapterDropdown() {
+            const dropdown = document.getElementById('chapterDropdown');
+
+            if (audioPlayer.chapters.length === 0) {
+                renderNoChapters();
+                return;
+            }
+
+            let html = '';
+            audioPlayer.chapters.forEach((chapter, index) => {
+                const isActive = index === audioPlayer.currentChapterIndex;
+                const title = chapter.title || `Chapter ${chapter.index}`;
+
+                html += `
+                    <div class="chapter-item ${isActive ? 'active' : ''}"
+                         data-chapter-index="${index}"
+                         onclick="selectChapter(${index})">
+                        <span class="chapter-title">${title}</span>
+                    </div>
+                `;
+            });
+
+            dropdown.innerHTML = html;
+        }
+
+        function renderNoChapters() {
+            const dropdown = document.getElementById('chapterDropdown');
+            dropdown.innerHTML = '<div class="no-chapters">No audiobook chapters available</div>';
+        }
+
+        function toggleChapterDropdown() {
+            const dropdown = document.getElementById('chapterDropdown');
+            dropdown.classList.toggle('show');
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function closeDropdown(e) {
+                if (!e.target.closest('.chapter-selector')) {
+                    dropdown.classList.remove('show');
+                    document.removeEventListener('click', closeDropdown);
+                }
+            });
+        }
+
+        function selectChapter(chapterIndex) {
+            if (chapterIndex < 0 || chapterIndex >= audioPlayer.chapters.length) {
+                console.error('Invalid chapter index:', chapterIndex);
+                return;
+            }
+
+            audioPlayer.currentChapterIndex = chapterIndex;
+            const chapter = audioPlayer.chapters[chapterIndex];
+
+            console.log('Selecting chapter:', chapter);
+
+            // Update UI
+            updateChapterUI();
+
+            // Load and play the chapter
+            if (chapter.audio_path) {
+                loadChapterAudio(chapter.audio_path);
+            } else {
+                console.error('Chapter has no audio file:', chapter);
+                alert('This chapter does not have an audio file yet.');
+            }
+
+            // Close dropdown
+            document.getElementById('chapterDropdown').classList.remove('show');
+        }
+
+        function updateChapterUI() {
+            // Update chapter dropdown active state
+            const chapterItems = document.querySelectorAll('.chapter-item');
+            chapterItems.forEach((item, index) => {
+                item.classList.toggle('active', index === audioPlayer.currentChapterIndex);
+            });
+        }
+
+        function loadChapterAudio(audioPath) {
+            if (!audioPlayer.audio) {
+                console.error('Audio element not initialized');
+                return;
+            }
+
+            console.log('Loading audio:', audioPath);
+
+            // Set the audio source
+            audioPlayer.audio.src = `{{ asset('') }}${audioPath}`;
+
+            // Load the audio
+            audioPlayer.audio.load();
+
+            // Auto-play if player was already playing
+            if (audioPlayer.isPlaying) {
+                audioPlayer.audio.play().catch(e => {
+                    console.error('Auto-play failed:', e);
+                });
+            }
+        }
+
+        function playNextChapter() {
+            const nextIndex = audioPlayer.currentChapterIndex + 1;
+            if (nextIndex < audioPlayer.chapters.length) {
+                selectChapter(nextIndex);
+            } else {
+                console.log('Reached end of audiobook');
+                audioPlayer.isPlaying = false;
+                updatePlayButton();
+            }
+        }
+
+        function playPreviousChapter() {
+            const prevIndex = audioPlayer.currentChapterIndex - 1;
+            if (prevIndex >= 0) {
+                selectChapter(prevIndex);
+            }
         }
 
         function toggleAudioPlayer() {
@@ -326,6 +516,12 @@
                 player.classList.add('show');
                 bookReader.classList.add('with-audio');
                 audioPlayer.isVisible = true;
+
+                // Load chapters if not already loaded
+                if (audioPlayer.chapters.length === 0) {
+                    loadChapters();
+                }
+
                 if (audioPlayer.isPlaying) {
                     toggle.classList.add('playing');
                 }
@@ -360,6 +556,26 @@
                 }
             }
 
+            // If no chapters loaded or no current chapter, load first available chapter
+            if (audioPlayer.chapters.length === 0) {
+                console.log('No chapters loaded, loading now...');
+                loadChapters().then(() => {
+                    if (audioPlayer.chapters.length > 0) {
+                        selectChapter(0);
+                    }
+                });
+                return;
+            }
+
+            // If no audio source is set, load current chapter
+            if (!audioPlayer.audio.src || audioPlayer.audio.src === location.href) {
+                const currentChapter = audioPlayer.chapters[audioPlayer.currentChapterIndex];
+                if (currentChapter && currentChapter.audio_path) {
+                    loadChapterAudio(currentChapter.audio_path);
+                    return;
+                }
+            }
+
             console.log('Current audio state - playing:', audioPlayer.isPlaying, 'paused:', audioPlayer.audio.paused);
 
             if (audioPlayer.isPlaying || !audioPlayer.audio.paused) {
@@ -371,9 +587,7 @@
                     console.log('Audio play successful');
                 }).catch(e => {
                     console.error('Play prevented:', e);
-                    alert(
-                        'Audio could not be played. Please check if the file exists at: uploads/audiobook/audio-test.mp3'
-                        );
+                    alert('Audio could not be played. Please check if the audiobook file exists.');
                 });
             }
         }
@@ -385,7 +599,14 @@
 
         function skipBackward() {
             if (!audioPlayer.audio) return;
-            audioPlayer.audio.currentTime = Math.max(audioPlayer.audio.currentTime - 30, 0);
+            const newTime = audioPlayer.audio.currentTime - 30;
+
+            if (newTime < 0 && audioPlayer.currentChapterIndex > 0) {
+                // Skip to previous chapter
+                playPreviousChapter();
+            } else {
+                audioPlayer.audio.currentTime = Math.max(newTime, 0);
+            }
         }
 
         function seekTo(event) {

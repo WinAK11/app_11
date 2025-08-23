@@ -119,10 +119,26 @@ Route::middleware(['auth', AuthAdmin::class])->group(function()
 Route::prefix('admin/free-products')->middleware(['auth', AuthAdmin::class])->group(function() {
     Route::get('ebooks', [FreeProductController::class, 'ebooks'])->name('admin.ebooks');
     Route::get('ebook/add', [FreeProductController::class, 'ebook_add'])->name('admin.ebook.add');
+
     Route::post('ebook/store', [FreeProductController::class, 'ebook_store'])->name('admin.ebook.store');
+    Route::post('ebooks/store-chapters', [FreeProductController::class, 'storeChapters']);
+    Route::post('ebooks/{id}/parse-chapters', [FreeProductController::class, 'parseChapters'])->name('admin.ebook.parseChapters');
     Route::get('ebook/{id}/edit', [FreeProductController::class, 'ebook_edit'])->name('admin.ebook.edit');
     Route::put('/admin/ebook/update', [FreeProductController::class, 'ebook_update'])->name('admin.ebook.update');
     Route::delete('/admin/ebook/{id}/delete', [FreeProductController::class, 'ebook_delete'])->name('admin.ebook.delete');
+
+    Route::post('audiobook/store', [FreeProductController::class, 'audiobook_store'])->name('admin.audiobook.store');
+    Route::get('audiobook/add', [FreeProductController::class, 'audiobook_add'])->name('admin.audiobook.add');
+    Route::get('audiobook/{ebook_id}/chapters', [FreeProductController::class, 'audiobook_chapters'])->name('admin.audiobook.chapters');
+    Route::delete('audiobook/{ebook_id}/chapters', [FreeProductController::class, 'audiobook_delete_chapters'])->name('admin.audiobook.chapters.delete');
+    Route::get('audiobook/{ebook_id}/regenerate', [FreeProductController::class, 'audiobook_regenerate_chapters'])->name('admin.audiobook.regenerate');
+    Route::post('audiobook/generate-chapter-audio', [FreeProductController::class, 'generate_chapter_audio'])->name('admin.audiobook.generate.chapter');
+    Route::post('audiobook/generate-all-audio', [FreeProductController::class, 'generate_all_chapters_audio'])->name('admin.audiobook.generate.all');
+    Route::delete('audiobook/chapter/{chapter_id}/audio', [FreeProductController::class, 'delete_chapter_audio'])->name('admin.audiobook.chapter.audio.delete');
+    Route::get('audiobook/voice-settings', [FreeProductController::class, 'voice_settings'])->name('admin.audiobook.voice.settings');
+    Route::get('audiobook/get-polly-voices', [FreeProductController::class, 'get_polly_voices'])->name('admin.audiobook.voice.get');
+    Route::post('audiobook/generate-preview', [FreeProductController::class, 'generate_voice_preview'])->name('admin.audiobook.generate.preview');
+    Route::get('polly/test', [FreeProductController::class, 'test_polly_connection'])->name('admin.audiobook.polly.test');
 });
 
 // Route::get('/{product_slug}', [ShopController::class, 'product_details'])->name('product.details');
@@ -147,6 +163,8 @@ Auth::routes();
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
 Route::get('/read/ebook/{id}', [FreeProductController::class, 'ebook_read'])->name('epub.reader');
+Route::get('/api/ebook/{id}/chapters', [FreeProductController::class, 'getEbookChapters']);
+
 
 Route::post('/ai/suggest-category', [AIController::class, 'suggestCategory']);
 Route::post('/ai/generate-description', [AIController::class, 'generateDescription']);
