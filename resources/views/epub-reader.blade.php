@@ -9,6 +9,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.5/jszip.min.js"></script>
     <script src="https://unpkg.com/epubjs/dist/epub.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.4/howler.min.js"></script>
     <title>{{ $ebook->title }} Reader</title>
 
     <style>
@@ -101,6 +102,21 @@
         .audio-controls {
             position: relative;
         }
+
+        .hover-time-preview {
+            position: absolute;
+            bottom: 100%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.85);
+            color: #fff;
+            padding: 2px 6px;
+            font-size: 12px;
+            border-radius: 4px;
+            white-space: nowrap;
+            display: none;
+            pointer-events: none;
+            z-index: 10;
+        }
     </style>
 </head>
 
@@ -165,9 +181,11 @@
 
             <div class="progress-container">
                 <span class="time" id="currentTime">0:00</span>
-                <div class="progress-bar" onclick="seekTo(event)">
+                <div class="progress-bar" id="progressBar" style="cursor: pointer; position: relative;">
                     <div class="progress-fill" id="progressFill"></div>
+                    <div class="hover-time-preview" id="hoverTimePreview"></div>
                 </div>
+
                 <span class="time" id="totalTime">0:00</span>
             </div>
 
@@ -194,24 +212,26 @@
         </div>
     </div>
 
-    <!-- Hidden audio element -->
-    <audio id="audioElement" preload="metadata" style="display: none;">
-        Your browser does not support the audio element.
-    </audio>
-
     <script>
-        // Audio Player State
+        // CLEAN HOWLER.JS AUDIO PLAYER IMPLEMENTATION
+
+        // Audio Player State - ONLY HOWLER
         let audioPlayer = {
-            audio: null,
+            sound: null, // Howler sound instance ONLY
             isPlaying: false,
             volume: 0.7,
             isVisible: false,
             chapters: [],
             currentChapterIndex: 0,
-            isLoading: false
+            isLoading: false,
+            currentAudioPath: null,
+            duration: 0
         };
 
-        // Initialize the book
+        // Progress updater
+        let progressInterval = null;
+
+        // Initialize the book (ePub.js part - keep this)
         const book = ePub("{{ asset($ebook->file_path) }}");
         const rendition = book.renderTo("viewer", {
             width: "100%",
@@ -234,7 +254,6 @@
                 tocSelect.appendChild(option);
             });
 
-            // Handle TOC selection change
             tocSelect.addEventListener("change", (e) => {
                 const href = e.target.value;
                 rendition.display(href);
@@ -243,9 +262,9 @@
 
         rendition.display();
 
+        // Theme handling
         let currentTheme = "light";
 
-        // Theme handling (existing code)
         rendition.hooks.content.register(function(contents) {
             const doc = contents.document;
             const style = doc.createElement("style");
@@ -296,65 +315,12 @@
             rendition.next();
         });
 
-        // Audio Player Functions
+        // ========== HOWLER AUDIO PLAYER FUNCTIONS ==========
 
-        function initAudio() {
-            console.log('Initializing audio...');
-            audioPlayer.audio = document.getElementById('audioElement');
-            if (!audioPlayer.audio) {
-                console.error('Audio element not found');
-                return false;
-            }
-
-            // Set initial volume
-            audioPlayer.audio.volume = audioPlayer.volume;
-            updateVolumeDisplay();
-
-            // Audio event listeners
-            audioPlayer.audio.addEventListener('loadedmetadata', () => {
-                console.log('Audio metadata loaded, duration:', audioPlayer.audio.duration);
-                const totalTimeEl = document.getElementById('totalTime');
-                if (totalTimeEl) {
-                    totalTimeEl.textContent = formatTime(audioPlayer.audio.duration);
-                }
-            });
-
-            audioPlayer.audio.addEventListener('timeupdate', () => {
-                updateProgress();
-            });
-
-            audioPlayer.audio.addEventListener('ended', () => {
-                console.log('Audio ended, playing next chapter');
-                playNextChapter();
-            });
-
-            audioPlayer.audio.addEventListener('play', () => {
-                console.log('Audio started playing');
-                audioPlayer.isPlaying = true;
-                updatePlayButton();
-            });
-
-            audioPlayer.audio.addEventListener('pause', () => {
-                console.log('Audio paused');
-                audioPlayer.isPlaying = false;
-                updatePlayButton();
-            });
-
-            audioPlayer.audio.addEventListener('error', (e) => {
-                console.error('Audio error:', e);
-                console.error('Audio error details:', audioPlayer.audio.error);
-            });
-
-            console.log('Audio initialized successfully');
-            return true;
-        }
-
-        // Load audiobook chapters
+        // Load chapters
         async function loadChapters() {
             try {
                 console.log('Loading chapters for ebook ID: {{ $ebook->id }}');
-
-                // You'll need to create this endpoint in your Laravel routes
                 const response = await fetch('/api/ebook/{{ $ebook->id }}/chapters');
 
                 if (!response.ok) {
@@ -363,16 +329,15 @@
 
                 const data = await response.json();
                 audioPlayer.chapters = data.chapters || [];
-
                 console.log('Chapters loaded:', audioPlayer.chapters.length);
                 renderChapterDropdown();
-
             } catch (error) {
                 console.error('Error loading chapters:', error);
                 renderNoChapters();
             }
         }
 
+        // Render chapter dropdown
         function renderChapterDropdown() {
             const dropdown = document.getElementById('chapterDropdown');
 
@@ -388,7 +353,6 @@
 
                 html += `
                     <div class="chapter-item ${isActive ? 'active' : ''}"
-                         data-chapter-index="${index}"
                          onclick="selectChapter(${index})">
                         <span class="chapter-title">${title}</span>
                     </div>
@@ -403,73 +367,161 @@
             dropdown.innerHTML = '<div class="no-chapters">No audiobook chapters available</div>';
         }
 
-        function toggleChapterDropdown() {
-            const dropdown = document.getElementById('chapterDropdown');
-            dropdown.classList.toggle('show');
+        // Load chapter with Howler
+        function loadChapterAudio(audioPath) {
+            console.log('Loading audio with Howler:', audioPath);
 
-            // Close dropdown when clicking outside
-            document.addEventListener('click', function closeDropdown(e) {
-                if (!e.target.closest('.chapter-selector')) {
-                    dropdown.classList.remove('show');
-                    document.removeEventListener('click', closeDropdown);
+            if (audioPlayer.currentAudioPath === audioPath && audioPlayer.sound) {
+                console.log('Audio already loaded');
+                return;
+            }
+
+            const wasPlaying = audioPlayer.isPlaying;
+
+            // Clean up previous sound
+            if (audioPlayer.sound) {
+                audioPlayer.sound.stop();
+                audioPlayer.sound.unload();
+            }
+
+            audioPlayer.isLoading = true;
+            audioPlayer.currentAudioPath = audioPath;
+
+            const fullPath = `{{ asset('') }}${audioPath}`;
+
+            // Create Howler instance
+            audioPlayer.sound = new Howl({
+                src: [fullPath],
+                html5: false,
+                volume: audioPlayer.volume,
+
+                onload: function() {
+                    console.log('✅ Audio loaded successfully');
+                    audioPlayer.isLoading = false;
+                    audioPlayer.duration = audioPlayer.sound.duration();
+
+                    const totalTimeEl = document.getElementById('totalTime');
+                    if (totalTimeEl) {
+                        totalTimeEl.textContent = formatTime(audioPlayer.duration);
+                    }
+
+                    if (wasPlaying) {
+                        audioPlayer.sound.play();
+                    }
+                },
+
+                onloaderror: function(id, error) {
+                    console.error('❌ Audio load error:', error);
+                    audioPlayer.isLoading = false;
+                    alert('Failed to load audio file.');
+                },
+
+                onplay: function() {
+                    audioPlayer.isPlaying = true;
+                    updatePlayButton();
+                    startProgressUpdater();
+                },
+
+                onpause: function() {
+                    audioPlayer.isPlaying = false;
+                    updatePlayButton();
+                },
+
+                onend: function() {
+                    playNextChapter();
                 }
             });
         }
 
-        function selectChapter(chapterIndex) {
-            if (chapterIndex < 0 || chapterIndex >= audioPlayer.chapters.length) {
-                console.error('Invalid chapter index:', chapterIndex);
+        // Progress updater
+        function startProgressUpdater() {
+            if (progressInterval) clearInterval(progressInterval);
+
+            progressInterval = setInterval(() => {
+                if (audioPlayer.sound && audioPlayer.isPlaying) {
+                    updateProgress();
+                }
+            }, 100);
+        }
+
+        function stopProgressUpdater() {
+            if (progressInterval) {
+                clearInterval(progressInterval);
+                progressInterval = null;
+            }
+        }
+
+        function updateProgress() {
+            if (!audioPlayer.sound || audioPlayer.isLoading) return;
+
+            const currentTime = audioPlayer.sound.seek() || 0;
+            const duration = audioPlayer.duration;
+
+            if (duration > 0) {
+                const progress = (currentTime / duration) * 100;
+                const progressFill = document.getElementById('progressFill');
+                if (progressFill) {
+                    progressFill.style.width = Math.max(0, Math.min(100, progress)) + '%';
+                }
+            }
+
+            const currentTimeEl = document.getElementById('currentTime');
+            if (currentTimeEl) {
+                currentTimeEl.textContent = formatTime(currentTime);
+            }
+        }
+
+        // ⭐ FIXED SEEK FUNCTION - NO MORE RESTARTS!
+        function seekTo(event) {
+            event.stopPropagation();
+
+            if (!audioPlayer.sound || audioPlayer.sound.state() !== 'loaded') {
+                console.warn("Audio is not loaded yet, cannot seek.");
                 return;
             }
+
+            const duration = audioPlayer.sound.duration();
+            if (!duration || isNaN(duration)) {
+                console.warn("Invalid audio duration.");
+                return;
+            }
+
+            const progressBar = event.currentTarget;
+            const rect = progressBar.getBoundingClientRect();
+            const clickX = event.clientX - rect.left;
+            const percentage = Math.max(0, Math.min(1, clickX / rect.width));
+            const targetTime = percentage * duration;
+
+            console.log(`⏩ Seeking to ${targetTime.toFixed(2)}s (of ${duration}s)`);
+
+            audioPlayer.sound.seek(targetTime);
+            updateProgress();
+
+        }
+
+        // Chapter selection
+        function selectChapter(chapterIndex) {
+            if (chapterIndex < 0 || chapterIndex >= audioPlayer.chapters.length) return;
 
             audioPlayer.currentChapterIndex = chapterIndex;
             const chapter = audioPlayer.chapters[chapterIndex];
 
-            console.log('Selecting chapter:', chapter);
-
-            // Update UI
             updateChapterUI();
 
-            // Load and play the chapter
             if (chapter.audio_path) {
                 loadChapterAudio(chapter.audio_path);
             } else {
-                console.error('Chapter has no audio file:', chapter);
                 alert('This chapter does not have an audio file yet.');
             }
 
-            // Close dropdown
             document.getElementById('chapterDropdown').classList.remove('show');
         }
 
         function updateChapterUI() {
-            // Update chapter dropdown active state
             const chapterItems = document.querySelectorAll('.chapter-item');
             chapterItems.forEach((item, index) => {
                 item.classList.toggle('active', index === audioPlayer.currentChapterIndex);
             });
-        }
-
-        function loadChapterAudio(audioPath) {
-            if (!audioPlayer.audio) {
-                console.error('Audio element not initialized');
-                return;
-            }
-
-            console.log('Loading audio:', audioPath);
-
-            // Set the audio source
-            audioPlayer.audio.src = `{{ asset('') }}${audioPath}`;
-
-            // Load the audio
-            audioPlayer.audio.load();
-
-            // Auto-play if player was already playing
-            if (audioPlayer.isPlaying) {
-                audioPlayer.audio.play().catch(e => {
-                    console.error('Auto-play failed:', e);
-                });
-            }
         }
 
         function playNextChapter() {
@@ -477,31 +529,81 @@
             if (nextIndex < audioPlayer.chapters.length) {
                 selectChapter(nextIndex);
             } else {
-                console.log('Reached end of audiobook');
+                console.log('End of audiobook reached');
                 audioPlayer.isPlaying = false;
                 updatePlayButton();
+                stopProgressUpdater();
             }
         }
 
-        function playPreviousChapter() {
-            const prevIndex = audioPlayer.currentChapterIndex - 1;
-            if (prevIndex >= 0) {
-                selectChapter(prevIndex);
-            }
-        }
-
-        function toggleAudioPlayer() {
-            console.log('Toggle audio player called');
-
-            // Initialize audio if not already done
-            if (!audioPlayer.audio) {
-                console.log('Audio not initialized, initializing now...');
-                if (!initAudio()) {
-                    console.error('Failed to initialize audio');
+        // Playback controls
+        function togglePlayback() {
+            if (!audioPlayer.sound) {
+                if (audioPlayer.chapters.length === 0) {
+                    loadChapters().then(() => {
+                        if (audioPlayer.chapters.length > 0) {
+                            selectChapter(0);
+                        }
+                    });
                     return;
                 }
+
+                const currentChapter = audioPlayer.chapters[audioPlayer.currentChapterIndex];
+                if (currentChapter?.audio_path) {
+                    loadChapterAudio(currentChapter.audio_path);
+                    return;
+                }
+                return;
             }
 
+            if (audioPlayer.isLoading) {
+                console.log('Audio loading...');
+                return;
+            }
+
+            if (audioPlayer.isPlaying) {
+                audioPlayer.sound.pause();
+            } else {
+                audioPlayer.sound.play();
+            }
+        }
+
+        function skipForward() {
+            const nextIndex = audioPlayer.currentChapterIndex + 1;
+            if (nextIndex < audioPlayer.chapters.length) {
+                selectChapter(nextIndex);
+            }
+        }
+
+        function skipBackward() {
+            if (!audioPlayer.sound) return;
+
+            const currentTime = audioPlayer.sound.seek();
+            if (currentTime <= 5 && audioPlayer.currentChapterIndex > 0) {
+                selectChapter(audioPlayer.currentChapterIndex - 1);
+            } else {
+                audioPlayer.sound.seek(0);
+            }
+        }
+
+        // Volume control - FIXED FOR HOWLER
+        function setVolume(event) {
+            const volumeBar = event.currentTarget;
+            const rect = volumeBar.getBoundingClientRect();
+            const clickPosition = event.clientX - rect.left;
+            const percentage = Math.max(0, Math.min(1, clickPosition / rect.width));
+
+            audioPlayer.volume = percentage;
+
+            if (audioPlayer.sound) {
+                audioPlayer.sound.volume(audioPlayer.volume);
+            }
+
+            updateVolumeDisplay();
+        }
+
+        // Audio player UI controls
+        function toggleAudioPlayer() {
             const player = document.getElementById('audioPlayer');
             const toggle = document.getElementById('audioToggle');
             const bookReader = document.querySelector('.book-reader');
@@ -511,21 +613,20 @@
                 bookReader.classList.remove('with-audio');
                 audioPlayer.isVisible = false;
                 toggle.classList.remove('playing');
-                console.log('Audio player hidden');
+                stopProgressUpdater();
             } else {
                 player.classList.add('show');
                 bookReader.classList.add('with-audio');
                 audioPlayer.isVisible = true;
 
-                // Load chapters if not already loaded
                 if (audioPlayer.chapters.length === 0) {
                     loadChapters();
                 }
 
                 if (audioPlayer.isPlaying) {
                     toggle.classList.add('playing');
+                    startProgressUpdater();
                 }
-                console.log('Audio player shown');
             }
         }
 
@@ -539,124 +640,32 @@
             audioPlayer.isVisible = false;
             toggle.classList.remove('playing');
 
-            // Pause audio when closing
-            if (audioPlayer.audio && !audioPlayer.audio.paused) {
-                audioPlayer.audio.pause();
+            if (audioPlayer.sound) {
+                audioPlayer.sound.pause();
             }
+            stopProgressUpdater();
         }
 
-        function togglePlayback() {
-            console.log('Toggle playback called');
+        function toggleChapterDropdown() {
+            const dropdown = document.getElementById('chapterDropdown');
+            dropdown.classList.toggle('show');
 
-            if (!audioPlayer.audio) {
-                console.log('Audio not initialized, initializing now...');
-                if (!initAudio()) {
-                    console.error('Audio initialization failed');
-                    return;
+            document.addEventListener('click', function closeDropdown(e) {
+                if (!e.target.closest('.chapter-selector')) {
+                    dropdown.classList.remove('show');
+                    document.removeEventListener('click', closeDropdown);
                 }
-            }
-
-            // If no chapters loaded or no current chapter, load first available chapter
-            if (audioPlayer.chapters.length === 0) {
-                console.log('No chapters loaded, loading now...');
-                loadChapters().then(() => {
-                    if (audioPlayer.chapters.length > 0) {
-                        selectChapter(0);
-                    }
-                });
-                return;
-            }
-
-            // If no audio source is set, load current chapter
-            if (!audioPlayer.audio.src || audioPlayer.audio.src === location.href) {
-                const currentChapter = audioPlayer.chapters[audioPlayer.currentChapterIndex];
-                if (currentChapter && currentChapter.audio_path) {
-                    loadChapterAudio(currentChapter.audio_path);
-                    return;
-                }
-            }
-
-            console.log('Current audio state - playing:', audioPlayer.isPlaying, 'paused:', audioPlayer.audio.paused);
-
-            if (audioPlayer.isPlaying || !audioPlayer.audio.paused) {
-                console.log('Pausing audio');
-                audioPlayer.audio.pause();
-            } else {
-                console.log('Attempting to play audio');
-                audioPlayer.audio.play().then(() => {
-                    console.log('Audio play successful');
-                }).catch(e => {
-                    console.error('Play prevented:', e);
-                    alert('Audio could not be played. Please check if the audiobook file exists.');
-                });
-            }
+            });
         }
 
-        function skipForward() {
-            if (!audioPlayer.audio) return;
-            audioPlayer.audio.currentTime = Math.min(audioPlayer.audio.currentTime + 30, audioPlayer.audio.duration);
-        }
-
-        function skipBackward() {
-            if (!audioPlayer.audio) return;
-            const newTime = audioPlayer.audio.currentTime - 30;
-
-            if (newTime < 0 && audioPlayer.currentChapterIndex > 0) {
-                // Skip to previous chapter
-                playPreviousChapter();
-            } else {
-                audioPlayer.audio.currentTime = Math.max(newTime, 0);
-            }
-        }
-
-        function seekTo(event) {
-            if (!audioPlayer.audio) return;
-
-            const progressBar = event.currentTarget;
-            const rect = progressBar.getBoundingClientRect();
-            const clickPosition = event.clientX - rect.left;
-            const percentage = (clickPosition / rect.width) * 100;
-
-            audioPlayer.audio.currentTime = (percentage / 100) * audioPlayer.audio.duration;
-        }
-
-        function setVolume(event) {
-            if (!audioPlayer.audio) return;
-
-            const volumeBar = event.currentTarget;
-            const rect = volumeBar.getBoundingClientRect();
-            const clickPosition = event.clientX - rect.left;
-            const percentage = (clickPosition / rect.width) * 100;
-
-            audioPlayer.volume = percentage / 100;
-            audioPlayer.audio.volume = audioPlayer.volume;
-            updateVolumeDisplay();
-        }
-
-        function updateProgress() {
-            if (!audioPlayer.audio) return;
-
-            const progress = (audioPlayer.audio.currentTime / audioPlayer.audio.duration) * 100;
-            const progressFill = document.getElementById('progressFill');
-            const currentTimeEl = document.getElementById('currentTime');
-
-            if (progressFill) {
-                progressFill.style.width = progress + '%';
-            }
-            if (currentTimeEl) {
-                currentTimeEl.textContent = formatTime(audioPlayer.audio.currentTime);
-            }
-        }
-
+        // UI helper functions
         function updatePlayButton() {
             const icon = document.getElementById('playIcon');
             const toggle = document.getElementById('audioToggle');
 
             if (audioPlayer.isPlaying) {
                 if (icon) icon.className = 'fas fa-pause';
-                if (toggle && audioPlayer.isVisible) {
-                    toggle.classList.add('playing');
-                }
+                if (toggle && audioPlayer.isVisible) toggle.classList.add('playing');
             } else {
                 if (icon) icon.className = 'fas fa-play';
                 if (toggle) toggle.classList.remove('playing');
@@ -677,9 +686,62 @@
             return minutes + ':' + (remainingSeconds < 10 ? '0' : '') + remainingSeconds;
         }
 
-        // Initialize audio when page loads
+        // Initialize everything
         document.addEventListener('DOMContentLoaded', function() {
-            initAudio();
+            console.log('🎵 Initializing Howler audio player...');
+
+            // Attach progress bar click handler
+            const progressBar = document.querySelector('.progress-bar');
+            if (progressBar) {
+                progressBar.addEventListener('click', seekTo);
+                console.log('✅ Progress bar click handler attached');
+            }
+
+            // Set initial volume display
+            updateVolumeDisplay();
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🎵 Initializing Howler audio player...');
+
+            const progressBar = document.getElementById('progressBar');
+            const hoverPreview = document.getElementById('hoverTimePreview');
+
+            if (progressBar) {
+                progressBar.addEventListener('mousemove', (e) => {
+                    if (!audioPlayer.sound || audioPlayer.isLoading || isNaN(audioPlayer.duration)) return;
+
+                    const rect = progressBar.getBoundingClientRect();
+                    const hoverX = e.clientX - rect.left;
+                    const percentage = Math.max(0, Math.min(1, hoverX / rect.width));
+                    const hoverTime = percentage * audioPlayer.duration;
+
+                    hoverPreview.style.display = 'block';
+                    hoverPreview.textContent = formatTime(hoverTime);
+                    hoverPreview.style.left = `${hoverX}px`;
+                });
+
+                progressBar.addEventListener('mouseleave', () => {
+                    hoverPreview.style.display = 'none';
+                });
+
+                progressBar.addEventListener('mouseenter', () => {
+                    if (audioPlayer.sound && !isNaN(audioPlayer.duration)) {
+                        hoverPreview.style.display = 'block';
+                    }
+                });
+            }
+
+            updateVolumeDisplay();
+        });
+
+
+        // Cleanup
+        window.addEventListener('beforeunload', function() {
+            if (audioPlayer.sound) {
+                audioPlayer.sound.unload();
+            }
+            stopProgressUpdater();
         });
     </script>
 </body>
