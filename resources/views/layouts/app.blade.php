@@ -630,12 +630,12 @@
                         </div>
 
                         <div class="search-popup js-hidden-content">
-                            <form action="#" method="GET" class="search-field container">
+                            <form action="{{ route('shop.index') }}" method="GET" class="search-field container">
                                 <p class="text-uppercase text-secondary fw-medium mb-4">What are you looking for?</p>
                                 <div class="position-relative">
                                     <input class="search-field__input search-popup__input w-100 fw-medium"
-                                        type="text" name="search-keyword" placeholder="Search for books"
-                                        id="search-input" />
+                                        type="text" name="query" placeholder="Search for books"
+                                        id="search-input" autocomplete="off" />
                                     <button class="btn-icon search-popup__submit" type="submit">
                                         <svg class="d-block" width="20" height="20" viewBox="0 0 20 20"
                                             fill="none" xmlns="http://www.w3.org/2000/svg">

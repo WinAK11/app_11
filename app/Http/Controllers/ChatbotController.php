@@ -4,14 +4,23 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Category;
 use App\Models\Product;
 use App\Models\Order;
+use App\Services\ProductSearchService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use Surfsidemedia\Shoppingcart\Facades\Cart;
 
 class ChatbotController extends Controller
 {
+    protected ProductSearchService $productSearchService;
+
+    public function __construct(ProductSearchService $productSearchService)
+    {
+        $this->productSearchService = $productSearchService;
+    }
+
     private function jsonResponse(string $html, ?int $cartCount = null)
     {
         return response()->json([
@@ -33,7 +42,7 @@ class ChatbotController extends Controller
                     return $this->showInitialOptions();
                 case 'search':
                     Session::put('chatbot_state', 'awaiting_search_query');
-                    return $this->jsonResponse('Tuyệt vời! Bạn muốn tìm sách gì ạ? Vui lòng nhập tên sách.');
+                    return $this->jsonResponse('Tuyệt vời! Bạn muốn tìm sách gì ạ? Vui lòng nhập tên sách hoặc danh mục.');
                 case 'orders':
                     return $this->checkOrderStatus();
                 case 'add_to_cart':
@@ -65,31 +74,16 @@ class ChatbotController extends Controller
                 return $this->searchProducts($message);
             case 'awaiting_add_to_cart_selection':
                 return $this->jsonResponse("Vui lòng chọn một sản phẩm từ danh sách bên trên bằng cách nhấn vào nút 'Thêm' tương ứng.");
-            // For any other state where we expect a button click, if the user types text, we restart the flow.
+            // In most other states, if the user types text, we can assume it's a new search.
+            // This makes the interaction feel more natural and user-friendly.
+            case 'initial':
             case 'search_results_displayed':
             case 'awaiting_add_more_to_cart':
-            case 'initial':
             default:
-                // Handle natural language search intent
-                $lowerMessage = mb_strtolower($message);
-                $searchKeywords = ['tìm kiếm', 'tìm', 'kiếm', 'search for', 'search'];
-                $matchedKeyword = null;
-
-                foreach ($searchKeywords as $keyword) {
-                    if (str_starts_with($lowerMessage, $keyword . ' ')) {
-                        $matchedKeyword = $keyword;
-                        break;
-                    }
+                if (!empty(trim($message))) {
+                    return $this->searchProducts($message);
                 }
-
-                if ($matchedKeyword !== null) {
-                    $query = trim(preg_replace('/^(sản phẩm|sách|cuốn|quyển|book|for)\s+/i', '', trim(substr($message, strlen($matchedKeyword)))));
-                    if (!empty($query)) {
-                        return $this->searchProducts($query);
-                    }
-                }
-
-                return $this->showInitialOptions(); // Fallback to initial options
+                return $this->showInitialOptions(); // Fallback to initial options if message is empty
         }
     }
 
@@ -111,27 +105,30 @@ class ChatbotController extends Controller
 
     private function searchProducts(string $query)
     {
-        if (empty($query)) {
-            return $this->jsonResponse('Bạn muốn tìm sách gì ạ?');
+        $cleanedQuery = $this->cleanSearchQuery($query);
+
+        if (empty(trim($cleanedQuery))) {
+            return $this->jsonResponse('Bạn muốn tìm sách gì ạ? Vui lòng nhập tên sách hoặc danh mục.');
         }
 
-        $products = Product::all();
         $results = collect();
-        $lowerQuery = mb_strtolower($query);
+        $responseMessageIntro = '';
 
-        foreach ($products as $product) {
-            $productName = mb_strtolower($product->name);
-            similar_text($lowerQuery, $productName, $percent);
-            $distance = levenshtein($lowerQuery, $productName);
-            if ($percent >= 60 || $distance <= 2 || stripos($productName, $lowerQuery) !== false) {
-                $results->push($product);
-            }
-            if ($results->count() >= 5) break;
+        // First, check if the query matches a category name
+        $category = Category::where('name', 'LIKE', "%{$cleanedQuery}%")->first();
+
+        if ($category) {
+            $results = Product::where('category_id', $category->id)->take(5)->get();
+            $responseMessageIntro = "Mình tìm thấy các sản phẩm trong danh mục '<strong>" . e($category->name) . "</strong>':<br>";
+        } else {
+            // If not a category, use the semantic search for products
+            $results = $this->productSearchService->searchProducts($cleanedQuery, 5);
+            $responseMessageIntro = "Mình tìm thấy các sản phẩm sau:<br>";
         }
-
+        
         if ($results->isEmpty()) {
             Session::put('chatbot_state', 'initial');
-            $message = 'Xin lỗi, mình không tìm thấy sản phẩm nào phù hợp với "' . e($query) . '".';
+            $message = 'Xin lỗi, mình không tìm thấy sản phẩm nào phù hợp với "' . e($cleanedQuery) . '".';
             return $this->jsonResponse($message . "<br><br>Bạn muốn làm gì tiếp theo không?" . $this->getInitialOptionsHtml());
         }
 
@@ -144,7 +141,7 @@ class ChatbotController extends Controller
             return "<a href='{$productUrl}' target='_blank' style='{$style}'>{$p->name}</a>";
         })->implode('');
 
-        $responseMessage = "Mình tìm thấy các sản phẩm sau:<br><div style='padding-top: 10px;'>{$list}</div>";
+        $responseMessage = $responseMessageIntro . "<div style='padding-top: 10px;'>{$list}</div>";
 
         $addToCartBtn = "<button onclick=\"sendChatbotMessage('action:add_to_cart', 'Thêm vào giỏ hàng')\" class='chatbot-button'>Thêm vào giỏ hàng</button>";
         $searchBtn = "<button onclick=\"sendChatbotMessage('action:search', 'Tìm sản phẩm khác')\" class='chatbot-button'>Tìm sản phẩm khác</button>";
@@ -153,6 +150,29 @@ class ChatbotController extends Controller
         $followUp = "<br><br>Bạn muốn làm gì tiếp theo không?<div class='chatbot-options'>{$addToCartBtn}{$searchBtn}{$ordersBtn}</div>";
 
         return $this->jsonResponse($responseMessage . $followUp);
+    }
+
+    private function cleanSearchQuery(string $query): string
+    {
+        $query = mb_strtolower(trim($query), 'UTF-8');
+        $prefixes = [
+            'tìm sách',
+            'tìm kiếm cho',
+            'tìm kiếm',
+            'tìm',
+            'kiếm',
+            'search for',
+            'search',
+            'find',
+        ];
+
+        foreach ($prefixes as $prefix) {
+            if (str_starts_with($query, $prefix . ' ')) {
+                return trim(mb_substr($query, mb_strlen($prefix)));
+            }
+        }
+
+        return $query;
     }
 
     private function checkOrderStatus()

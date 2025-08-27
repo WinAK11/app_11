@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Author;
 use App\Models\Category;
 use App\Models\Product;
+use App\Services\ProductSearchService;
 use Illuminate\Http\Request;
 
 class ShopController extends Controller
@@ -17,6 +18,7 @@ class ShopController extends Controller
         $f_authors = $request->query('authors');
         $f_categories = $request->query('categories');
         $min_price = $request->query('min')?$request->query('min'):1;
+        $search_query = $request->query('query'); // New: Get search query
         $max_price = $request->query('max')?$request->query('max'):1000000;
         switch($order)
         {
@@ -40,18 +42,31 @@ class ShopController extends Controller
         // $categories = Category::orderBy('name', 'ASC')->get();
         $categories = Category::whereHas( 'products' )->withCount( 'products' )->orderBy( 'name', 'ASC' )->get();
         $authors = Author::orderBy('name', 'ASC')->get();
-        $products = Product::when($f_authors, function ($query) use ($f_authors) {
-            $author_ids = explode(',', $f_authors);
-            return $query->whereIn('author_id', $author_ids);
-        })
-        ->when($f_categories, function ($query) use ($f_categories) {
-            $category_ids = explode(',', $f_categories);
-            return $query->whereIn('category_id', $category_ids);
-        })
-        ->where(function ($query) use ($min_price, $max_price) {
-            $query->whereBetween('regular_price', [$min_price, $max_price])
-            ->orWhereBetween('sale_price', [$min_price, $max_price]);
-        })->orderBy($o_column, $o_order)->paginate(12);
+
+        // Initialize product query
+        $productsQuery = Product::query();
+
+        // Apply search query if present
+        if (!empty($search_query)) {
+            // Use the ProductSearchService to get relevant product IDs
+            $productSearchService = app(ProductSearchService::class); // Resolve the service
+            $searchResults = $productSearchService->searchProducts($search_query, 50); // Get more results for shop page
+            $productIds = $searchResults->pluck('id')->toArray();
+
+            // Filter the main query by these IDs and maintain order
+            if (!empty($productIds)) {
+                $ids_ordered = implode(',', $productIds);
+                $productsQuery->whereIn('id', $productIds)->orderByRaw("FIELD(id, $ids_ordered)");
+            } else {
+                $productsQuery->whereRaw('1 = 0'); // Return no results if vector search yields nothing
+            }
+        }
+
+        $products = $productsQuery->when($f_authors, fn ($query) => $query->whereIn('author_id', explode(',', $f_authors)))
+            ->when($f_categories, fn ($query) => $query->whereIn('category_id', explode(',', $f_categories)))
+            ->where(fn ($query) => $query->whereBetween('regular_price', [$min_price, $max_price])->orWhereBetween('sale_price', [$min_price, $max_price]))
+            ->orderBy($o_column, $o_order) // Apply default/selected sorting if no search query or after search query
+            ->paginate(12);
         return view('shop', compact('products', 'order', 'authors', 'f_authors', 'categories', 'f_categories', 'min_price', 'max_price'));
     }
 

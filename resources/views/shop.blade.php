@@ -253,6 +253,13 @@
                     </div>
                 </div>
 
+                @if (request()->query('query'))
+                    <div class="search-results-header mb-4">
+                        <h4 class="fs-5">Kết quả tìm kiếm cho: <span
+                                class="text-warning fst-italic">"{{ e(request()->query('query')) }}"</span></h4>
+                    </div>
+                @endif
+
                 <div class="products-grid row row-cols-2 row-cols-md-3" id="products-grid">
                     @foreach ($products as $product)
                         <div class="product-card-wrapper">
@@ -402,6 +409,7 @@
 
     <form id="frmfilter" method="GET" action="{{ route('shop.index') }}">
         <input type="hidden" name="page" value="{{ $products->currentPage() }}" />
+        <input type="hidden" name="query" value="{{ request()->query('query') }}" />
         <input type="hidden" name="order" id="order" value="{{ $order }}" />
         <input type="hidden" name="authors" id="hdnAuthors" />
         <input type="hidden" name="categories" id="hdnCategories" />
