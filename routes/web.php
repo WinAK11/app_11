@@ -54,6 +54,11 @@ Route::middleware(['auth', 'verified'])->group(function()
     Route::delete('/wishlist/clear', [WishlistController::class, 'clear_wishlist'])->name('wishlist.clear');
     Route::post('/wishlist/add-to-cart/{rowId}', [WishlistController::class, 'add_to_cart'])->name('wishlist.addtocart');
 
+    // Review routes (auth required for write operations)
+    Route::post('/products/{productId}/reviews', [App\Http\Controllers\ReviewController::class, 'store'])->name('reviews.store');
+    Route::delete('/reviews/{reviewId}', [App\Http\Controllers\ReviewController::class, 'destroy'])->name('reviews.destroy');
+    Route::put('/reviews/{reviewId}/status', [App\Http\Controllers\ReviewController::class, 'updateStatus'])->name('reviews.updateStatus');
+
     Route::get('/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
     Route::post('/place-order', [CartController::class, 'place_order'])->name('cart.place.order');
     Route::get('/order-confirm',[CartController::class,'order_confirm'])->name('cart.order.confirm');
@@ -172,3 +177,6 @@ Route::post('/ai/generate-author-biography', [AIController::class, 'generateAuth
 
 
 Route::get('/api/products', [ProductController::class, 'index']);
+
+// Public reviews listing
+Route::get('/products/{productId}/reviews', [App\Http\Controllers\ReviewController::class, 'getReviews'])->name('reviews.get');

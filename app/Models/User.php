@@ -58,6 +58,22 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail {
         ];
     }
 
+    /**
+     * Get the reviews for the user.
+     */
+    public function reviews()
+    {
+        return $this->hasMany(Review::class);
+    }
+
+    /**
+     * Check if user is admin.
+     */
+    public function isAdmin()
+    {
+        return $this->usertype === 'ADM';
+    }
+
 
     protected static function booted(): void
     {
