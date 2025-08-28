@@ -236,11 +236,18 @@
                 stopGeneration();
             });
 
-            // Generate single chapter audio
+            // Generate single chapter audio - WITH reload for individual generation
             document.querySelectorAll('.generate-single-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
+                btn.addEventListener('click', async function() {
                     const chapterId = this.dataset.chapterId;
-                    generateSingleAudio(chapterId);
+                    const success = await generateSingleAudio(chapterId, true);
+
+                    // Only reload for individual generation, not batch
+                    if (success) {
+                        setTimeout(() => {
+                            location.reload();
+                        }, 1500);
+                    }
                 });
             });
 
@@ -252,24 +259,50 @@
 
                 const chaptersToGenerate = chapters.filter(ch => !ch.has_audio);
                 let completed = 0;
+                let successful = 0;
+                let failed = 0;
 
                 for (const chapter of chaptersToGenerate) {
-                    if (!isGenerating) break;
+                    if (!isGenerating) {
+                        updateOverallProgress((completed / chaptersToGenerate.length) * 100,
+                            'Generation stopped by user');
+                        break;
+                    }
 
                     updateOverallProgress((completed / chaptersToGenerate.length) * 100,
                         `Generating audio for: ${chapter.title}`);
 
-                    await generateSingleAudio(chapter.id, false);
+                    // Pass false to prevent individual reloads during batch generation
+                    const success = await generateSingleAudio(chapter.id, false);
+
+                    if (success) {
+                        successful++;
+                    } else {
+                        failed++;
+                    }
+
                     completed++;
                 }
 
-                updateOverallProgress(100, 'All audio generation completed!');
-                resetGenerationState();
+                if (isGenerating && completed > 0) {
+                    const finalMessage =
+                        `Generation completed! ${successful} successful, ${failed} failed. Refreshing page...`;
+                    updateOverallProgress(100, finalMessage);
+
+                    // Add a short delay before reloading
+                    setTimeout(() => {
+                        location.reload();
+                    }, 2000);
+                } else {
+                    const finalMessage = `Generation stopped. ${successful} successful, ${failed} failed.`;
+                    updateOverallProgress(100, finalMessage);
+                    resetGenerationState();
+                }
             }
 
             async function generateSingleAudio(chapterId, showIndividualProgress = true) {
                 const chapter = chapters.find(ch => ch.id == chapterId);
-                if (!chapter) return;
+                if (!chapter) return false;
 
                 const statusEl = document.getElementById(`status-${chapterId}`);
                 const progressEl = document.getElementById(`chapter-progress-${chapterId}`);
@@ -283,26 +316,18 @@
                     '<span class="badge" style="background: #ffc107; color: white; padding: 4px 8px; border-radius: 12px;"><i class="icon-loader"></i> Generating...</span>';
 
                 try {
-                    // Simulate TTS generation (replace with actual API call)
                     if (showIndividualProgress) {
                         updateChapterProgress(chapterId, 25, 'Processing text...');
                     }
 
-                    // TODO: Replace this with actual TTS API call
-                    // For now, we'll simulate the process
-                    await new Promise(resolve => setTimeout(resolve, 2000));
-
-                    if (showIndividualProgress) {
-                        updateChapterProgress(chapterId, 75, 'Generating audio...');
+                    // Check if generation was stopped before making API call
+                    if (!isGenerating) {
+                        statusEl.innerHTML =
+                            '<span class="badge" style="background: #6c757d; color: white; padding: 4px 8px; border-radius: 12px;"><i class="icon-clock"></i> Pending</span>';
+                        return false;
                     }
 
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-
-                    if (showIndividualProgress) {
-                        updateChapterProgress(chapterId, 100, 'Complete!');
-                    }
-
-                    // TODO: Make actual API call to generate audio
+                    // Make the actual API call to generate audio
                     const response = await fetch('{{ route('admin.audiobook.generate.chapter') }}', {
                         method: 'POST',
                         headers: {
@@ -315,15 +340,40 @@
                         })
                     });
 
-                    if (response.ok) {
-                        const result = await response.json();
+                    // Check again after API call completes
+                    if (!isGenerating) {
+                        statusEl.innerHTML =
+                            '<span class="badge" style="background: #6c757d; color: white; padding: 4px 8px; border-radius: 12px;"><i class="icon-clock"></i> Pending</span>';
+                        return false;
+                    }
+
+                    if (showIndividualProgress) {
+                        updateChapterProgress(chapterId, 75, 'Generating audio...');
+                    }
+
+                    const result = await response.json();
+
+                    if (response.ok && result.success) {
+                        if (showIndividualProgress) {
+                            updateChapterProgress(chapterId, 100, 'Complete!');
+                        }
+
                         statusEl.innerHTML =
                             '<span class="badge" style="background: #28a745; color: white; padding: 4px 8px; border-radius: 12px;"><i class="icon-check"></i> Generated</span>';
 
-                        // Update the row with new audio controls
-                        location.reload(); // Simple reload for now, can be optimized
+                        // Update the chapter object to reflect it now has audio
+                        const chapterIndex = chapters.findIndex(ch => ch.id == chapterId);
+                        if (chapterIndex !== -1) {
+                            chapters[chapterIndex].has_audio = true;
+                        }
+
+                        // Add the play/download buttons to the UI
+                        addAudioButtonsToRow(chapterId, result.audio_path);
+
+                        return true; // Success
+
                     } else {
-                        throw new Error('Generation failed');
+                        throw new Error(result.message || 'Generation failed');
                     }
 
                 } catch (error) {
@@ -332,8 +382,11 @@
                         '<span class="badge" style="background: #dc3545; color: white; padding: 4px 8px; border-radius: 12px;"><i class="icon-x"></i> Failed</span>';
 
                     if (showIndividualProgress) {
-                        updateChapterProgress(chapterId, 0, 'Generation failed');
+                        updateChapterProgress(chapterId, 0, 'Generation failed: ' + error.message);
                     }
+
+                    return false; // Failure
+
                 } finally {
                     if (showIndividualProgress) {
                         setTimeout(() => {
@@ -343,9 +396,76 @@
                 }
             }
 
+            // Function to add audio buttons to a chapter row
+            function addAudioButtonsToRow(chapterId, audioPath) {
+                const row = document.getElementById(`chapter-row-${chapterId}`);
+                if (!row) return;
+
+                const actionsCell = row.querySelector('td:last-child .flex');
+                if (!actionsCell) return;
+
+                // Check if buttons already exist
+                const existingPlayBtn = actionsCell.querySelector('.btn-primary[style*="#17a2b8"]');
+                const existingDownloadBtn = actionsCell.querySelector('.btn-primary[style*="#28a745"]');
+
+                // Construct full URL
+                const baseUrl = window.location.origin;
+                const fullAudioUrl = audioPath.startsWith('http') ? audioPath : `${baseUrl}/${audioPath}`;
+
+                if (!existingPlayBtn) {
+                    // Create play button
+                    const playButton = document.createElement('button');
+                    playButton.className = 'btn-lg btn-primary';
+                    playButton.style.background = '#17a2b8';
+                    playButton.innerHTML = '<i class="icon-play"></i>';
+                    playButton.onclick = () => playAudio(fullAudioUrl, chapterId);
+
+                    // Insert before the generate button
+                    const generateBtn = actionsCell.querySelector('.generate-single-btn');
+                    if (generateBtn) {
+                        actionsCell.insertBefore(playButton, generateBtn);
+                    }
+                }
+
+                if (!existingDownloadBtn) {
+                    // Create download button
+                    const downloadButton = document.createElement('a');
+                    downloadButton.href = fullAudioUrl;
+                    downloadButton.download = true;
+                    downloadButton.className = 'btn-lg btn-primary';
+                    downloadButton.style.background = '#28a745';
+                    downloadButton.innerHTML = '<i class="icon-download"></i>';
+
+                    // Insert before the generate button
+                    const generateBtn = actionsCell.querySelector('.generate-single-btn');
+                    if (generateBtn) {
+                        actionsCell.insertBefore(downloadButton, generateBtn);
+                    }
+                }
+            }
+
             function stopGeneration() {
                 isGenerating = false;
-                resetGenerationState();
+
+                // Show immediate feedback
+                updateOverallProgress(100, 'Stopping generation...');
+
+                // Update any chapters currently showing as "Generating" back to "Pending"
+                document.querySelectorAll('[id^="status-"]').forEach(statusEl => {
+                    if (statusEl.innerHTML.includes('Generating...')) {
+                        statusEl.innerHTML =
+                            '<span class="badge" style="background: #6c757d; color: white; padding: 4px 8px; border-radius: 12px;"><i class="icon-clock"></i> Pending</span>';
+                    }
+                });
+
+                // Hide any visible progress bars
+                document.querySelectorAll('[id^="chapter-progress-"]').forEach(progressEl => {
+                    progressEl.style.display = 'none';
+                });
+
+                setTimeout(() => {
+                    resetGenerationState();
+                }, 1000);
             }
 
             function resetGenerationState() {
