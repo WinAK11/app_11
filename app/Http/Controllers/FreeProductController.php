@@ -722,4 +722,31 @@ public function getEbookChapters($ebook_id)
         ], 500);
     }
 }
+
+public function ebook_details($id) {
+    $ebook = Ebook::with(['category', 'chapters' => function($query) {
+        $query->orderBy('index', 'ASC');
+    }])->findOrFail($id);
+
+    // Get related ebooks from the same category (excluding current ebook)
+    $related_ebooks = Ebook::with('category')
+        ->where('category_id', $ebook->category_id)
+        ->where('id', '!=', $ebook->id)
+        ->limit(4)
+        ->get();
+
+    // If not enough related ebooks from same category, get random ones
+    if ($related_ebooks->count() < 4) {
+        $additional_ebooks = Ebook::with('category')
+            ->where('id', '!=', $ebook->id)
+            ->whereNotIn('id', $related_ebooks->pluck('id'))
+            ->inRandomOrder()
+            ->limit(4 - $related_ebooks->count())
+            ->get();
+
+        $related_ebooks = $related_ebooks->concat($additional_ebooks);
+    }
+
+    return view('ebook-details', compact('ebook', 'related_ebooks'));
+}
 }

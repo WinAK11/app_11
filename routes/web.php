@@ -169,6 +169,8 @@ Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name
 
 Route::get('/read/ebook/{id}', [FreeProductController::class, 'ebook_read'])->name('epub.reader');
 Route::get('/api/ebook/{id}/chapters', [FreeProductController::class, 'getEbookChapters']);
+Route::get('/ebooks/{id}/details', [FreeProductController::class, 'ebook_details'])->name('ebook.details');
+
 
 
 Route::post('/ai/suggest-category', [AIController::class, 'suggestCategory']);
