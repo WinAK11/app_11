@@ -1036,7 +1036,7 @@
     @stack('scripts')
 
 <script>
-    // Hàm để thêm tin nhắn vào khung chat
+    // Add chat text
     function appendMessage(msg, type) {
         const chatBody = document.getElementById('chatBody');
         if (!chatBody) return;
@@ -1047,7 +1047,6 @@
         chatBody.scrollTop = chatBody.scrollHeight;
     }
 
-    // Hàm để gửi tin nhắn đến backend và nhận phản hồi
     function postToChatbot(message) {
         appendMessage('Typing...', 'bot');
 
@@ -1106,8 +1105,6 @@
         });
     }
 
-    // Hàm global được gọi bởi các nút bấm (onclick)
-    // action: 'action:search', buttonText: 'Tìm kiếm sản phẩm'
     function sendChatbotMessage(action, buttonText) {
         if (buttonText) {
             appendMessage(buttonText, 'user');
@@ -1145,7 +1142,6 @@
             });
         }
 
-        // Hàm xử lý khi người dùng nhập và gửi tin nhắn
         function sendMessageFromInput() {
             const message = userInput.value.trim();
             if (!message) return;
@@ -1159,7 +1155,7 @@
             sendBtn.addEventListener('click', sendMessageFromInput);
             userInput.addEventListener('keypress', e => {
                 if (e.key === 'Enter') {
-                    e.preventDefault(); // Ngăn form submit (nếu có)
+                    e.preventDefault();
                     sendMessageFromInput();
                 }
             });

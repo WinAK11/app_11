@@ -59,7 +59,7 @@ class ProductSearchService
             return $results;
         } catch (\Exception $e) {
             Log::error('Vector search failed, falling back to LIKE search.', ['query' => $query, 'error' => $e->getMessage()]);
-            // Fallback: tìm kiếm theo tên sản phẩm nếu có lỗi, cũng cache kết quả này
+            // Fallback: cache result if searching error
             $fallbackCacheKey = 'fallback_search_' . md5(strtolower(trim($query)));
             $fallbackResults = Cache::remember($fallbackCacheKey, now()->addMinutes(60), function () use ($query, $limit) {
                 return Product::where('name', 'LIKE', "%{$query}%")->with('category')->take($limit)->get();

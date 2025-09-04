@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Log;
 
 class QdrantService
 {
-    protected $host = 'http://localhost:6333'; // Đổi nếu dùng Qdrant cloud
+    protected $host = 'http://localhost:6333';
     protected $collectionName = 'products';
 
     public function searchByVector(array $vector, $limit = 8)
@@ -33,7 +33,7 @@ class QdrantService
 
         $response = Http::timeout(60)->put("{$this->host}/collections/{$this->collectionName}/points", [
             'points' => $points,
-            'wait' => true // Đảm bảo hoạt động hoàn tất trước khi trả về
+            'wait' => true
         ]);
 
         if ($response->failed()) {

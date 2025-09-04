@@ -41,13 +41,13 @@ class GenerateProductEmbeddings extends Command
         $progressBar = $this->output->createProgressBar($productCount);
         $progressBar->start();
 
-        // Xử lý theo từng lô để tránh quá tải bộ nhớ và API
+        // Product processing
         Product::with(['category', 'author'])->chunkById(50, function ($products) use ($openAIService, $qdrantService, $progressBar) {
             $pointsToUpsert = [];
 
             foreach ($products as $product) {
                 try {
-                    // Tạo chuỗi văn bản giàu thông tin để có embedding chất lượng hơn
+                    // Create embedded strings
                     $textToEmbed = "Tên sách: {$product->name}. ";
                     $textToEmbed .= "Mô tả: {$product->short_description}. ";
                     if ($product->category) {
