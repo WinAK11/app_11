@@ -159,6 +159,44 @@
                     alert("Error processing EPUB file. Please check the file and try again.");
                 }
             });
+            document.getElementById('file-input').addEventListener('change', async function() {
+                const file = this.files[0];
+                if (!file) return;
+
+                const book = ePub(file);
+                await book.ready;
+
+                const spineItems = book.spine.spineItems;
+                const allChapters = [];
+
+                for (const section of spineItems) {
+                    try {
+                        const chapterDoc = await book.load(section.href);
+                        if (chapterDoc && chapterDoc.body && chapterDoc.body.textContent) {
+                            const text = chapterDoc.body.textContent.trim();
+                            if (text) {
+                                allChapters.push(text);
+                            }
+                        }
+                    } catch (error) {
+                        console.warn(`Error reading section ${section.href}:`, error);
+                    }
+                }
+
+                // Log all chapter text
+                console.log("📚 Extracted Chapters:", allChapters);
+                // const response = await fetch('ebooks/store-chapters', {
+                //     method: 'POST',
+                //     headers: {
+                //         'Content-Type': 'application/json',
+                //         'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                //     },
+                //     body: JSON.stringify({
+                //         ebook_id: 12, // use actual ebook ID
+                //         chapters: allChapters, // array of strings
+                //     }),
+                // });
+            });
 
             aiCategoryBtn.addEventListener('click', suggestCategory);
             aiDescBtn.addEventListener('click', generateDescription);
