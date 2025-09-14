@@ -356,6 +356,25 @@ CREATE TABLE `publishers` (
   UNIQUE KEY `publishers_slug_unique` (`slug`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `reviews`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `reviews` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `user_id` bigint unsigned NOT NULL,
+  `product_id` bigint unsigned NOT NULL,
+  `rating` int unsigned NOT NULL COMMENT 'Rating from 1 to 5',
+  `comment` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `status` enum('pending','approved','rejected') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pending',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `reviews_user_id_product_id_unique` (`user_id`,`product_id`),
+  KEY `reviews_product_id_foreign` (`product_id`),
+  CONSTRAINT `reviews_product_id_foreign` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `reviews_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `role_has_permissions`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
@@ -478,3 +497,4 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (234,'2025_07_03_14
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (235,'2025_08_01_164823_create_slides_table',9);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (236,'2025_08_02_180830_add_vector_to_products_table',9);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (237,'2025_08_14_153122_create_chapters_table',9);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (238,'2025_08_27_032711_create_reviews_table',10);

@@ -4,8 +4,21 @@ namespace App\Models;
 use App\Models\Ebook;
 use App\Models\Review;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class Product extends Model {
+    protected $fillable = [
+        'name', 'slug', 'short_description', 'description', 'regular_price', 
+        'sale_price', 'SKU', 'stock_status', 'featured', 'quantity', 
+        'image', 'images', 'category_id', 'author_id', 'embedding', 
+        'has_embedding', 'embedding_updated_at'
+    ];
+
+    protected $casts = [
+        'embedding' => 'array',
+        'has_embedding' => 'boolean',
+        'embedding_updated_at' => 'datetime',
+    ];
     public function category() {
         return $this->belongsTo( Category::class, 'category_id' );
     }

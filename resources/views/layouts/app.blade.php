@@ -760,42 +760,72 @@
 
     <script>
         $(function() {
+            var searchTimeout;
+            
             $("#search-input").on('keyup', function() {
                 var searchQuery = $(this).val();
+                var searchType = $('input[name="search-type"]:checked').val() || 'hybrid';
+                
+                // Clear previous timeout
+                clearTimeout(searchTimeout);
+                
                 if (searchQuery.length > 2) {
-                    $.ajax({
-                        type: "GET",
-                        url: "{{ route('home.search') }}",
-                        data: {
-                            query: searchQuery
-                        },
-                        dataType: 'json',
-                        success: function(data) {
-                            $('#box-content-search').html('');
-                            $.each(data, function(index, item) {
-                                var url =
-                                    "{{ route('shop.product.details', ['product_slug' => 'product_slug_pls']) }}";
-                                var link = url.replace('product_slug_pls', item.slug);
+                    // Debounce search requests
+                    searchTimeout = setTimeout(function() {
+                        // Show loading indicator
+                        $('#box-content-search').html('<li><div class="text-center p-3"><small class="text-muted">Searching...</small></div></li>');
+                        
+                        $.ajax({
+                            type: "GET",
+                            url: "{{ route('home.search') }}",
+                            data: {
+                                query: searchQuery,
+                                search_type: searchType
+                            },
+                            dataType: 'json',
+                            success: function(data) {
+                                $('#box-content-search').html('');
+                                
+                                if (data.length === 0) {
+                                    $('#box-content-search').html('<li><div class="text-center p-3"><small class="text-muted">No results found</small></div></li>');
+                                    return;
+                                }
+                                
+                                $.each(data, function(index, item) {
+                                    var url = "{{ route('shop.product.details', ['product_slug' => 'product_slug_pls']) }}";
+                                    var link = url.replace('product_slug_pls', item.slug);
+                                    
+                                    // Add author info if available (simplified)
+                                    var authorInfo = item.author ? `<small class="text-muted d-block">by ${item.author.name}</small>` : '';
 
-                                $('#box-content-search').append(`
-                                    <li>
-                                        <ul>
-                                            <li class="product-item gap14 mb-10">
-                                                <div class="image no-bg">
-                                                    <img src="{{ asset('uploads/products/thumbnails') }}/${item.image}" alt="${item.name}">
-                                                </div>
-                                                <div class="flex items-center justify-between gap20 flex-grow">
-                                                    <div class="name">
-                                                        <a href="${link}" class="body-text">${item.name}</a>
+                                    $('#box-content-search').append(`
+                                        <li>
+                                            <ul>
+                                                <li class="product-item gap14 mb-10">
+                                                    <div class="image no-bg">
+                                                        <img src="{{ asset('uploads/products/thumbnails') }}/${item.image}" alt="${item.name}" 
+                                                             onerror="this.src='{{ asset('uploads/book_placeholder.png') }}'">
                                                     </div>
-                                                </div>
-                                            </li>
-                                        </ul>
-                                    </li>
-                                `);
-                            });
-                        }
-                    });
+                                                    <div class="flex items-center justify-between gap20 flex-grow">
+                                                        <div class="name">
+                                                            <a href="${link}" class="body-text">${item.name}</a>
+                                                            ${authorInfo}
+                                                        </div>
+                                                    </div>
+                                                </li>
+                                            </ul>
+                                        </li>
+                                    `);
+                                });
+                            },
+                            error: function(xhr, status, error) {
+                                $('#box-content-search').html('<li><div class="text-center p-3"><small class="text-danger">Search error occurred</small></div></li>');
+                                console.error('Search error:', error);
+                            }
+                        });
+                    }, 300); // 300ms debounce
+                } else {
+                    $('#box-content-search').html('');
                 }
             });
 

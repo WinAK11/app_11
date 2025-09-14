@@ -110,11 +110,11 @@
                             <div class="price-range__info d-flex align-items-center mt-2">
                                 <div class="me-auto">
                                     <span class="text-secondary">Min Price: </span>
-                                    <span class="price-range__min">{{$min_price}}đ</span>
+                                    <span class="price-range__min">{{ $min_price }}đ</span>
                                 </div>
                                 <div>
                                     <span class="text-secondary">Max Price: </span>
-                                    <span class="price-range__max">{{$max_price}}đ</span>
+                                    <span class="price-range__max">{{ $max_price }}đ</span>
                                 </div>
                             </div>
                         </div>
@@ -261,11 +261,20 @@
                                     <div class="swiper-container background-img js-swiper-slider"
                                         data-settings='{"resizeObserver": true}'>
                                         <div class="swiper-wrapper">
-                                            <div class="swiper-slide">
+                                            {{-- <div class="swiper-slide">
                                                 <a
                                                     href="{{ route('shop.product.details', ['product_slug' => $product->slug]) }}">
                                                     <img loading="lazy"
                                                         src="{{ asset('uploads/products') }}/{{ $product->image }}"
+                                                        width="310" height="400" alt="{{ $product->name }}"
+                                                        class="pc__img" />
+                                                </a>
+                                            </div> --}}
+                                            <div class="swiper-slide">
+                                                <a
+                                                    href="{{ route('shop.product.details', ['product_slug' => $product->slug]) }}">
+                                                    <img loading="lazy"
+                                                        src="{{ $product->image ? asset('uploads/products/' . $product->image) : asset('uploads/book_placeholder.png') }}"
                                                         width="310" height="400" alt="{{ $product->name }}"
                                                         class="pc__img" />
                                                 </a>
@@ -320,7 +329,8 @@
                                     <div class="product-card__price d-flex">
                                         <span class="money price">
                                             @if ($product->sale_price)
-                                                <s>{{ number_format($product->regular_price, 0, ',', ',') }}đ</s> {{ number_format($product->sale_price, 0, ',', ',') }}đ
+                                                <s>{{ number_format($product->regular_price, 0, ',', ',') }}đ</s>
+                                                {{ number_format($product->sale_price, 0, ',', ',') }}đ
                                             @else
                                                 {{ number_format($product->regular_price, 0, ',', ',') }}đ
                                             @endif
