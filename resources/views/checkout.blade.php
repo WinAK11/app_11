@@ -128,7 +128,7 @@
                         {{$item->name}} x {{$item->qty}}
                       </td>
                       <td class="text-right">
-                        {{ number_format($item->subtotal(), 0, ',', ',') }}đ
+                        {{ number_format(intval(str_replace(',', '', $item->subtotal())), 0, ',', ',') }}đ
                       </td>
                     </tr>
                     @endforeach
@@ -139,23 +139,23 @@
                     <tbody>
                         <tr>
                             <th>Subtotal</th>
-                            <td class="text-right">{{ number_format(Cart::instance('cart')->subtotal(), 0, ',', ',') }}đ</td>
+                            <td class="text-right">{{ number_format(intval(str_replace(',', '', Cart::instance('cart')))->subtotal(), 0, ',', ',') }}đ</td>
                         </tr>
                         <tr>
                             <th>Discount({{Session::get('coupon')['code']}})</th>
-                            <td class="text-right">{{ number_format(Session::get('discounts')['discount'], 0, ',', ',') }}đ</td>
+                            <td class="text-right">{{ number_format(intval(str_replace(',', '', Session::get('discounts')['discount'])), 0, ',', ',') }}đ</td>
                         </tr>
                         <tr>
                             <th>Subtotal after Discount</th>
-                            <td class="text-right">{{ number_format(Session::get('discounts')['subtotal'], 0, ',', ',') }}đ</td>
+                            <td class="text-right">{{ number_format(intval(str_replace(',', '', Session::get('discounts')['subtotal'])), 0, ',', ',') }}đ</td>
                         </tr>
                         <tr>
                             <th>VAT</th>
-                            <td class="text-right">{{ number_format(Session::get('discounts')['tax'], 0, ',', ',') }}đ</td>
+                            <td class="text-right">{{ number_format(intval(str_replace(',', '', Session::get('discounts')['tax'])), 0, ',', ',') }}đ</td>
                         </tr>
                         <tr>
                             <th>Total</th>
-                            <td class="text-right">{{ number_format(Session::get('discounts')['total'], 0, ',', ',') }}đ</td>
+                            <td class="text-right">{{ number_format(intval(str_replace(',', '', Session::get('discounts')['total'])), 0, ',', ',') }}đ</td>
                         </tr>
                     </tbody>
                 </table>
@@ -164,7 +164,7 @@
                   <tbody>
                     <tr>
                       <th>SUBTOTAL</th>
-                      <td class="text-right">{{ number_format(Cart::instance('cart')->subtotal(), 0, ',', ',') }}đ</td>
+                      <td class="text-right">{{ number_format(intval(str_replace(',', '', Cart::instance('cart')->subtotal())), 0, ',', ',') }}đ</td>
                     </tr>
                     <tr>
                       <th>SHIPPING</th>
@@ -172,11 +172,11 @@
                     </tr>
                     <tr>
                       <th>VAT</th>
-                      <td class="text-right">{{ number_format(Cart::instance('cart')->tax(), 0, ',', ',') }}đ</td>
+                      <td class="text-right">{{ number_format(intval(str_replace(',', '', Cart::instance('cart')->tax())), 0, ',', ',') }}đ</td>
                     </tr>
                     <tr>
                       <th>TOTAL</th>
-                      <td class="text-right">{{ number_format(Cart::instance('cart')->total(), 0, ',', ',') }}đ</td>
+                      <td class="text-right">{{ number_format(intval(str_replace(',', '', Cart::instance('cart')->total())), 0, ',', ',') }}đ</td>
                     </tr>
                   </tbody>
                 </table>

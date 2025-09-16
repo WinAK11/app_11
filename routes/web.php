@@ -64,6 +64,7 @@ Route::middleware(['auth', 'verified'])->group(function()
 Route::middleware(['auth', AuthAdmin::class])->group(function()
 {
     Route::get('/admin', [AdminController::class, 'index'])->name('admin.index');
+    Route::get('/revenue-weekly', [AdminController::class, 'getWeeklyRevenueForMonth'])->name('admin.revenue.weekly');
     Route::get('/admin/publishers', [AdminController::class, 'publishers'])->name('admin.publishers');
     Route::get('/admin/publisher/add', [AdminController::class, 'add_publisher'])->name('admin.publisher.add');
     Route::post('/admin/publisher/store', [AdminController::class, 'publisher_store'])->name('admin.publisher.store');

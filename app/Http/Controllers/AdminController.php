@@ -25,6 +25,100 @@ use Illuminate\Support\Facades\Http;
 
 class AdminController extends Controller {
     public function index() {
+        // Revenue comparison logic
+        $now = Carbon::now();
+
+        // This Week vs Last Week
+        $thisWeekRevenue = Order::where('status', 'delivered')
+            ->whereBetween('delivered_date', [$now->startOfWeek()->format('Y-m-d'), $now->endOfWeek()->format('Y-m-d')])
+            ->sum('total');
+        $lastWeekRevenue = Order::where('status', 'delivered')
+            ->whereBetween('delivered_date', [$now->copy()->subWeek()->startOfWeek()->format('Y-m-d'), $now->copy()->subWeek()->endOfWeek()->format('Y-m-d')])
+            ->sum('total');
+        $weekDiff = $thisWeekRevenue - $lastWeekRevenue;
+        $weekPercentageChange = $lastWeekRevenue > 0 ? ($weekDiff / $lastWeekRevenue) * 100 : ($thisWeekRevenue > 0 ? 100 : 0);
+
+        // This Month vs Last Month
+        $thisMonthRevenue = Order::where('status', 'delivered')
+            ->whereBetween('delivered_date', [$now->startOfMonth()->format('Y-m-d'), $now->endOfMonth()->format('Y-m-d')])
+            ->sum('total');
+        $lastMonthRevenue = Order::where('status', 'delivered')
+            ->whereBetween('delivered_date', [$now->copy()->subMonth()->startOfMonth()->format('Y-m-d'), $now->copy()->subMonth()->endOfMonth()->format('Y-m-d')])
+            ->sum('total');
+        $monthDiff = $thisMonthRevenue - $lastMonthRevenue;
+        $monthPercentageChange = $lastMonthRevenue > 0 ? ($monthDiff / $lastMonthRevenue) * 100 : ($thisMonthRevenue > 0 ? 100 : 0);
+
+        // This Quarter vs Last Quarter
+        $thisQuarterRevenue = Order::where('status', 'delivered')
+            ->whereBetween('delivered_date', [$now->startOfQuarter()->format('Y-m-d'), $now->endOfQuarter()->format('Y-m-d')])
+            ->sum('total');
+        $lastQuarterRevenue = Order::where('status', 'delivered')
+            ->whereBetween('delivered_date', [$now->copy()->subQuarter()->startOfQuarter()->format('Y-m-d'), $now->copy()->subQuarter()->endOfQuarter()->format('Y-m-d')])
+            ->sum('total');
+        $quarterDiff = $thisQuarterRevenue - $lastQuarterRevenue;
+        $quarterPercentageChange = $lastQuarterRevenue > 0 ? ($quarterDiff / $lastQuarterRevenue) * 100 : ($thisQuarterRevenue > 0 ? 100 : 0);
+
+        $revenueComparison = [
+            'week' => ['current' => $thisWeekRevenue, 'previous' => $lastWeekRevenue, 'percentage' => $weekPercentageChange],
+            'month' => ['current' => $thisMonthRevenue, 'previous' => $lastMonthRevenue, 'percentage' => $monthPercentageChange],
+            'quarter' => ['current' => $thisQuarterRevenue, 'previous' => $lastQuarterRevenue, 'percentage' => $quarterPercentageChange],
+        ];
+
+        $allProductsSales = OrderItem::join('orders', 'order_items.order_id', '=', 'orders.id')
+            ->join('products', 'order_items.product_id', '=', 'products.id')
+            ->where('orders.status', 'delivered')
+            ->whereMonth('orders.delivered_date', $now->month)
+            ->whereYear('orders.delivered_date', $now->year)
+            ->select('products.name', DB::raw('SUM(order_items.quantity) as total_quantity'))
+            ->groupBy('products.name')
+            ->orderBy('total_quantity', 'desc');
+
+        $topProducts = $allProductsSales->get();
+        $totalProductQuantity = $topProducts->sum('total_quantity');
+
+        $topProductLabels = [];
+        $topProductData = [];
+        $topProductQty = [];
+        foreach ($topProducts->take(4) as $item) {
+            $topProductLabels[] = $item->name;
+            $topProductData[] = $totalProductQuantity > 0 ? round($item->total_quantity / $totalProductQuantity * 100, 2) : 0;
+            $topProductQty[] = $item->total_quantity;
+        }
+        if ($topProducts->count() > 4) {
+            $otherQuantity = $topProducts->slice(4)->sum('total_quantity');
+            $topProductLabels[] = 'Khác';
+            $topProductData[] = $totalProductQuantity > 0 ? round($otherQuantity / $totalProductQuantity * 100, 2) : 0;
+            $topProductQty[] = $otherQuantity;
+        }
+
+        $allCategoriesSales = OrderItem::join('orders', 'order_items.order_id', '=', 'orders.id')
+            ->join('products', 'order_items.product_id', '=', 'products.id')
+            ->join('categories', 'products.category_id', '=', 'categories.id')
+            ->where('orders.status', 'delivered')
+            ->whereMonth('orders.delivered_date', $now->month)
+            ->whereYear('orders.delivered_date', $now->year)
+            ->select('categories.name', DB::raw('SUM(order_items.quantity) as total_quantity'))
+            ->groupBy('categories.name')
+            ->orderBy('total_quantity', 'desc');
+
+        $topCategories = $allCategoriesSales->get();
+        $totalCategoryQuantity = $topCategories->sum('total_quantity');
+
+        $topCategoryLabels = [];
+        $topCategoryData = [];
+        $topCategoryQty = [];
+        foreach ($topCategories->take(4) as $item) {
+            $topCategoryLabels[] = $item->name;
+            $topCategoryData[] = $totalCategoryQuantity > 0 ? round($item->total_quantity / $totalCategoryQuantity * 100, 2) : 0;
+            $topCategoryQty[] = $item->total_quantity;
+        }
+        if ($topCategories->count() > 4) {
+            $otherQuantity = $topCategories->slice(4)->sum('total_quantity');
+            $topCategoryLabels[] = 'Khác';
+            $topCategoryData[] = $totalCategoryQuantity > 0 ? round($otherQuantity / $totalCategoryQuantity * 100, 2) : 0;
+            $topCategoryQty[] = $otherQuantity;
+        }
+
         $orders = Order::orderBy( 'created_at', 'DESC' )->get()->take( 10 );
         $dashboardDatas = DB::select( "Select sum(total) AS TotalAmount,
                                     sum(if(status='ordered', total, 0)) as TotalOrderedAmount,
@@ -44,7 +138,11 @@ $monthlyDatas = DB::select("
         IFNULL(D.TotalAmount, 0) AS TotalAmount,
         IFNULL(D.TotalOrderedAmount, 0) AS TotalOrderedAmount,
         IFNULL(D.TotalDeliveredAmount, 0) AS TotalDeliveredAmount,
-        IFNULL(D.TotalCanceledAmount, 0) AS TotalCanceledAmount
+        IFNULL(D.TotalCanceledAmount, 0) AS TotalCanceledAmount,
+        IFNULL(D.TotalOrders, 0) AS TotalOrders,
+        IFNULL(D.TotalOrdered, 0) AS TotalOrdered,
+        IFNULL(D.TotalDelivered, 0) AS TotalDelivered,
+        IFNULL(D.TotalCanceled, 0) AS TotalCanceled
     FROM month_names M
     LEFT JOIN (
         SELECT
@@ -52,7 +150,11 @@ $monthlyDatas = DB::select("
             SUM(total) AS TotalAmount,
             SUM(IF(status = 'ordered', total, 0)) AS TotalOrderedAmount,
             SUM(IF(status = 'delivered', total, 0)) AS TotalDeliveredAmount,
-            SUM(IF(status = 'canceled', total, 0)) AS TotalCanceledAmount
+            SUM(IF(status = 'canceled', total, 0)) AS TotalCanceledAmount,
+            COUNT(*) AS TotalOrders,
+            SUM(IF(status = 'ordered', 1, 0)) AS TotalOrdered,
+            SUM(IF(status = 'delivered', 1, 0)) AS TotalDelivered,
+            SUM(IF(status = 'canceled', 1, 0)) AS TotalCanceled
         FROM Orders
         WHERE YEAR(created_at) = YEAR(NOW())
         GROUP BY MONTH(created_at)
@@ -70,7 +172,7 @@ $monthlyDatas = DB::select("
         $TotalOrderedAmount = collect($monthlyDatas)->sum('TotalOrderedAmount');
         $TotalDeliveredAmount = collect($monthlyDatas)->sum('TotalDeliveredAmount');
         $TotalCanceledAmount = collect($monthlyDatas)->sum('TotalCanceledAmount');
-        return view( 'admin.index', compact('orders', 'dashboardDatas', 'AmountM', 'OrderedAmountM', 'DeliveredAmountM', 'CanceledAmountM', 'TotalAmount', 'TotalOrderedAmount', 'TotalDeliveredAmount', 'TotalCanceledAmount') );
+        return view( 'admin.index', compact('orders', 'dashboardDatas', 'AmountM', 'OrderedAmountM', 'DeliveredAmountM', 'CanceledAmountM', 'TotalAmount', 'TotalOrderedAmount', 'TotalDeliveredAmount', 'TotalCanceledAmount', 'revenueComparison', 'topProductLabels', 'topProductData', 'topProductQty', 'topCategoryLabels', 'topCategoryData', 'topCategoryQty', 'monthlyDatas') );
     }
 
     public function categories() {
@@ -714,54 +816,55 @@ $monthlyDatas = DB::select("
         return redirect()->route('admin.slides')->with("status", "Slide has been deleted successfully.");
     }
 
-    // public function store(Request $request)
-    // {
-    //     // 1. Validate and create the product
-    //     $product = Product::create([
-    //         'name' => $request->name,
-    //         'slug' => Str::slug($request->name),
-    //         'short_description' => $request->short_description,
-    //         'description' => $request->description,
-    //         'regular_price' => $request->regular_price,
-    //         'sale_price' => $request->sale_price,
-    //         'SKU' => $request->SKU,
-    //         'stock_status' => $request->stock_status,
-    //         'featured' => $request->featured,
-    //         'quantity' => $request->quantity,
-    //         'image' => $request->image,
-    //         'category_id' => $request->category_id,
-    //         'author_id' => $request->author_id,
-    //     ]);
+    public function getWeeklyRevenueForMonth(Request $request)
+    {
+        $request->validate([
+            'month' => 'required|integer|between:1,12',
+            'year' => 'required|integer'
+        ]);
 
-    //     // 2. Generate embedding with OpenAI
-    //     $text = $product->name . ' ' . $product->description;
-    //     $embeddingResponse = Http::withHeaders([
-    //         'Authorization' => 'Bearer ' . env('OPENAI_API_KEY'),
-    //     ])->post('https://api.openai.com/v1/embeddings', [
-    //         'input' => $text,
-    //         'model' => 'text-embedding-ada-002',
-    //     ]);
-    //     $embedding = $embeddingResponse->json('data.0.embedding');
-    //     $product->vector = json_encode($embedding);
-    //     $product->save();
+        $month = $request->input('month');
+        $year = $request->input('year');
 
-    //     // 3. Upsert to Pinecone
-    //     $pineconeUrl = "https://" . env('PINECONE_INDEX') . ".svc." . env('PINECONE_ENVIRONMENT') . ".pinecone.io/vectors/upsert";
-    //     Http::withHeaders([
-    //         'Api-Key' => env('PINECONE_API_KEY'),
-    //         'Content-Type' => 'application/json',
-    //     ])->post($pineconeUrl, [
-    //         'vectors' => [
-    //             [
-    //                 'id' => (string)$product->id,
-    //                 'values' => $embedding,
-    //                 'metadata' => [
-    //                     'id' => $product->id,
-    //                 ],
-    //             ],
-    //         ],
-    //     ]);
+        $startDate = Carbon::createFromDate($year, $month, 1)->startOfMonth();
+        $endDate = $startDate->copy()->endOfMonth();
 
-    //     // ...rest of your logic...
-    // }
+        $weeklyTotal = [];
+        $weeklyPending = [];
+        $weeklyDelivered = [];
+        $weeklyCanceled = [];
+        $weekLabels = [];
+        $currentDate = $startDate->copy();
+
+        while ($currentDate->lte($endDate)) {
+            $startOfWeek = $currentDate->copy()->startOfWeek();
+            $endOfWeek = $currentDate->copy()->endOfWeek();
+
+            // Lấy dữ liệu cho tuần hiện tại
+            $weeklyRevenue = Order::whereBetween('created_at', [$startOfWeek, $endOfWeek])
+                ->selectRaw("
+                    SUM(total) as total_amount,
+                    SUM(IF(status = 'ordered', total, 0)) as pending_amount,
+                    SUM(IF(status = 'delivered', total, 0)) as delivered_amount,
+                    SUM(IF(status = 'canceled', total, 0)) as canceled_amount
+                ")
+                ->first();
+
+            $weekLabels[] = "Tuần " . $currentDate->weekOfMonth . " (" . $startOfWeek->format('d/m') . " - " . $endOfWeek->format('d/m') . ")";
+            $weeklyTotal[] = $weeklyRevenue->total_amount ?? 0;
+            $weeklyPending[] = $weeklyRevenue->pending_amount ?? 0;
+            $weeklyDelivered[] = $weeklyRevenue->delivered_amount ?? 0;
+            $weeklyCanceled[] = $weeklyRevenue->canceled_amount ?? 0;
+
+            $currentDate->addWeek();
+        }
+
+        return response()->json([
+            'labels' => $weekLabels,
+            'total' => $weeklyTotal,
+            'pending' => $weeklyPending,
+            'delivered' => $weeklyDelivered,
+            'canceled' => $weeklyCanceled,
+        ]);
+    }
 }
