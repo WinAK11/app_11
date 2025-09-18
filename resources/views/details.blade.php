@@ -278,7 +278,13 @@
                                 <p class="text-muted">No reviews yet. Be the first to review this product!</p>
                             </div>
                             <div class="text-center" id="load-more-container" style="display: none;">
-                                <button class="btn btn-outline-primary" id="load-more-reviews">Load More Reviews</button>
+                                <button class="btn btn-outline-primary" id="load-more-reviews">
+                                    <span class="btn-text">Load More Reviews</span>
+                                    <span class="btn-loading" style="display: none;">
+                                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                        Loading...
+                                    </span>
+                                </button>
                             </div>
                         </div>
 
@@ -524,6 +530,8 @@
             const loadMoreBtn = document.getElementById('load-more-reviews');
             if (loadMoreBtn) {
                 loadMoreBtn.addEventListener('click', function() {
+                    if (isLoading) return;
+                    
                     currentPage++;
                     loadReviews(currentPage);
                 });
@@ -546,20 +554,28 @@
                 const loadingEl = document.getElementById('reviews-loading');
                 const emptyEl = document.getElementById('reviews-empty');
                 const loadMoreContainer = document.getElementById('load-more-container');
+                const loadMoreBtn = document.getElementById('load-more-reviews');
 
                 if (page === 1) {
                     reviewsList.innerHTML = '';
                     loadingEl.style.display = 'block';
                     emptyEl.style.display = 'none';
                     loadMoreContainer.style.display = 'none';
+                } else {
+                    // Show loading state for load more button
+                    if (loadMoreBtn) {
+                        loadMoreBtn.disabled = true;
+                        loadMoreBtn.querySelector('.btn-text').style.display = 'none';
+                        loadMoreBtn.querySelector('.btn-loading').style.display = 'inline';
+                    }
                 }
 
-                fetch(`/products/${productId}/reviews?page=${page}`, {
-                        headers: {
-                            'Accept': 'application/json',
-                            'X-Requested-With': 'XMLHttpRequest'
-                        }
-                    })
+                fetch(`/products/${productId}/reviews?page=${page}&per_page=5`, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
                     .then(async response => {
                         if (!response.ok) {
                             throw new Error(`HTTP error! status: ${response.status}`);
@@ -595,8 +611,22 @@
                         // Show/hide load more button
                         if (data.pagination.current_page < data.pagination.last_page) {
                             loadMoreContainer.style.display = 'block';
+                            // Update button text to show progress
+                            const btnText = loadMoreBtn.querySelector('.btn-text');
+                            if (btnText) {
+                                const loaded = data.pagination.current_page * data.pagination.per_page;
+                                const total = data.pagination.total;
+                                btnText.textContent = `Load More Reviews (${loaded}/${total})`;
+                            }
                         } else {
                             loadMoreContainer.style.display = 'none';
+                            // Show a message when all reviews are loaded
+                            if (data.pagination.total > 0) {
+                                const allLoadedMessage = document.createElement('div');
+                                allLoadedMessage.className = 'text-center text-muted mt-3';
+                                allLoadedMessage.innerHTML = '<small><i class="fas fa-check-circle me-1"></i>All reviews loaded</small>';
+                                loadMoreContainer.appendChild(allLoadedMessage);
+                            }
                         }
                     })
                     .catch(error => {
@@ -610,6 +640,13 @@
                     })
                     .finally(() => {
                         isLoading = false;
+                        
+                        // Reset load more button state
+                        if (loadMoreBtn) {
+                            loadMoreBtn.disabled = false;
+                            loadMoreBtn.querySelector('.btn-text').style.display = 'inline';
+                            loadMoreBtn.querySelector('.btn-loading').style.display = 'none';
+                        }
                     });
             }
 

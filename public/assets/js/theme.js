@@ -1722,7 +1722,13 @@ function pureFadeOut(e) {
 
     $("button.js-add-wishlist, a.add-to-wishlist")
         .off("click")
-        .on("click", function () {
+        .on("click", function (e) {
+            // If this is a form submit button, allow the form to submit normally
+            if ($(this).is('button[type="submit"]') || $(this).closest('form').length > 0) {
+                return true; // Allow form submission
+            }
+            
+            // Otherwise, handle as toggle button
             if ($(this).hasClass("active")) $(this).removeClass("active");
             else $(this).addClass("active");
             return false;

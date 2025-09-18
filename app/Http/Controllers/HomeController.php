@@ -62,7 +62,7 @@ class HomeController extends Controller {
     public function search( Request $request ) {
         $query = $request->input( 'query' );
         $searchType = $request->input( 'search_type', 'hybrid' ); // 'text', 'vector', 'hybrid'
-        
+
         if (empty($query)) {
             return response()->json([]);
         }
@@ -81,14 +81,14 @@ class HomeController extends Controller {
             // Fallback to text search if vector search fails or hybrid mode
             if (empty($results) || $searchType === 'text' || $searchType === 'hybrid') {
                 $textResults = $this->performTextSearch($query);
-                
+
                 if ($searchType === 'hybrid' && !empty($results)) {
                     // Merge results, avoiding duplicates
                     $vectorIds = collect($results)->pluck('id')->toArray();
                     $textResults = collect($textResults)->filter(function($product) use ($vectorIds) {
                         return !in_array($product->id, $vectorIds);
                     })->values()->toArray();
-                    
+
                     $results = array_merge($results, $textResults);
                 } else {
                     $results = $textResults;
@@ -118,7 +118,7 @@ class HomeController extends Controller {
 
             // Generate embedding for the search query
             $embedding = $aiService->generateSearchEmbedding($query);
-            
+
             if (!$embedding) {
                 Log::warning('Failed to generate embedding for search query');
                 return [];
@@ -126,14 +126,14 @@ class HomeController extends Controller {
 
             // Search in Qdrant (faster with lower threshold)
             $vectorResults = $qdrantService->searchByVector($embedding, 8, 0.5);
-            
+
             if (empty($vectorResults)) {
                 return [];
             }
 
             // Get product IDs from vector search results
             $productIds = collect($vectorResults)->pluck('id')->toArray();
-            
+
             // Fetch full product data from database
             $products = Product::with(['author', 'category'])
                 ->whereIn('id', $productIds)
