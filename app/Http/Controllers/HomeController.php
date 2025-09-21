@@ -8,6 +8,7 @@ use App\Models\Slide;
 use App\Services\OpenAIService;
 use App\Services\ProductSearchService;
 use App\Services\QdrantService;
+use App\Services\AIService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -81,24 +82,118 @@ class HomeController extends Controller {
         return view( 'account-order' );
     }
 
-    public function search(Request $request)
-    {
-        $query = $request->input('query');
- 
-        // Bắt đầu tìm kiếm khi người dùng gõ ít nhất 3 ký tự để tối ưu
-        if (empty($query) || mb_strlen(trim($query)) < 3) {
+    public function search( Request $request ) {
+        $query = $request->input( 'query' );
+        $searchType = $request->input( 'search_type', 'hybrid' ); // 'text', 'vector', 'hybrid'
+        
+        if (empty($query)) {
             return response()->json([]);
         }
- 
-        // Sửa lỗi: Trả về danh sách sản phẩm thay vì từ khóa gợi ý.
-        // Frontend (file app.blade.php) đang mong đợi một danh sách các đối tượng sản phẩm
-        // (với các thuộc tính như slug, image, name) để hiển thị gợi ý.
-        // Việc trả về chuỗi ký tự đã gây ra lỗi "undefined".
- 
-        // Sử dụng ProductSearchService đã được tối ưu (có caching) để lấy sản phẩm.
-        $relatedProducts = $this->productSearchService->searchProducts($query, 8); // Lấy 8 sản phẩm gợi ý
- 
-        // Trả về collection sản phẩm dưới dạng JSON, đúng với định dạng frontend cần.
-        return response()->json($relatedProducts);
+
+        $results = [];
+
+        try {
+            // Try vector search first if enabled
+            if (in_array($searchType, ['vector', 'hybrid'])) {
+                $vectorResults = $this->performVectorSearch($query);
+                if (!empty($vectorResults)) {
+                    $results = $vectorResults;
+                }
+            }
+
+            // Fallback to text search if vector search fails or hybrid mode
+            if (empty($results) || $searchType === 'text' || $searchType === 'hybrid') {
+                $textResults = $this->performTextSearch($query);
+                
+                if ($searchType === 'hybrid' && !empty($results)) {
+                    // Merge results, avoiding duplicates
+                    $vectorIds = collect($results)->pluck('id')->toArray();
+                    $textResults = collect($textResults)->filter(function($product) use ($vectorIds) {
+                        return !in_array($product->id, $vectorIds);
+                    })->values()->toArray();
+                    
+                    $results = array_merge($results, $textResults);
+                } else {
+                    $results = $textResults;
+                }
+            }
+
+            // Limit results
+            $results = array_slice($results, 0, 8);
+
+        } catch (\Exception $e) {
+            Log::error('Search error: ' . $e->getMessage());
+            // Fallback to text search on error
+            $results = $this->performTextSearch($query);
+        }
+
+        return response()->json( $results );
+    }
+
+    /**
+     * Perform vector-based search using Qdrant
+     */
+    protected function performVectorSearch(string $query): array
+    {
+        try {
+            $aiService = new AIService();
+            $qdrantService = new QdrantService();
+
+            // Generate embedding for the search query
+            $embedding = $aiService->generateSearchEmbedding($query);
+            
+            if (!$embedding) {
+                Log::warning('Failed to generate embedding for search query');
+                return [];
+            }
+
+            // Search in Qdrant (faster with lower threshold)
+            $vectorResults = $qdrantService->searchByVector($embedding, 8, 0.5);
+            
+            if (empty($vectorResults)) {
+                return [];
+            }
+
+            // Get product IDs from vector search results
+            $productIds = collect($vectorResults)->pluck('id')->toArray();
+            
+            // Fetch full product data from database
+            $products = Product::with(['author', 'category'])
+                ->whereIn('id', $productIds)
+                ->get()
+                ->keyBy('id');
+
+            // Order results by vector search score (without storing score)
+            $orderedResults = [];
+            foreach ($vectorResults as $result) {
+                if (isset($products[$result['id']])) {
+                    $orderedResults[] = $products[$result['id']];
+                }
+            }
+
+            return $orderedResults;
+
+        } catch (\Exception $e) {
+            Log::error('Vector search failed: ' . $e->getMessage());
+            return [];
+        }
+    }
+
+    /**
+     * Perform traditional text-based search (optimized with database queries)
+     */
+    protected function performTextSearch(string $query): array
+    {
+        // Use database LIKE queries for faster search
+        $products = Product::with(['author', 'category'])
+            ->where(function($q) use ($query) {
+                $q->where('name', 'LIKE', "%{$query}%")
+                  ->orWhere('description', 'LIKE', "%{$query}%")
+                  ->orWhere('short_description', 'LIKE', "%{$query}%");
+            })
+            ->limit(8)
+            ->get();
+
+        return $products->toArray();
     }
 }

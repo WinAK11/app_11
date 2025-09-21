@@ -106,7 +106,7 @@ class CartController extends Controller
             Session::put('discounts', [
                 'discount'=>number_format(floatval($discount), 2, '.', ''),
                 'subtotal'=>number_format(floatval($subtotalAfterDiscount), 2, '.', ''),
-                'tax'=>number_format(floatval($taxAfterDiscount), 2, '.', ''),
+                // 'tax'=>number_format(floatval($taxAfterDiscount), 2, '.', ''),
                 'total'=>number_format(floatval($totalAfterDiscount), 2, '.', '')
             ]);
         }
@@ -139,42 +139,47 @@ class CartController extends Controller
             $request->validate([
                 'name' => 'required | max: 100',
                 'phone' => 'required | numeric | digits:10',
-                'zip' => 'required | numeric | digits:6',
-                'state' => 'required',
+                'shipping_cost' => 'required | numeric',
+                'province' => 'required',
                 'city' => 'required',
+                'district' => 'required',
                 'address' => 'required',
-                'locality' => 'required',
+                // 'locality' => 'required',
             ]);
 
             $address = new Address();
             $address->name = $request->name;
             $address->phone = $request->phone;
-            $address->zip = $request->zip;
-            $address->state = $request->state;
+            // $address->zip = $request->zip;
+            $address->shipping_cost = $request->shipping_cost;
+            $address->province = $request->province;
             $address->city = $request->city;
+            $address->district = $request->district;
             $address->address = $request->address;
-            $address->locality = $request->locality;
+            // $address->locality = $request->locality;
             $address->country = 'Vietnam';
             $address->user_id = $user_id;
             $address->isdefault = true;
         }
 
-        $this->setAmountforCheckout();
+        $this->setAmountforCheckout($request->shipping_cost); // Pass the shipping cost from the request
 
         $order = new Order();
         $order->user_id = $user_id;
         $order->subtotal = floatval(str_replace(',', '', Session::get('checkout')['subtotal']));
         $order->discount = floatval(str_replace(',', '', Session::get('checkout')['discount']));
-        $order->tax = floatval(str_replace(',', '', Session::get('checkout')['tax']));
+        // $order->tax = floatval(str_replace(',', '', Session::get('checkout')['tax']));
+        $order->shipping_cost = floatval(str_replace(',', '', Session::get('checkout')['shipping_cost']));
         $order->total = floatval(str_replace(',', '', Session::get('checkout')['total']));
         $order->name = $address->name;
         $order->phone = $address->phone;
-        $order->locality = $address->locality;
+        // $order->locality = $address->locality;
         $order->address = $address->address;
+        $order->province = $address->province;
         $order->city = $address->city;
-        $order->state = $address->state;
+        $order->district = $address->district;
         $order->country = $address->country;
-        $order->zip = $address->zip;
+        // $order->zip = $address->zip;
         $order->save();
 
         foreach(Cart::instance('cart')->content() as $item)
@@ -185,16 +190,22 @@ class CartController extends Controller
             $orderItem->price = $item->price;
             $orderItem->quantity = $item->qty;
             $orderItem->save();
+
+            // Decrease product quantity
+            $product = \App\Models\Product::find($item->id);
+            $product->quantity -= $item->qty;
+            $product->save();
         }
 
         // Prepare order data for the email
         $orderData = [
             'name' => $request->name ?? $address->name,
             'address' => $request->address ?? $address->address,
+            'province' => $request->province ?? $address->province,
             'city' => $request->city ?? $address->city,
-            'state' => $request->state ?? $address->state,
+            'district' => $request->district ?? $address->district,
             'country' => $request->country ?? $address->country,
-            'zip' => $request->zip ?? $address->zip,
+            // 'zip' => $request->zip ?? $address->zip,
             'total' => Cart::instance('cart')->total(),
         ];
 
@@ -243,32 +254,47 @@ class CartController extends Controller
             Session::put('order_id', $order->id);
             return redirect()->route('cart.order.confirm');
         }
-        
-
     }
 
-    public function setAmountforCheckout()
+    public function setAmountforCheckout($shippingCostFromRequest = null) // Accept shipping cost as a parameter
     {
         if(!Cart::instance('cart')->content()->count() > 0)
         {
             Session::forget('checkout');
             return;
         }
+
+        // Ensure shippingCost is a numeric value, default to 0 if not provided or invalid
+        $shippingCost = is_numeric($shippingCostFromRequest) ? (float) $shippingCostFromRequest : 0;
+
         if(Session::has('coupon'))
         {
+            $discount = floatval(str_replace(',', '', Session::get('discounts')['discount']));
+            $subtotalAfterDiscount = floatval(str_replace(',', '', Session::get('discounts')['subtotal']));
+            // Recalculate tax based on subtotal after discount, as 'discounts' session might not have it explicitly
+            $taxAfterDiscount = ($subtotalAfterDiscount * config('cart.tax'))/100;
+            $totalAfterDiscountAndTax = $subtotalAfterDiscount + $taxAfterDiscount;
+
             Session::put('checkout',[
-            'discount' => Session::get('discounts') ['discount'],
-            'subtotal' => Session::get('discounts') ['subtotal'],
-            'tax' => Session::get('discounts') ['tax'], 'total' => Session::get('discounts') ['total'],
+                'discount' => number_format($discount, 2, '.', ''),
+                'subtotal' => number_format($subtotalAfterDiscount, 2, '.', ''),
+                'shipping_cost' => number_format($shippingCost, 2, '.', ''),
+                'tax' => number_format($taxAfterDiscount, 2, '.', ''),
+                'total' => number_format($totalAfterDiscountAndTax + $shippingCost, 2, '.', ''),
             ]);
         }
         else
         {
+            $subtotal = floatval(str_replace(',', '', Cart::instance('cart')->subtotal()));
+            $tax = floatval(str_replace(',', '', Cart::instance('cart')->tax()));
+            $total = $subtotal + $tax;
+
             Session::put('checkout',[
-            'discount' => 0,
-            'subtotal' => Cart::instance('cart')->subtotal(),
-            'tax' => Cart::instance('cart')->tax(),
-            'total' => Cart::instance('cart')->total(),
+                'discount' => number_format(0, 2, '.', ''),
+                'subtotal' => number_format($subtotal, 2, '.', ''),
+                'shipping_cost' => number_format($shippingCost, 2, '.', ''),
+                'tax' => number_format($tax, 2, '.', ''),
+                'total' => number_format($total + $shippingCost, 2, '.', ''),
             ]);
         }
     }

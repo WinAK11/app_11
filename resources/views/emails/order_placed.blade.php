@@ -36,8 +36,8 @@
                                 <p style="font-size: 16px; color: #333;">Your order will be delivered to:</p>
                                 <p style="font-size: 15px; color: #555;">
                                     {{ $order['name'] }}<br>
-                                    {{ $order['address'] }}, {{ $order['city'] }}, {{ $order['state'] }}, {{ $order['country'] }}<br>
-                                    {{ $order['zip'] }}
+                                    {{ $order['address'] }}, {{ $order['district'] }}, {{ $order['city'] }}, {{ $order['province'] }}<br>
+                                    {{-- {{ $order['zip'] }} --}}
                                 </p>
                             </div>
                             <p style="font-size: 15px; color: #888; text-align: center; margin-top: 30px;">Thank you for shopping with us.</p>

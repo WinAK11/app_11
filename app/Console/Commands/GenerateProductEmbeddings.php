@@ -3,11 +3,10 @@
 namespace App\Console\Commands;
 
 use App\Models\Product;
-use App\Services\OpenAIService;
+use App\Services\AIService;
 use App\Services\QdrantService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
-use Exception;
 
 class GenerateProductEmbeddings extends Command
 {
@@ -16,72 +15,131 @@ class GenerateProductEmbeddings extends Command
      *
      * @var string
      */
-    protected $signature = 'app:generate-product-embeddings';
+    protected $signature = 'embeddings:generate {--force : Force regenerate existing embeddings} {--limit= : Limit number of products to process}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Generate and store embeddings for all existing products in Qdrant.';
+    protected $description = 'Generate embeddings for products and store them in Qdrant';
+
+    protected $aiService;
+    protected $qdrantService;
+
+    public function __construct()
+    {
+        parent::__construct();
+        $this->aiService = new AIService();
+        $this->qdrantService = new QdrantService();
+    }
 
     /**
      * Execute the console command.
      */
-    public function handle(OpenAIService $openAIService, QdrantService $qdrantService): int
+    public function handle()
     {
-        $this->info('Starting to generate embeddings for all products...');
+        $this->info('Starting product embedding generation...');
 
-        $productCount = Product::count();
-        if ($productCount === 0) {
-            $this->info('No products found in the database.');
-            return self::SUCCESS;
+        // Check if Qdrant collection exists, create if not
+        if (!$this->qdrantService->collectionExists()) {
+            $this->info('Creating Qdrant collection...');
+            try {
+                $this->qdrantService->createCollection();
+                $this->info('Qdrant collection created successfully.');
+            } catch (\Exception $e) {
+                $this->error('Failed to create Qdrant collection: ' . $e->getMessage());
+                return 1;
+            }
+        } else {
+            $this->info('Qdrant collection already exists.');
         }
 
-        $progressBar = $this->output->createProgressBar($productCount);
+        // Get products to process
+        $query = Product::with(['author', 'category']);
+        
+        if (!$this->option('force')) {
+            $query->where('has_embedding', false);
+        }
+
+        if ($limit = $this->option('limit')) {
+            $query->limit((int) $limit);
+        }
+
+        $products = $query->get();
+        $totalProducts = $products->count();
+
+        if ($totalProducts === 0) {
+            $this->info('No products to process.');
+            return 0;
+        }
+
+        $this->info("Processing {$totalProducts} products...");
+
+        $progressBar = $this->output->createProgressBar($totalProducts);
         $progressBar->start();
 
-        // Xử lý theo từng lô để tránh quá tải bộ nhớ và API
-        Product::with(['category', 'author'])->chunkById(50, function ($products) use ($openAIService, $qdrantService, $progressBar) {
-            $pointsToUpsert = [];
+        $successCount = 0;
+        $errorCount = 0;
 
-            foreach ($products as $product) {
-                try {
-                    // Tạo chuỗi văn bản giàu thông tin để có embedding chất lượng hơn
-                    $textToEmbed = "Tên sách: {$product->name}. ";
-                    $textToEmbed .= "Mô tả: {$product->short_description}. ";
-                    if ($product->category) {
-                        $textToEmbed .= "Thể loại: {$product->category->name}. ";
-                    }
-                    if ($product->author) {
-                        $textToEmbed .= "Tác giả: {$product->author->name}.";
-                    }
-
-                    $vector = $openAIService->getEmbedding(trim($textToEmbed));
-
-                    if ($vector) {
-                        $pointsToUpsert[] = [
-                            'id' => $product->id,
-                            'vector' => $vector,
-                            'payload' => ['name' => $product->name, 'category_id' => $product->category_id]
-                        ];
-                    } else {
-                        $this->warn("\nCould not generate embedding for product ID: {$product->id}");
-                    }
-                } catch (Exception $e) {
-                    $this->error("\nAn error occurred for product ID: {$product->id}. Error: {$e->getMessage()}");
-                    Log::error("Embedding generation exception for product ID: {$product->id}", ['error' => $e->getMessage()]);
+        foreach ($products as $product) {
+            try {
+                // Generate embedding
+                $embedding = $this->aiService->generateProductEmbedding($product);
+                
+                if (!$embedding) {
+                    $this->error("Failed to generate embedding for product: {$product->name}");
+                    $errorCount++;
+                    $progressBar->advance();
+                    continue;
                 }
-                $progressBar->advance();
+
+                // Store in database
+                $product->update([
+                    'embedding' => $embedding,
+                    'has_embedding' => true,
+                    'embedding_updated_at' => now(),
+                ]);
+
+                // Store in Qdrant
+                $payload = [
+                    'name' => $product->name,
+                    'slug' => $product->slug,
+                    'description' => $product->description,
+                    'short_description' => $product->short_description,
+                    'category_id' => $product->category_id,
+                    'author_id' => $product->author_id,
+                    'category_name' => $product->category?->name,
+                    'author_name' => $product->author?->name,
+                ];
+
+                $this->qdrantService->upsertProduct($product->id, $embedding, $payload);
+                $successCount++;
+
+            } catch (\Exception $e) {
+                $this->error("Error processing product {$product->name}: " . $e->getMessage());
+                Log::error('Embedding generation error', [
+                    'product_id' => $product->id,
+                    'error' => $e->getMessage()
+                ]);
+                $errorCount++;
             }
 
-            if (!empty($pointsToUpsert) && !$qdrantService->upsertPoints($pointsToUpsert)) {
-                $this->error("\nFailed to upsert a batch of points to Qdrant.");
-            }
-        });
+            $progressBar->advance();
+            
+            // Add small delay to avoid rate limiting
+            usleep(100000); // 0.1 second
+        }
 
         $progressBar->finish();
-        $this->info("\n\nEmbedding generation and storage complete!");
-        return self::SUCCESS;
+        $this->newLine();
+
+        $this->info("Embedding generation completed!");
+        $this->info("Successfully processed: {$successCount} products");
+        if ($errorCount > 0) {
+            $this->warn("Failed to process: {$errorCount} products");
+        }
+
+        return 0;
     }
 }

@@ -72,8 +72,19 @@ class ShopController extends Controller
 
     public function product_details($product_slug)
     {
-        $product = Product::where('slug', $product_slug)->first();
-        $related_products = Product::where('slug', '<>', $product_slug)->get()->take(8);
+        $product = Product::with(['category', 'author', 'reviews.user'])
+            ->where('slug', $product_slug)
+            ->first();
+            
+        if (!$product) {
+            abort(404);
+        }
+        
+        $related_products = Product::where('slug', '<>', $product_slug)
+            ->where('category_id', $product->category_id)
+            ->get()
+            ->take(8);
+            
         return view('details', compact('product', 'related_products'));
     }
 }

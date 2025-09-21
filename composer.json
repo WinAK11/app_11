@@ -10,9 +10,11 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "aws/aws-sdk-php": "^3.354",
         "bezhansalleh/filament-shield": "^3.3",
         "dinushchathurya/nationality-list": "^1.0",
         "filament/filament": "^3.2",
+        "hkulekci/qdrant": "^0.5.8",
         "http-interop/http-factory-guzzle": "^1.2",
         "intervention/image-laravel": "^1.2",
         "laravel/framework": "^11.31",

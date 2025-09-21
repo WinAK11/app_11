@@ -23,6 +23,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta http-equiv="content-type" content="text/html; charset=utf-8" />
     <meta name="author" content="surfside media" />
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="shortcut icon" href="{{ asset('assets/images/favicon.ico') }}" type="image/x-icon">
     <link rel="preconnect" href="https://fonts.gstatic.com/">
     <link
@@ -120,6 +121,16 @@
             <path
                 d="M4.0172 0.313075L2.91869 2.64013L0.460942 3.0145C0.0201949 3.08129 -0.15644 3.64899 0.163185 3.97415L1.94131 5.78447L1.52075 8.34177C1.44505 8.80402 1.91103 9.15026 2.30131 8.93408L4.5 7.72661L6.69869 8.93408C7.08897 9.14851 7.55495 8.80402 7.47925 8.34177L7.05869 5.78447L8.83682 3.97415C9.15644 3.64899 8.97981 3.08129 8.53906 3.0145L6.08131 2.64013L4.9828 0.313075C4.78598 -0.101718 4.2157 -0.10699 4.0172 0.313075Z" />
         </symbol>
+ <symbol id="icon_star_half" viewBox="0 0 9 9">
+        <defs>
+            <linearGradient id="halfStarGradient">
+                <stop offset="50%" stop-color="#ffc107"/>
+                <stop offset="50%" stop-color="#ccc"/>
+            </linearGradient>
+        </defs>
+        <path d="M4.0172 0.313075L2.91869 2.64013L0.460942 3.0145C0.0201949 3.08129 -0.15644 3.64899 0.163185 3.97415L1.94131 5.78447L1.52075 8.34177C1.44505 8.80402 1.91103 9.15026 2.30131 8.93408L4.5 7.72661L6.69869 8.93408C7.08897 9.14851 7.55495 8.80402 7.47925 8.34177L7.05869 5.78447L8.83682 3.97415C9.15644 3.64899 8.97981 3.08129 8.53906 3.0145L6.08131 2.64013L4.9828 0.313075C4.78598 -0.101718 4.2157 -0.10699 4.0172 0.313075Z" 
+              fill="url(#halfStarGradient)" />
+    </symbol>
         <symbol id="icon_next_sm" viewBox="0 0 7 11">
             <path
                 d="M6.83968 5.89247C7.05344 5.67871 7.05344 5.32158 6.83968 5.10728L1.90756 0.162495C1.69106 -0.0540023 1.33996 -0.0540023 1.12401 0.162495C0.90751 0.378993 0.90751 0.730642 1.12401 0.94714L5.66434 5.50012L1.12346 10.0526C0.906962 10.2696 0.906962 10.6207 1.12346 10.8377C1.33996 11.0542 1.69106 11.0542 1.90701 10.8377L6.83968 5.89247Z"
@@ -924,42 +935,72 @@
 
     <script>
         $(function() {
+            var searchTimeout;
+            
             $("#search-input").on('keyup', function() {
                 var searchQuery = $(this).val();
+                var searchType = $('input[name="search-type"]:checked').val() || 'hybrid';
+                
+                // Clear previous timeout
+                clearTimeout(searchTimeout);
+                
                 if (searchQuery.length > 2) {
-                    $.ajax({
-                        type: "GET",
-                        url: "{{ route('home.search') }}",
-                        data: {
-                            query: searchQuery
-                        },
-                        dataType: 'json',
-                        success: function(data) {
-                            $('#box-content-search').html('');
-                            $.each(data, function(index, item) {
-                                var url =
-                                    "{{ route('shop.product.details', ['product_slug' => 'product_slug_pls']) }}";
-                                var link = url.replace('product_slug_pls', item.slug);
+                    // Debounce search requests
+                    searchTimeout = setTimeout(function() {
+                        // Show loading indicator
+                        $('#box-content-search').html('<li><div class="text-center p-3"><small class="text-muted">Searching...</small></div></li>');
+                        
+                        $.ajax({
+                            type: "GET",
+                            url: "{{ route('home.search') }}",
+                            data: {
+                                query: searchQuery,
+                                search_type: searchType
+                            },
+                            dataType: 'json',
+                            success: function(data) {
+                                $('#box-content-search').html('');
+                                
+                                if (data.length === 0) {
+                                    $('#box-content-search').html('<li><div class="text-center p-3"><small class="text-muted">No results found</small></div></li>');
+                                    return;
+                                }
+                                
+                                $.each(data, function(index, item) {
+                                    var url = "{{ route('shop.product.details', ['product_slug' => 'product_slug_pls']) }}";
+                                    var link = url.replace('product_slug_pls', item.slug);
+                                    
+                                    // Add author info if available (simplified)
+                                    var authorInfo = item.author ? `<small class="text-muted d-block">by ${item.author.name}</small>` : '';
 
-                                $('#box-content-search').append(`
-                                    <li>
-                                        <ul>
-                                            <li class="product-item gap14 mb-10">
-                                                <div class="image no-bg">
-                                                    <img src="{{ asset('uploads/products/thumbnails') }}/${item.image}" alt="${item.name}">
-                                                </div>
-                                                <div class="flex items-center justify-between gap20 flex-grow">
-                                                    <div class="name">
-                                                        <a href="${link}" class="body-text">${item.name}</a>
+                                    $('#box-content-search').append(`
+                                        <li>
+                                            <ul>
+                                                <li class="product-item gap14 mb-10">
+                                                    <div class="image no-bg">
+                                                        <img src="{{ asset('uploads/products/thumbnails') }}/${item.image}" alt="${item.name}" 
+                                                             onerror="this.src='{{ asset('uploads/book_placeholder.png') }}'">
                                                     </div>
-                                                </div>
-                                            </li>
-                                        </ul>
-                                    </li>
-                                `);
-                            });
-                        }
-                    });
+                                                    <div class="flex items-center justify-between gap20 flex-grow">
+                                                        <div class="name">
+                                                            <a href="${link}" class="body-text">${item.name}</a>
+                                                            ${authorInfo}
+                                                        </div>
+                                                    </div>
+                                                </li>
+                                            </ul>
+                                        </li>
+                                    `);
+                                });
+                            },
+                            error: function(xhr, status, error) {
+                                $('#box-content-search').html('<li><div class="text-center p-3"><small class="text-danger">Search error occurred</small></div></li>');
+                                console.error('Search error:', error);
+                            }
+                        });
+                    }, 300); // 300ms debounce
+                } else {
+                    $('#box-content-search').html('');
                 }
             });
 

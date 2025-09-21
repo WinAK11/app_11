@@ -287,7 +287,7 @@ $monthlyDatas = DB::select("
             'stock_status' => 'required',
             'featured' => 'required',
             'quantity' => 'required',
-            'image' => 'required|mimes:png,jpg,jpeg|max:2048',
+            'image' => 'mimes:png,jpg,jpeg|max:2048',
             'category_id' => 'required',
             'author_id' => 'required'
         ]);

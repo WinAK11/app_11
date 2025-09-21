@@ -76,9 +76,9 @@
                                                     <i class="icon-download"></i>
                                                 </div>
                                             </a>
-                                            <a href="{{ route('admin.ebook.edit', ['id' => $ebook->id]) }}">
+                                            <a href="{{ route('admin.audiobook.chapters', ['ebook_id' => $ebook->id]) }}">
                                                 <div class="item edit">
-                                                    <i class="icon-edit-3"></i>
+                                                    <i class="icon-volume-2"></i>
                                                 </div>
                                             </a>
                                             <form action="{{ route('admin.ebook.delete', ['id' => $ebook->id]) }}"

@@ -3,13 +3,17 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class AIService {
     protected $apiKey;
     protected $apiUrl = 'https://api.deepseek.com/v1/chat/completions';
+    protected $openaiApiKey;
+    protected $openaiEmbeddingUrl = 'https://api.openai.com/v1/embeddings';
 
     public function __construct() {
         $this->apiKey = env( 'DEEPSEEK_API_KEY' );
+        $this->openaiApiKey = env( 'OPENAI_API_KEY' );
     }
 
     public function suggestCategory( string $title, string $author ): string {
@@ -57,5 +61,87 @@ class AIService {
             'Authorization' => 'Bearer ' . $this->apiKey,
             'Content-Type' => 'application/json',
         ] )->timeout( 30 )->post( $this->apiUrl, $payload );
+    }
+
+    /**
+     * Generate embeddings for text using OpenAI API
+     */
+    public function generateEmbedding(string $text): ?array
+    {
+        try {
+            if (!$this->openaiApiKey) {
+                Log::warning('OpenAI API key not configured for embedding generation');
+                return null;
+            }
+
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $this->openaiApiKey,
+                'Content-Type' => 'application/json',
+            ])->timeout(30)->post($this->openaiEmbeddingUrl, [
+                'model' => 'text-embedding-ada-002',
+                'input' => $text,
+            ]);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                if (isset($data['data'][0]['embedding'])) {
+                    return $data['data'][0]['embedding'];
+                }
+            }
+
+            Log::error('Failed to generate embedding', [
+                'status' => $response->status(),
+                'response' => $response->body()
+            ]);
+
+            return null;
+        } catch (\Exception $e) {
+            Log::error('Exception while generating embedding: ' . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Generate embeddings for product content
+     */
+    public function generateProductEmbedding($product): ?array
+    {
+        // Combine product information for embedding
+        $content = $this->buildProductContent($product);
+        return $this->generateEmbedding($content);
+    }
+
+    /**
+     * Build content string from product data for embedding
+     */
+    protected function buildProductContent($product): string
+    {
+        $content = $product->name;
+        
+        if ($product->short_description) {
+            $content .= ' ' . $product->short_description;
+        }
+        
+        if ($product->description) {
+            $content .= ' ' . $product->description;
+        }
+        
+        if ($product->author) {
+            $content .= ' Author: ' . $product->author->name;
+        }
+        
+        if ($product->category) {
+            $content .= ' Category: ' . $product->category->name;
+        }
+
+        return trim($content);
+    }
+
+    /**
+     * Generate embeddings for search query
+     */
+    public function generateSearchEmbedding(string $query): ?array
+    {
+        return $this->generateEmbedding($query);
     }
 }

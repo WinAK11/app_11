@@ -110,11 +110,11 @@
                             <div class="price-range__info d-flex align-items-center mt-2">
                                 <div class="me-auto">
                                     <span class="text-secondary">Min Price: </span>
-                                    <span class="price-range__min">{{$min_price}}đ</span>
+                                    <span class="price-range__min">{{ $min_price }}đ</span>
                                 </div>
                                 <div>
                                     <span class="text-secondary">Max Price: </span>
-                                    <span class="price-range__max">{{$max_price}}đ</span>
+                                    <span class="price-range__max">{{ $max_price }}đ</span>
                                 </div>
                             </div>
                         </div>
@@ -268,7 +268,7 @@
                                     <div class="swiper-container background-img js-swiper-slider"
                                         data-settings='{"resizeObserver": true}'>
                                         <div class="swiper-wrapper">
-                                            <div class="swiper-slide">
+                                            {{-- <div class="swiper-slide">
                                                 <a
                                                     href="{{ route('shop.product.details', ['product_slug' => $product->slug]) }}">
                                                     <img loading="lazy"
@@ -276,11 +276,18 @@
                                                         width="310" height="400" alt="{{ $product->name }}"
                                                         class="pc__img" />
                                                 </a>
+                                            </div> --}}
+                                            <div class="swiper-slide">
+                                                <a href="{{ route('shop.product.details', ['product_slug' => $product->slug]) }}">
+                                                    <img loading="lazy"
+                                                        src="{{ $product->image ? asset('uploads/products/' . $product->image) : asset('uploads/book_placeholder.png') }}"
+                                                        width="310" height="400" alt="{{ $product->name }}"
+                                                        class="pc__img" />
+                                                </a>
                                             </div>
                                             <div class="swiper-slide">
                                                 @foreach (explode(',', $product->images) as $gallery_image)
-                                                    <a
-                                                        href="{{ route('shop.product.details', ['product_slug' => $product->slug]) }}"><img
+                                                    <a href="{{ route('shop.product.details', ['product_slug' => $product->slug]) }}"><img
                                                             loading="lazy"
                                                             src="{{ asset('uploads/products') }}/{{ $gallery_image }}"
                                                             width="310" height="400" alt="{{ $product->name }}"
@@ -303,35 +310,45 @@
                                             class = "pc__atc btn anim_appear-bottom btn position-absolute border-0 text-uppercase fw-medium btn-warning mb-3">Go
                                             to cart </a>
                                     @else
-                                        <form name = "addtocart-form" method = "post"
-                                            action = "{{ route('cart.add') }}">
-                                            @csrf
-                                            <input type="hidden" name="id" value="{{ $product->id }}" />
-                                            <input type="hidden" name="quantity" value="1" />
-                                            <input type="hidden" name="name" value="{{ $product->name }}" />
-                                            <input type="hidden" name="price"
-                                                value="{{ $product->sale_price == '' ? $product->regular_price : $product->sale_price }}" />
-                                            <button
-                                                class="pc__atc btn anim_appear-bottom btn position-absolute border-0 text-uppercase fw-medium"
-                                                data-aside="cartDrawer" title="Add To Cart">Add To Cart</button>
-                                        </form>
+                                        @if ($product->quantity > 0)
+                                            <form name="addtocart-form" method="post" action="{{ route('cart.add') }}">
+                                                @csrf
+                                                <input type="hidden" name="id" value="{{ $product->id }}">
+                                                <input type="hidden" name="quantity" value="1">
+                                                <input type="hidden" name="name" value="{{ $product->name }}">
+                                                <input type="hidden" name="price" value="{{ $product->sale_price ?? $product->regular_price }}">
+                                                <button class="pc__atc btn anim_appear-bottom btn position-absolute border-0 text-uppercase fw-medium" data-aside="cartDrawer" title="Add To Cart">
+                                                    Add To Cart
+                                                </button>
+                                            </form>
+                                        @else
+                                            <button class="pc__atc btn anim_appear-bottom btn position-absolute border-0 text-uppercase fw-medium out-of-stock-wrapper">
+                                                Out of Stock
+                                            </button>
+                                        @endif
                                     @endif
                                 </div>
 
                                 <div class="pc__info position-relative">
                                     <p class="pc__category">{{ $product->category->name }}</p>
                                     <h6 class="pc__title"><a
-                                            href="{{ route('shop.product.details', ['product_slug' => $product->slug]) }}">{{ $product->name }}</a>
+                                            href="{{ $product->quantity > 0 ? route('shop.product.details', ['product_slug' => $product->slug]) : 'javascript:void(0);' }}">{{ $product->name }}</a>
                                     </h6>
                                     <span class="text-secondary">by {{ $product->author->name }}</span>
-                                    <div class="product-card__price d-flex">
+                                    <div class="product-card__price d-flex align-items-center">
                                         <span class="money price">
                                             @if ($product->sale_price)
-                                                <s>{{ number_format($product->regular_price, 0, ',', ',') }}đ</s> {{ number_format($product->sale_price, 0, ',', ',') }}đ
+                                                <s>{{ number_format($product->regular_price, 0, ',', ',') }}đ</s>
+                                                {{ number_format($product->sale_price, 0, ',', ',') }}đ
                                             @else
                                                 {{ number_format($product->regular_price, 0, ',', ',') }}đ
                                             @endif
                                         </span>
+                                        @if ($product->quantity == 0)
+                                            <span class="badge bg-danger ms-2">Out of stock</span>
+                                        @elseif ($product->quantity < 10)
+                                            <span class="badge bg-warning text-dark ms-2">Only {{ $product->quantity }} left</span>
+                                        @endif
                                     </div>
                                     <div class="product-card__review d-flex align-items-center">
                                         <div class="reviews-group d-flex">
@@ -420,6 +437,20 @@
 
 @push('scripts')
     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.out-of-stock-wrapper').forEach(wrapper => {
+                wrapper.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    swal({
+                        title: "Out of Stock",
+                        text: "Sorry, this book is out of stock now.",
+                        icon: "error",
+                        button: "OK",
+                    });
+                });
+            });
+        });
+
         $(function() {
             $("#orderby").on("change", function() {
                 $("#order").val($("#orderby option:selected").val());
