@@ -160,6 +160,16 @@ Route::get('/account', [HomeController::class, 'account'])->name('home.account')
 Route::get('/account-wishlist', [HomeController::class, 'accountWishlist'])->name('home.accountWishlist');
 Route::get('/account-order', [HomeController::class, 'accountOrder'])->name('home.accountOrder');
 Route::get('/search', [HomeController::class, 'search'])->name('home.search');
+Route::get('/search-results', [HomeController::class, 'searchResults'])->name('search.results');
+Route::get('/debug-products', function() {
+    $totalProducts = \App\Models\Product::count();
+    $sampleProducts = \App\Models\Product::with(['author', 'category'])->take(5)->get();
+    
+    return response()->json([
+        'total_products' => $totalProducts,
+        'sample_products' => $sampleProducts
+    ]);
+});
 Route::get('/free-products', [FreeProductController::class, 'index'])->name('free.products');
 
 

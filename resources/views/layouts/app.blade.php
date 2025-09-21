@@ -479,11 +479,11 @@
                         </div>
 
                         <div class="search-popup js-hidden-content">
-                            <form action="#" method="GET" class="search-field container">
+                            <form action="{{ route('search.results') }}" method="GET" class="search-field container">
                                 <p class="text-uppercase text-secondary fw-medium mb-4">What are you looking for?</p>
                                 <div class="position-relative">
                                     <input class="search-field__input search-popup__input w-100 fw-medium"
-                                        type="text" name="search-keyword" placeholder="Search for books"
+                                        type="text" name="q" placeholder="Search for books"
                                         id="search-input" />
                                     <button class="btn-icon search-popup__submit" type="submit">
                                         <svg class="d-block" width="20" height="20" viewBox="0 0 20 20"
@@ -817,6 +817,18 @@
                                         </li>
                                     `);
                                 });
+                                
+                                // Add "View All Results" link
+                                var searchResultsUrl = "{{ route('search.results') }}?q=" + encodeURIComponent(searchQuery) + "&search_type=" + searchType;
+                                $('#box-content-search').append(`
+                                    <li>
+                                        <div class="text-center p-3">
+                                            <a href="${searchResultsUrl}" class="btn btn-outline-primary btn-sm">
+                                                View All Results
+                                            </a>
+                                        </div>
+                                    </li>
+                                `);
                             },
                             error: function(xhr, status, error) {
                                 $('#box-content-search').html('<li><div class="text-center p-3"><small class="text-danger">Search error occurred</small></div></li>');
