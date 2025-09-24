@@ -240,8 +240,15 @@
             document.querySelectorAll('.generate-single-btn').forEach(btn => {
                 btn.addEventListener('click', async function() {
                     const chapterId = this.dataset.chapterId;
+                    if (isGenerating) {
+                        alert('Another generation process is already running. Please wait.');
+                        return;
+                    }
+                    isGenerating = true; // Set flag to indicate a process is running
+
                     const success = await generateSingleAudio(chapterId, true);
 
+                    isGenerating = false;
                     // Only reload for individual generation, not batch
                     if (success) {
                         setTimeout(() => {
