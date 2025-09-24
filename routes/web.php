@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\FreeProductController;
 use App\Http\Controllers\ProductController;
-
+use Illuminate\Support\Facades\DB;
 Route::get('/', function () {
     return view('welcome');
 });
@@ -164,7 +164,7 @@ Route::get('/search-results', [HomeController::class, 'searchResults'])->name('s
 Route::get('/debug-products', function() {
     $totalProducts = \App\Models\Product::count();
     $sampleProducts = \App\Models\Product::with(['author', 'category'])->take(5)->get();
-    
+
     return response()->json([
         'total_products' => $totalProducts,
         'sample_products' => $sampleProducts
@@ -192,3 +192,17 @@ Route::get('/api/products', [ProductController::class, 'index']);
 
 // Public reviews listing
 Route::get('/products/{productId}/reviews', [App\Http\Controllers\ReviewController::class, 'getReviews'])->name('reviews.get');
+Route::get('/health', function () {
+    try {
+        DB::connection()->getPdo();
+        $dbStatus = 'connected';
+    } catch (\Exception $e) {
+        $dbStatus = 'disconnected';
+    }
+
+    return response()->json([
+        'status' => 'ok',
+        'database' => $dbStatus,
+        'timestamp' => now()->toISOString(),
+    ]);
+});
