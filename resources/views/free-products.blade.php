@@ -103,15 +103,28 @@
                         <div class="col mb-3">
                             <div class="card h-100 audiobook-card">
                                 <div class="card-body d-flex flex-column">
+                                    {{-- Make cover image clickable --}}
                                     <div class="audiobook-cover mb-3 text-center">
-                                        <img src="{{ asset($ebook->cover_path ?? 'https://via.placeholder.com/150x200') }}"
-                                            alt="{{ $ebook->title }}" class="img-fluid rounded"
-                                            style="max-height: 200px; object-fit: cover;">
+                                        <a href="{{ route('ebook.details', $ebook->id) }}">
+                                            <img src="{{ asset($ebook->cover_path ?? 'https://via.placeholder.com/150x200') }}"
+                                                alt="{{ $ebook->title }}" class="img-fluid rounded"
+                                                style="max-height: 200px; object-fit: cover;">
+                                        </a>
                                     </div>
-                                    <h5 class="audiobook-title">{{ $ebook->title }}</h5>
+
+                                    {{-- Make title clickable --}}
+                                    <h5 class="audiobook-title">
+                                        <a href="{{ route('ebook.details', $ebook->id) }}"
+                                            class="text-decoration-none text-dark">
+                                            {{ $ebook->title }}
+                                        </a>
+                                    </h5>
+
                                     <p class="text-muted mb-2">by {{ $ebook->author }}</p>
                                     <p class="text-secondary small mb-3">
-                                        {{ $ebook->category->name ?? 'Uncategorized' }}</p>
+                                        {{ $ebook->category->name ?? 'Uncategorized' }}
+                                    </p>
+
                                     <button class="btn btn-primary btn-sm mt-auto play-audiobook-btn"
                                         onclick="window.open('{{ route('epub.reader', ['id' => $ebook->id]) }}', '_blank')">
                                         <i class="fas fa-book-open me-1"></i> Read Ebook
@@ -121,6 +134,11 @@
                         </div>
                     @endforeach
                 </div>
+
+                {{-- <button class="btn btn-primary btn-sm mt-auto play-audiobook-btn"
+                    onclick="window.open('{{ route('epub.reader', ['id' => $ebook->id]) }}', '_blank')">
+                    <i class="fas fa-book-open me-1"></i> Read Ebook
+                </button> --}}
 
                 {{-- Pagination --}}
                 @if ($ebooks->hasPages())

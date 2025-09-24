@@ -40,25 +40,39 @@ class ShopController extends Controller
         // $categories = Category::orderBy('name', 'ASC')->get();
         $categories = Category::whereHas( 'products' )->withCount( 'products' )->orderBy( 'name', 'ASC' )->get();
         $authors = Author::orderBy('name', 'ASC')->get();
-        $products = Product::when($f_authors, function ($query) use ($f_authors) {
-            $author_ids = explode(',', $f_authors);
-            return $query->whereIn('author_id', $author_ids);
-        })
-        ->when($f_categories, function ($query) use ($f_categories) {
-            $category_ids = explode(',', $f_categories);
-            return $query->whereIn('category_id', $category_ids);
-        })
-        ->where(function ($query) use ($min_price, $max_price) {
-            $query->whereBetween('regular_price', [$min_price, $max_price])
-            ->orWhereBetween('sale_price', [$min_price, $max_price]);
-        })->orderBy($o_column, $o_order)->paginate(12);
+        $products = Product::with(['category', 'author', 'reviews' => function($query) {
+                $query->where('status', 'approved');
+            }])
+            ->when($f_authors, function ($query) use ($f_authors) {
+                $author_ids = explode(',', $f_authors);
+                return $query->whereIn('author_id', $author_ids);
+            })
+            ->when($f_categories, function ($query) use ($f_categories) {
+                $category_ids = explode(',', $f_categories);
+                return $query->whereIn('category_id', $category_ids);
+            })
+            ->where(function ($query) use ($min_price, $max_price) {
+                $query->whereBetween('regular_price', [$min_price, $max_price])
+                ->orWhereBetween('sale_price', [$min_price, $max_price]);
+            })->orderBy($o_column, $o_order)->paginate(12);
         return view('shop', compact('products', 'order', 'authors', 'f_authors', 'categories', 'f_categories', 'min_price', 'max_price'));
     }
 
     public function product_details($product_slug)
     {
-        $product = Product::where('slug', $product_slug)->first();
-        $related_products = Product::where('slug', '<>', $product_slug)->get()->take(8);
+        $product = Product::with(['category', 'author', 'reviews.user'])
+            ->where('slug', $product_slug)
+            ->first();
+
+        if (!$product) {
+            abort(404);
+        }
+
+        $related_products = Product::where('slug', '<>', $product_slug)
+            ->where('category_id', $product->category_id)
+            ->get()
+            ->take(8);
+
         return view('details', compact('product', 'related_products'));
     }
 }

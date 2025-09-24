@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta http-equiv="content-type" content="text/html; charset=utf-8" />
     <meta name="author" content="surfside media" />
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="shortcut icon" href="{{ asset('assets/images/favicon.ico') }}" type="image/x-icon">
     <link rel="preconnect" href="https://fonts.gstatic.com/">
     <link
@@ -19,6 +20,9 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/audio-player.css') }}">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <script src="
+    https://cdn.jsdelivr.net/npm/@hotwired/turbo@8.0.13/dist/turbo.es2017-umd.min.js
+    "></script>
     @stack('styles')
     @livewireStyles
 
@@ -102,6 +106,17 @@
         <symbol id="icon_star" viewBox="0 0 9 9">
             <path
                 d="M4.0172 0.313075L2.91869 2.64013L0.460942 3.0145C0.0201949 3.08129 -0.15644 3.64899 0.163185 3.97415L1.94131 5.78447L1.52075 8.34177C1.44505 8.80402 1.91103 9.15026 2.30131 8.93408L4.5 7.72661L6.69869 8.93408C7.08897 9.14851 7.55495 8.80402 7.47925 8.34177L7.05869 5.78447L8.83682 3.97415C9.15644 3.64899 8.97981 3.08129 8.53906 3.0145L6.08131 2.64013L4.9828 0.313075C4.78598 -0.101718 4.2157 -0.10699 4.0172 0.313075Z" />
+        </symbol>
+        <symbol id="icon_star_half" viewBox="0 0 9 9">
+            <defs>
+                <linearGradient id="halfStarGradient">
+                    <stop offset="50%" stop-color="#ffc107" />
+                    <stop offset="50%" stop-color="#ccc" />
+                </linearGradient>
+            </defs>
+            <path
+                d="M4.0172 0.313075L2.91869 2.64013L0.460942 3.0145C0.0201949 3.08129 -0.15644 3.64899 0.163185 3.97415L1.94131 5.78447L1.52075 8.34177C1.44505 8.80402 1.91103 9.15026 2.30131 8.93408L4.5 7.72661L6.69869 8.93408C7.08897 9.14851 7.55495 8.80402 7.47925 8.34177L7.05869 5.78447L8.83682 3.97415C9.15644 3.64899 8.97981 3.08129 8.53906 3.0145L6.08131 2.64013L4.9828 0.313075C4.78598 -0.101718 4.2157 -0.10699 4.0172 0.313075Z"
+                fill="url(#halfStarGradient)" />
         </symbol>
         <symbol id="icon_next_sm" viewBox="0 0 7 11">
             <path
@@ -192,7 +207,7 @@
             <g clip-path="url(#clip0_103_552)">
                 <path
                     d="M42.3288 13.1443L40.0744 6.95021C39.3286 4.90095 37.0545 3.84037 35.0053 4.58648L30.8603 6.09521C30.867 6.05469 30.8739 6.01417 30.8797 5.9733C31.1516 4.06194 30.3512 2.21668 28.7391 1.03736C27.2149 -0.0777035 25.2643 -0.309207 23.5216 0.417824C21.7787 1.14494 20.5711 2.69393 20.2922 4.55501L19.7 8.37447L16.6377 5.66753C15.2227 4.41676 13.302 4.00613 11.4996 4.56969C7.53123 5.80983 6.44534 10.8941 9.52248 13.6558C9.57777 13.7054 9.63419 13.7532 9.69115 13.8003L5.27359 15.4082C3.21985 16.1557 2.16217 18.423 2.90995 20.4772L5.16443 26.6713L7.97183 25.6558V41.0451C7.97183 43.2258 9.72841 45.0001 11.9092 45.0001C12.2951 45.0001 37.4585 45.0001 38.2757 45.0001C40.4565 45.0001 42.2307 43.2259 42.2307 41.0451V21.0944C41.3836 21.0944 20.4865 21.0944 20.4865 21.0944L42.3288 13.1443ZM35.9071 7.06411C36.59 6.81556 37.3482 7.16897 37.5967 7.85205L38.9495 11.5685L26.5613 16.0775L24.7578 11.1222L35.9071 7.06411ZM22.8987 4.95228C23.0405 4.00534 23.6529 3.21995 24.5366 2.85125C25.4121 2.48598 26.4021 2.5947 27.1823 3.16537C28.9536 4.46123 28.5289 6.94353 26.5088 7.67908C26.1701 7.80231 23.9626 8.60589 23.8559 8.64465L22.2347 9.23466L22.8987 4.95228ZM22.28 12.024L24.0835 16.9791C23.217 17.2946 22.4724 17.5655 21.6059 17.881L19.8023 12.9257L22.28 12.024ZM12.2859 7.08609C13.1885 6.80413 14.1647 7.00048 14.8914 7.64278L18.3086 10.6636C17.3172 11.0245 14.9729 11.8777 14.0221 12.2236C13.065 12.5718 12.0413 12.3736 11.2835 11.6933C9.69774 10.2702 10.3022 7.70607 12.2859 7.08609ZM6.74013 23.2918L5.38741 19.5753C5.13815 18.8909 5.4905 18.1348 6.17535 17.8855L17.3247 13.8275L19.1282 18.7827L6.74013 23.2918ZM29.0473 23.7311H39.6115V41.0451C39.6115 41.772 39.0025 42.3634 38.2756 42.3634H29.0473V23.7311ZM23.774 23.7311H26.4282V42.3634H23.774V23.7311ZM21.1549 23.7311V42.3634H11.9091C11.1821 42.3634 10.5907 41.7719 10.5907 41.045V24.6961L13.242 23.7311H21.1549Z"
-                fill="currentColor" />
+                    fill="currentColor" />
             </g>
             <defs>
                 <clipPath id="clip0_103_552">
@@ -250,9 +265,11 @@
             padding-top: 8px;
             padding-bottom: 8px;
         }
+
         .logo__image {
             max-width: 220px;
         }
+
         .product-item {
             display: flex;
             align-items: center;
@@ -261,6 +278,7 @@
             transition: all 0.3s ease;
             padding-right: 5px;
         }
+
         .product-item .image {
             display: flex;
             align-items: center;
@@ -273,17 +291,21 @@
             border-radius: 10px;
             background: #EFF4F8;
         }
+
         #box-content-search li {
             list-style: none;
         }
+
         #box-content-search .product-item {
             margin-bottom: 10px;
         }
+
         .container {
             max-width: 100% !important;
             padding-left: 10px !important;
             padding-right: 10px !important;
         }
+
         @media (min-width: 1200px) {
             .container {
                 max-width: 1200px !important;
@@ -468,11 +490,12 @@
                         </div>
 
                         <div class="search-popup js-hidden-content">
-                            <form action="#" method="GET" class="search-field container">
+                            <form action="{{ route('search.results') }}" method="GET"
+                                class="search-field container">
                                 <p class="text-uppercase text-secondary fw-medium mb-4">What are you looking for?</p>
                                 <div class="position-relative">
                                     <input class="search-field__input search-popup__input w-100 fw-medium"
-                                        type="text" name="search-keyword" placeholder="Search for books"
+                                        type="text" name="q" placeholder="Search for books"
                                         id="search-input" />
                                     <button class="btn-icon search-popup__submit" type="submit">
                                         <svg class="d-block" width="20" height="20" viewBox="0 0 20 20"
@@ -485,10 +508,11 @@
                                     <button type="button" id="mic-btn" class="btn-icon"
                                         style="position:absolute;right:25px;top:0px;background:none;border:none;display:flex;align-items:center;justify-content:center;">
                                         <svg width="24" height="24" viewBox="0 0 20 20" fill="none"
-                                            stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
-                                            <rect x="7" y="4" width="6" height="10" rx="3"/>
-                                            <path d="M10 17v-2"/>
-                                            <path d="M7 14a3 3 0 0 0 6 0"/>
+                                            stroke="currentColor" stroke-width="1" stroke-linecap="round"
+                                            stroke-linejoin="round">
+                                            <rect x="7" y="4" width="6" height="10" rx="3" />
+                                            <path d="M10 17v-2" />
+                                            <path d="M7 14a3 3 0 0 0 6 0" />
                                         </svg>
                                     </button>
                                     <select id="lang-select" style="position:absolute;right:70px;top:3px;">
@@ -669,13 +693,16 @@
                         @endforeach
 
                         <li class="sub-menu__item">
-                            <a href="{{ url('/shop?categories=7') }}" class="menu-link menu-link_us-s">Non-Fiction</a>
+                            <a href="{{ url('/shop?categories=7') }}"
+                                class="menu-link menu-link_us-s">Non-Fiction</a>
                         </li>
                         <li class="sub-menu__item">
-                            <a href="{{ url('/shop?categories=14') }}" class="menu-link menu-link_us-s">Self-help & Personal Development</a>
+                            <a href="{{ url('/shop?categories=14') }}" class="menu-link menu-link_us-s">Self-help &
+                                Personal Development</a>
                         </li>
                         <li class="sub-menu__item">
-                            <a href="{{ url('/shop?categories=11') }}" class="menu-link menu-link_us-s">Mystery/Detective</a>
+                            <a href="{{ url('/shop?categories=11') }}"
+                                class="menu-link menu-link_us-s">Mystery/Detective</a>
                         </li>
                         <li class="sub-menu__item">
                             <a href="{{ url('/shop?categories=12') }}" class="menu-link menu-link_us-s">Romance</a>
@@ -749,42 +776,97 @@
 
     <script>
         $(function() {
+            var searchTimeout;
+
             $("#search-input").on('keyup', function() {
                 var searchQuery = $(this).val();
-                if (searchQuery.length > 2) {
-                    $.ajax({
-                        type: "GET",
-                        url: "{{ route('home.search') }}",
-                        data: {
-                            query: searchQuery
-                        },
-                        dataType: 'json',
-                        success: function(data) {
-                            $('#box-content-search').html('');
-                            $.each(data, function(index, item) {
-                                var url =
-                                    "{{ route('shop.product.details', ['product_slug' => 'product_slug_pls']) }}";
-                                var link = url.replace('product_slug_pls', item.slug);
+                var searchType = $('input[name="search-type"]:checked').val() || 'hybrid';
 
+                // Clear previous timeout
+                clearTimeout(searchTimeout);
+
+                if (searchQuery.length > 2) {
+                    // Debounce search requests
+                    searchTimeout = setTimeout(function() {
+                        // Show loading indicator
+                        $('#box-content-search').html(
+                            '<li><div class="text-center p-3"><small class="text-muted">Searching...</small></div></li>'
+                            );
+
+                        $.ajax({
+                            type: "GET",
+                            url: "{{ route('home.search') }}",
+                            data: {
+                                query: searchQuery,
+                                search_type: searchType
+                            },
+                            dataType: 'json',
+                            success: function(data) {
+                                $('#box-content-search').html('');
+
+                                if (data.length === 0) {
+                                    $('#box-content-search').html(
+                                        '<li><div class="text-center p-3"><small class="text-muted">No results found</small></div></li>'
+                                        );
+                                    return;
+                                }
+
+                                $.each(data, function(index, item) {
+                                    var url =
+                                        "{{ route('shop.product.details', ['product_slug' => 'product_slug_pls']) }}";
+                                    var link = url.replace('product_slug_pls',
+                                        item.slug);
+
+                                    // Add author info if available (simplified)
+                                    var authorInfo = item.author ?
+                                        `<small class="text-muted d-block">by ${item.author.name}</small>` :
+                                        '';
+
+                                    $('#box-content-search').append(`
+                                        <li>
+                                            <ul>
+                                                <li class="product-item gap14 mb-10">
+                                                    <div class="image no-bg">
+                                                        <img src="{{ asset('uploads/products/thumbnails') }}/${item.image}" alt="${item.name}"
+                                                             onerror="this.src='{{ asset('uploads/book_placeholder.png') }}'">
+                                                    </div>
+                                                    <div class="flex items-center justify-between gap20 flex-grow">
+                                                        <div class="name">
+                                                            <a href="${link}" class="body-text">${item.name}</a>
+                                                            ${authorInfo}
+                                                        </div>
+                                                    </div>
+                                                </li>
+                                            </ul>
+                                        </li>
+                                    `);
+                                });
+
+                                // Add "View All Results" link
+                                var searchResultsUrl =
+                                    "{{ route('search.results') }}?q=" +
+                                    encodeURIComponent(searchQuery) + "&search_type=" +
+                                    searchType;
                                 $('#box-content-search').append(`
                                     <li>
-                                        <ul>
-                                            <li class="product-item gap14 mb-10">
-                                                <div class="image no-bg">
-                                                    <img src="{{ asset('uploads/products/thumbnails') }}/${item.image}" alt="${item.name}">
-                                                </div>
-                                                <div class="flex items-center justify-between gap20 flex-grow">
-                                                    <div class="name">
-                                                        <a href="${link}" class="body-text">${item.name}</a>
-                                                    </div>
-                                                </div>
-                                            </li>
-                                        </ul>
+                                        <div class="text-center p-3">
+                                            <a href="${searchResultsUrl}" class="btn btn-outline-primary btn-sm">
+                                                View All Results
+                                            </a>
+                                        </div>
                                     </li>
                                 `);
-                            });
-                        }
-                    });
+                            },
+                            error: function(xhr, status, error) {
+                                $('#box-content-search').html(
+                                    '<li><div class="text-center p-3"><small class="text-danger">Search error occurred</small></div></li>'
+                                    );
+                                console.error('Search error:', error);
+                            }
+                        });
+                    }, 300); // 300ms debounce
+                } else {
+                    $('#box-content-search').html('');
                 }
             });
 
@@ -832,7 +914,7 @@
     {{-- Chatbot script --}}
     <script src="https://cdn.botpress.cloud/webchat/v3.2/inject.js"></script>
     <script src="https://files.bpcontent.cloud/2025/08/03/08/20250803083409-3WIT2L2F.js"></script>
-    
+
 
     <script src={{ asset('js/sweetalert.min.js') }}></script>
     <!--Start of Tawk.to Script-->

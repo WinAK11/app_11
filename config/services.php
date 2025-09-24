@@ -39,4 +39,9 @@ return [
         'key' => env( 'OPENAI_API_KEY' ),
     ],
 
+    'qdrant' => [
+        'host' => env( 'QDRANT_HOST', 'http://localhost:6333' ),
+        'api_key' => env( 'QDRANT_API_KEY' ),
+    ],
+
 ];

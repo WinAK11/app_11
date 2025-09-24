@@ -18,7 +18,7 @@
 <body>
     @persist('player')
         <audio controls autoplay>
-            <source src="{{ asset('uploads/audiobook/audio-test.mp3') }}" type="audio/mpeg">
+            <source src="{{ asset('uploads/audiobooks/audio-test.mp3') }}" type="audio/mpeg">
             Your browser does not support the audio element.
         </audio>
     @endpersist

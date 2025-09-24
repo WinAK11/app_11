@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\FreeProductController;
 use App\Http\Controllers\ProductController;
-
+use Illuminate\Support\Facades\DB;
 Route::get('/', function () {
     return view('welcome');
 });
@@ -53,6 +53,11 @@ Route::middleware(['auth', 'verified'])->group(function()
     Route::delete('/wishlist/item/remove/{rowId}', [WishlistController::class, 'remove_item'])->name('wishlist.item.remove');
     Route::delete('/wishlist/clear', [WishlistController::class, 'clear_wishlist'])->name('wishlist.clear');
     Route::post('/wishlist/add-to-cart/{rowId}', [WishlistController::class, 'add_to_cart'])->name('wishlist.addtocart');
+
+    // Review routes (auth required for write operations)
+    Route::post('/products/{productId}/reviews', [App\Http\Controllers\ReviewController::class, 'store'])->name('reviews.store');
+    Route::delete('/reviews/{reviewId}', [App\Http\Controllers\ReviewController::class, 'destroy'])->name('reviews.destroy');
+    Route::put('/reviews/{reviewId}/status', [App\Http\Controllers\ReviewController::class, 'updateStatus'])->name('reviews.updateStatus');
 
     Route::get('/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
     Route::post('/place-order', [CartController::class, 'place_order'])->name('cart.place.order');
@@ -119,10 +124,26 @@ Route::middleware(['auth', AuthAdmin::class])->group(function()
 Route::prefix('admin/free-products')->middleware(['auth', AuthAdmin::class])->group(function() {
     Route::get('ebooks', [FreeProductController::class, 'ebooks'])->name('admin.ebooks');
     Route::get('ebook/add', [FreeProductController::class, 'ebook_add'])->name('admin.ebook.add');
+
     Route::post('ebook/store', [FreeProductController::class, 'ebook_store'])->name('admin.ebook.store');
+    Route::post('ebooks/store-chapters', [FreeProductController::class, 'storeChapters']);
+    Route::post('ebooks/{id}/parse-chapters', [FreeProductController::class, 'parseChapters'])->name('admin.ebook.parseChapters');
     Route::get('ebook/{id}/edit', [FreeProductController::class, 'ebook_edit'])->name('admin.ebook.edit');
     Route::put('/admin/ebook/update', [FreeProductController::class, 'ebook_update'])->name('admin.ebook.update');
     Route::delete('/admin/ebook/{id}/delete', [FreeProductController::class, 'ebook_delete'])->name('admin.ebook.delete');
+
+    Route::post('audiobook/store', [FreeProductController::class, 'audiobook_store'])->name('admin.audiobook.store');
+    Route::get('audiobook/add', [FreeProductController::class, 'audiobook_add'])->name('admin.audiobook.add');
+    Route::get('audiobook/{ebook_id}/chapters', [FreeProductController::class, 'audiobook_chapters'])->name('admin.audiobook.chapters');
+    Route::delete('audiobook/{ebook_id}/chapters', [FreeProductController::class, 'audiobook_delete_chapters'])->name('admin.audiobook.chapters.delete');
+    Route::get('audiobook/{ebook_id}/regenerate', [FreeProductController::class, 'audiobook_regenerate_chapters'])->name('admin.audiobook.regenerate');
+    Route::post('audiobook/generate-chapter-audio', [FreeProductController::class, 'generate_chapter_audio'])->name('admin.audiobook.generate.chapter');
+    Route::post('audiobook/generate-all-audio', [FreeProductController::class, 'generate_all_chapters_audio'])->name('admin.audiobook.generate.all');
+    Route::delete('audiobook/chapter/{chapter_id}/audio', [FreeProductController::class, 'delete_chapter_audio'])->name('admin.audiobook.chapter.audio.delete');
+    Route::get('audiobook/voice-settings', [FreeProductController::class, 'voice_settings'])->name('admin.audiobook.voice.settings');
+    Route::get('audiobook/get-polly-voices', [FreeProductController::class, 'get_polly_voices'])->name('admin.audiobook.voice.get');
+    Route::post('audiobook/generate-preview', [FreeProductController::class, 'generate_voice_preview'])->name('admin.audiobook.generate.preview');
+    Route::get('polly/test', [FreeProductController::class, 'test_polly_connection'])->name('admin.audiobook.polly.test');
 });
 
 // Route::get('/{product_slug}', [ShopController::class, 'product_details'])->name('product.details');
@@ -139,6 +160,16 @@ Route::get('/account', [HomeController::class, 'account'])->name('home.account')
 Route::get('/account-wishlist', [HomeController::class, 'accountWishlist'])->name('home.accountWishlist');
 Route::get('/account-order', [HomeController::class, 'accountOrder'])->name('home.accountOrder');
 Route::get('/search', [HomeController::class, 'search'])->name('home.search');
+Route::get('/search-results', [HomeController::class, 'searchResults'])->name('search.results');
+Route::get('/debug-products', function() {
+    $totalProducts = \App\Models\Product::count();
+    $sampleProducts = \App\Models\Product::with(['author', 'category'])->take(5)->get();
+
+    return response()->json([
+        'total_products' => $totalProducts,
+        'sample_products' => $sampleProducts
+    ]);
+});
 Route::get('/free-products', [FreeProductController::class, 'index'])->name('free.products');
 
 
@@ -147,6 +178,10 @@ Auth::routes();
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
 Route::get('/read/ebook/{id}', [FreeProductController::class, 'ebook_read'])->name('epub.reader');
+Route::get('/api/ebook/{id}/chapters', [FreeProductController::class, 'getEbookChapters']);
+Route::get('/ebooks/{id}/details', [FreeProductController::class, 'ebook_details'])->name('ebook.details');
+
+
 
 Route::post('/ai/suggest-category', [AIController::class, 'suggestCategory']);
 Route::post('/ai/generate-description', [AIController::class, 'generateDescription']);
@@ -154,3 +189,20 @@ Route::post('/ai/generate-author-biography', [AIController::class, 'generateAuth
 
 
 Route::get('/api/products', [ProductController::class, 'index']);
+
+// Public reviews listing
+Route::get('/products/{productId}/reviews', [App\Http\Controllers\ReviewController::class, 'getReviews'])->name('reviews.get');
+Route::get('/health', function () {
+    try {
+        DB::connection()->getPdo();
+        $dbStatus = 'connected';
+    } catch (\Exception $e) {
+        $dbStatus = 'disconnected';
+    }
+
+    return response()->json([
+        'status' => 'ok',
+        'database' => $dbStatus,
+        'timestamp' => now()->toISOString(),
+    ]);
+});

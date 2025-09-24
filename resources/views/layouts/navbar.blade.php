@@ -172,11 +172,11 @@
                     </div>
 
                     <div class="search-popup js-hidden-content">
-                        <form action="#" method="GET" class="search-field container">
+                        <form action="{{ route('search.results') }}" method="GET" class="search-field container">
                             <p class="text-uppercase text-secondary fw-medium mb-4">What are you looking for?</p>
                             <div class="position-relative">
                                 <input class="search-field__input search-popup__input w-100 fw-medium" type="text"
-                                    name="search-keyword" placeholder="Search for books" id="search-input" />
+                                    name="q" placeholder="Search for books" id="search-input" />
                                 <button class="btn-icon search-popup__submit" type="submit">
                                     <svg class="d-block" width="20" height="20" viewBox="0 0 20 20"
                                         fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -198,6 +198,31 @@
                                         <option value="vi-VN">🇻🇳 VN</option>
                                         <option value="en-US">🇺🇸 EN</option>
                                     </select>
+                            </div>
+                            
+                            <!-- Search Type Selector -->
+                            <div class="mt-3">
+                                <div class="d-flex gap-2 align-items-center">
+                                    <small class="text-muted">Search Type:</small>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="search-type" id="search-hybrid" value="hybrid" checked>
+                                        <label class="form-check-label" for="search-hybrid">
+                                            <small>AI + Text</small>
+                                        </label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="search-type" id="search-vector" value="vector">
+                                        <label class="form-check-label" for="search-vector">
+                                            <small>AI Only</small>
+                                        </label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="search-type" id="search-text" value="text">
+                                        <label class="form-check-label" for="search-text">
+                                            <small>Text Only</small>
+                                        </label>
+                                    </div>
+                                </div>
                             </div>
 
                             <div class="search-popup__results">
