@@ -45,7 +45,7 @@
                                             <h4 id="stat-month">{{ number_format($revenueComparison['month']['current'], 0, ',', ',') }} đ</h4>
                                             <p class="text-tiny {{ $revenueComparison['month']['percentage'] >= 0 ? 'text-success' : 'text-danger' }}">
                                                 {{ $revenueComparison['month']['percentage'] >= 0 ? '▲' : '▼' }}
-                                                {{ number_format(abs($revenueComparison['month']['percentage']), 2) }}% so với tháng trước
+                                                {{ number_format(abs($revenueComparison['month']['percentage']), 2) }}% compared to last month
                                             </p>
                                         </div>
                                     </div>
@@ -62,13 +62,12 @@
                                             <h4 id="stat-quarter">{{ number_format($revenueComparison['quarter']['current'], 0, ',', ',') }} đ</h4>
                                             <p class="text-tiny {{ $revenueComparison['quarter']['percentage'] >= 0 ? 'text-success' : 'text-danger' }}">
                                                 {{ $revenueComparison['quarter']['percentage'] >= 0 ? '▲' : '▼' }}
-                                                {{ number_format(abs($revenueComparison['quarter']['percentage']), 2) }}% so với quý trước
+                                                {{ number_format(abs($revenueComparison['quarter']['percentage']), 2) }}% compared to last quarter
                                             </p>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            {{-- Dòng 2: Total Orders | Total Amount --}}
                             <div class="col-md-6 mb-3">
                                 <div class="wg-chart-default">
                                     <div class="flex items-center gap14">
@@ -179,7 +178,7 @@
                         <div class="wg-box mb-4">
                             <div class="flex items-center justify-between">
                                 <h5 id="chart-title">Monthly Revenue</h5>
-                                <button id="back-to-monthly" class="btn btn-secondary" style="display: none;">Quay lại</button>
+                                <button id="back-to-monthly" class="btn btn-secondary" style="display: none;">Back</button>
                             </div>
                             <div id="revenue-chart"></div>
                         </div>
@@ -320,14 +319,14 @@
                     document.getElementById('stat-month').innerText = Number(month.TotalAmount || 0).toLocaleString('vi-VN') + ' đ';
                     let monthCompareElem = document.getElementById('stat-month').nextElementSibling;
                     monthCompareElem.innerHTML =
-                        `${monthPercentageChange >= 0 ? '▲' : '▼'} ${Math.abs(monthPercentageChange).toFixed(2)}% so với tháng trước`;
+                        `${monthPercentageChange >= 0 ? '▲' : '▼'} ${Math.abs(monthPercentageChange).toFixed(2)}% compared to last month`;
                     monthCompareElem.classList.remove('text-success', 'text-danger');
                     monthCompareElem.classList.add(monthPercentageChange >= 0 ? 'text-success' : 'text-danger');
 
                     document.getElementById('stat-quarter').innerText = Number(quarterTotal || 0).toLocaleString('vi-VN') + ' đ';
                     let quarterCompareElem = document.getElementById('stat-quarter').nextElementSibling;
                     quarterCompareElem.innerHTML =
-                        `${quarterPercentageChange >= 0 ? '▲' : '▼'} ${Math.abs(quarterPercentageChange).toFixed(2)}% so với quý trước`;
+                        `${quarterPercentageChange >= 0 ? '▲' : '▼'} ${Math.abs(quarterPercentageChange).toFixed(2)}% compared to last quarter`;
                     quarterCompareElem.classList.remove('text-success', 'text-danger');
                     quarterCompareElem.classList.add(quarterPercentageChange >= 0 ? 'text-success' : 'text-danger');
 
@@ -358,35 +357,44 @@
                 {
                     const month = monthlyData[monthIndex];
 
-                    let prevMonth = monthlyData[monthIndex - 1] || {TotalAmount: 0};
+                    let prevMonth;
+                    if (monthIndex === 0) {
+                        prevMonth = { TotalAmount: 0 };
+                    } else {
+                        prevMonth = monthlyData[monthIndex - 1] || { TotalAmount: 0 };
+                    }
                     let monthDiff = month.TotalAmount - prevMonth.TotalAmount;
                     let monthPercentageChange = prevMonth.TotalAmount > 0 ? (monthDiff / prevMonth.TotalAmount) * 100 : (month.TotalAmount > 0 ? 100 : 0);
 
                     let currentQuarter = Math.floor(monthIndex / 3);
-                    let prevQuarterIndex = (currentQuarter - 1) * 3;
                     let quarterTotal = 0, prevQuarterTotal = 0;
+
+                    // Calculate current quarter total
                     for (let i = currentQuarter * 3; i < currentQuarter * 3 + 3; i++) {
                         if (monthlyData[i]) quarterTotal += Number(monthlyData[i].TotalAmount) || 0;
-                        console.log(monthlyData[i].TotalAmount)
                     }
-                    for (let i = prevQuarterIndex; i < prevQuarterIndex + 3; i++) {
-                        if (monthlyData[i]) prevQuarterTotal += Number(monthlyData[i].TotalAmount) || 0;
-                        console.log(monthlyData[i].TotalAmount)
+
+                    if (currentQuarter > 0) {
+                        let prevQuarterIndex = (currentQuarter - 1) * 3;
+                        for (let i = prevQuarterIndex; i < prevQuarterIndex + 3; i++) {
+                            if (monthlyData[i]) prevQuarterTotal += Number(monthlyData[i].TotalAmount) || 0;
+                        }
                     }
+
                     let quarterDiff = quarterTotal - prevQuarterTotal;
                     let quarterPercentageChange = prevQuarterTotal > 0 ? (quarterDiff / prevQuarterTotal) * 100 : (quarterTotal > 0 ? 100 : 0);
 
                     document.getElementById('stat-month').innerText = Number(month.TotalAmount || 0).toLocaleString('vi-VN') + ' đ';
                     let monthCompareElem = document.getElementById('stat-month').nextElementSibling;
                     monthCompareElem.innerHTML =
-                        `${monthPercentageChange >= 0 ? '▲' : '▼'} ${Math.abs(monthPercentageChange).toFixed(2)}% so với tháng trước`;
+                        `${monthPercentageChange >= 0 ? '▲' : '▼'} ${Math.abs(monthPercentageChange).toFixed(2)}% compared to last month`;
                     monthCompareElem.classList.remove('text-success', 'text-danger');
                     monthCompareElem.classList.add(monthPercentageChange >= 0 ? 'text-success' : 'text-danger');
 
                     document.getElementById('stat-quarter').innerText = Number(quarterTotal || 0).toLocaleString('vi-VN') + ' đ';
                     let quarterCompareElem = document.getElementById('stat-quarter').nextElementSibling;
                     quarterCompareElem.innerHTML =
-                        `${quarterPercentageChange >= 0 ? '▲' : '▼'} ${Math.abs(quarterPercentageChange).toFixed(2)}% so với quý trước`;
+                        `${quarterPercentageChange >= 0 ? '▲' : '▼'} ${Math.abs(quarterPercentageChange).toFixed(2)}% compared to last quarter`;
                     quarterCompareElem.classList.remove('text-success', 'text-danger');
                     quarterCompareElem.classList.add(quarterPercentageChange >= 0 ? 'text-success' : 'text-danger');
 
@@ -508,7 +516,7 @@
                     weeklyChart = null;
                 }
 
-                chartTitle.innerText = `Doanh thu theo tuần của tháng ${month}/${year}`;
+                chartTitle.innerText = `Weekly revenue ${month}/${year}`;
                 backButton.style.display = 'block';
 
                 const weeklyOptions = {
@@ -569,7 +577,7 @@
             }
 
             backButton.addEventListener('click', function() {
-                chartTitle.innerText = 'Doanh thu hàng tháng';
+                chartTitle.innerText = 'Monthly Revenue';
                 this.style.display = 'none';
                 renderMonthlyChart();
             });
@@ -611,7 +619,7 @@
                     y: {
                         formatter: function(val, opts) {
                             var idx = opts.dataPointIndex;
-                            return topProductQty[idx] + " sản phẩm (" + val + "%)";
+                            return topProductQty[idx] + " sold (" + val + "%)";
                         },
                         title: {
                             formatter: (seriesName) => seriesName,
@@ -646,7 +654,7 @@
                     y: {
                         formatter: function(val, opts) {
                             var idx = opts.dataPointIndex;
-                            return topCategoryQty[idx] + " sản phẩm (" + val + "%)";
+                            return topCategoryQty[idx] + " sold (" + val + "%)";
                         },
                         title: {
                             formatter: (seriesName) => seriesName,

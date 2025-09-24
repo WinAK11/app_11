@@ -219,7 +219,7 @@
                             <div class="my-account__address-item__detail">
                                 <p>{{ $order->name }}</p>
                                 <p>{{ $order->address }}</p>
-                                <p>{{ $order->locality }}</p>
+                                {{-- <p>{{ $order->locality }}</p> --}}
                                 <p>{{ $order->city }}, {{ $order->country }}</p>
                                 <p>{{ $order->landmark }}</p>
                                 <p>{{ $order->zip }}</p>

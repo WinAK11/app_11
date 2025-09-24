@@ -122,10 +122,10 @@ class AdminController extends Controller {
         $orders = Order::orderBy( 'created_at', 'DESC' )->get()->take( 10 );
         $dashboardDatas = DB::select( "Select sum(total) AS TotalAmount,
                                     sum(if(status='ordered', total, 0)) as TotalOrderedAmount,
-                                    sum(if(status='delivered', total, 0)) as TotalDeliveredAmount,
+                                    sum(if(status='delivered', total, 0)) as TotalDeliveredAmount, 
                                     sum(if(status='canceled', total, 0)) as TotalCanceledAmount,
-                                    Count(*) as Total,
-                                    sum(if(status='ordered', 1, 0)) as TotalOrdered,
+                                    sum(if(status!='canceled', 1, 0)) as Total,
+                                    sum(if(status='ordered', 1, 0)) as TotalOrdered, 
                                     sum(if(status='delivered', 1, 0)) as TotalDelivered,
                                     sum(if(status='canceled', 1, 0)) as TotalCanceled
                                     From Orders
@@ -135,19 +135,19 @@ $monthlyDatas = DB::select("
     SELECT
         M.id AS MonthNo,
         M.name AS MonthName,
-        IFNULL(D.TotalAmount, 0) AS TotalAmount,
+        IFNULL(D.TotalAmount, 0) AS TotalAmount, 
         IFNULL(D.TotalOrderedAmount, 0) AS TotalOrderedAmount,
         IFNULL(D.TotalDeliveredAmount, 0) AS TotalDeliveredAmount,
         IFNULL(D.TotalCanceledAmount, 0) AS TotalCanceledAmount,
-        IFNULL(D.TotalOrders, 0) AS TotalOrders,
+        IFNULL(D.TotalOrders, 0) AS TotalOrders, 
         IFNULL(D.TotalOrdered, 0) AS TotalOrdered,
         IFNULL(D.TotalDelivered, 0) AS TotalDelivered,
         IFNULL(D.TotalCanceled, 0) AS TotalCanceled
     FROM month_names M
     LEFT JOIN (
         SELECT
-            MONTH(created_at) AS MonthNo,
-            SUM(total) AS TotalAmount,
+            MONTH(created_at) AS MonthNo, 
+            SUM(IF(status != 'canceled', total, 0)) AS TotalAmount,
             SUM(IF(status = 'ordered', total, 0)) AS TotalOrderedAmount,
             SUM(IF(status = 'delivered', total, 0)) AS TotalDeliveredAmount,
             SUM(IF(status = 'canceled', total, 0)) AS TotalCanceledAmount,
@@ -156,7 +156,7 @@ $monthlyDatas = DB::select("
             SUM(IF(status = 'delivered', 1, 0)) AS TotalDelivered,
             SUM(IF(status = 'canceled', 1, 0)) AS TotalCanceled
         FROM Orders
-        WHERE YEAR(created_at) = YEAR(NOW())
+        WHERE YEAR(created_at) = YEAR(NOW()) 
         GROUP BY MONTH(created_at)
         ORDER BY MONTH(created_at)
     ) D ON D.MonthNo = M.id
