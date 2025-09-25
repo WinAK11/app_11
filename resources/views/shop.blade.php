@@ -150,7 +150,8 @@
                                 </div>
                                 <div class="slide-split_media position-relative">
                                     <div class="slideshow-bg" style="background-color: #f5e6e0;">
-                                        <img loading="lazy" src="{{ asset('assets/images/shop/shop-banner1.jpg') }}"
+                                        <img loading="lazy"
+                                            src="{{ secure_asset('assets/images/shop/shop-banner1.jpg') }}"
                                             width="630" height="450" alt=""
                                             class="slideshow-bg__img object-fit-cover" />
                                     </div>
@@ -171,7 +172,8 @@
                                 </div>
                                 <div class="slide-split_media position-relative">
                                     <div class="slideshow-bg" style="background-color: #f5e6e0;">
-                                        <img loading="lazy" src="{{ asset('assets/images/shop/shop-banner2.jpg') }}"
+                                        <img loading="lazy"
+                                            src="{{ secure_asset('assets/images/shop/shop-banner2.jpg') }}"
                                             width="630" height="450" alt="Women's accessories"
                                             class="slideshow-bg__img object-fit-cover" />
                                     </div>
@@ -192,7 +194,8 @@
                                 </div>
                                 <div class="slide-split_media position-relative">
                                     <div class="slideshow-bg" style="background-color: #f5e6e0;">
-                                        <img loading="lazy" src="{{ asset('assets/images/shop/shop-banner3.jpg') }}"
+                                        <img loading="lazy"
+                                            src="{{ secure_asset('assets/images/shop/shop-banner3.jpg') }}"
                                             width="630" height="450" alt="Women's accessories"
                                             class="slideshow-bg__img object-fit-cover" />
                                     </div>
@@ -265,7 +268,7 @@
                                                 <a
                                                     href="{{ route('shop.product.details', ['product_slug' => $product->slug]) }}">
                                                     <img loading="lazy"
-                                                        src="{{ asset('uploads/products') }}/{{ $product->image }}"
+                                                        src="{{ secure_asset('uploads/products') }}/{{ $product->image }}"
                                                         width="310" height="400" alt="{{ $product->name }}"
                                                         class="pc__img" />
                                                 </a>
@@ -274,7 +277,7 @@
                                                 <a
                                                     href="{{ route('shop.product.details', ['product_slug' => $product->slug]) }}">
                                                     <img loading="lazy"
-                                                        src="{{ $product->image ? asset('uploads/products/' . $product->image) : asset('uploads/book_placeholder.png') }}"
+                                                        src="{{ $product->image ? secure_asset('uploads/products/' . $product->image) : secure_asset('uploads/book_placeholder.png') }}"
                                                         width="310" height="400" alt="{{ $product->name }}"
                                                         class="pc__img" />
                                                 </a>
@@ -284,7 +287,7 @@
                                                     <a
                                                         href="{{ route('shop.product.details', ['product_slug' => $product->slug]) }}"><img
                                                             loading="lazy"
-                                                            src="{{ asset('uploads/products') }}/{{ $gallery_image }}"
+                                                            src="{{ secure_asset('uploads/products') }}/{{ $gallery_image }}"
                                                             width="310" height="400" alt="{{ $product->name }}"
                                                             class="pc__img" />
                                                     </a>
@@ -341,34 +344,43 @@
                                             @for ($i = 1; $i <= 5; $i++)
                                                 @if ($i <= $product->star_display['full'])
                                                     {{-- Full star --}}
-                                                    <svg class="review-star" style="fill: gold;" viewBox="0 0 9 9" xmlns="http://www.w3.org/2000/svg">
+                                                    <svg class="review-star" style="fill: gold;" viewBox="0 0 9 9"
+                                                        xmlns="http://www.w3.org/2000/svg">
                                                         <use href="#icon_star" />
                                                     </svg>
                                                 @elseif ($i == $product->star_display['full'] + 1 && $product->star_display['half'] > 0)
                                                     {{-- Half star --}}
-                                                    <svg class="review-star" viewBox="0 0 9 9" xmlns="http://www.w3.org/2000/svg">
+                                                    <svg class="review-star" viewBox="0 0 9 9"
+                                                        xmlns="http://www.w3.org/2000/svg">
                                                         <defs>
                                                             <mask id="half-mask-{{ $product->id }}-{{ $i }}">
-                                                                <rect x="0" y="0" width="4.5" height="9" fill="white" />
-                                                                <rect x="4.5" y="0" width="4.5" height="9" fill="black" />
+                                                                <rect x="0" y="0" width="4.5" height="9"
+                                                                    fill="white" />
+                                                                <rect x="4.5" y="0" width="4.5" height="9"
+                                                                    fill="black" />
                                                             </mask>
                                                         </defs>
                                                         <!-- Background star (empty) -->
-                                                        <path fill="#ccc" d="M4.0172 0.313075L2.91869 2.64013L0.460942 3.0145C0.0201949 3.08129 -0.15644 3.64899 0.163185 3.97415L1.94131 5.78447L1.52075 8.34177C1.44505 8.80402 1.91103 9.15026 2.30131 8.93408L4.5 7.72661L6.69869 8.93408C7.08897 9.14851 7.55495 8.80402 7.47925 8.34177L7.05869 5.78447L8.83682 3.97415C9.15644 3.64899 8.97981 3.08129 8.53906 3.0145L6.08131 2.64013L4.9828 0.313075C4.78598 -0.101718 4.2157 -0.10699 4.0172 0.313075Z" />
+                                                        <path fill="#ccc"
+                                                            d="M4.0172 0.313075L2.91869 2.64013L0.460942 3.0145C0.0201949 3.08129 -0.15644 3.64899 0.163185 3.97415L1.94131 5.78447L1.52075 8.34177C1.44505 8.80402 1.91103 9.15026 2.30131 8.93408L4.5 7.72661L6.69869 8.93408C7.08897 9.14851 7.55495 8.80402 7.47925 8.34177L7.05869 5.78447L8.83682 3.97415C9.15644 3.64899 8.97981 3.08129 8.53906 3.0145L6.08131 2.64013L4.9828 0.313075C4.78598 -0.101718 4.2157 -0.10699 4.0172 0.313075Z" />
                                                         <!-- Half filled star -->
-                                                        <path fill="gold" mask="url(#half-mask-{{ $product->id }}-{{ $i }})" d="M4.0172 0.313075L2.91869 2.64013L0.460942 3.0145C0.0201949 3.08129 -0.15644 3.64899 0.163185 3.97415L1.94131 5.78447L1.52075 8.34177C1.44505 8.80402 1.91103 9.15026 2.30131 8.93408L4.5 7.72661L6.69869 8.93408C7.08897 9.14851 7.55495 8.80402 7.47925 8.34177L7.05869 5.78447L8.83682 3.97415C9.15644 3.64899 8.97981 3.08129 8.53906 3.0145L6.08131 2.64013L4.9828 0.313075C4.78598 -0.101718 4.2157 -0.10699 4.0172 0.313075Z" />
+                                                        <path fill="gold"
+                                                            mask="url(#half-mask-{{ $product->id }}-{{ $i }})"
+                                                            d="M4.0172 0.313075L2.91869 2.64013L0.460942 3.0145C0.0201949 3.08129 -0.15644 3.64899 0.163185 3.97415L1.94131 5.78447L1.52075 8.34177C1.44505 8.80402 1.91103 9.15026 2.30131 8.93408L4.5 7.72661L6.69869 8.93408C7.08897 9.14851 7.55495 8.80402 7.47925 8.34177L7.05869 5.78447L8.83682 3.97415C9.15644 3.64899 8.97981 3.08129 8.53906 3.0145L6.08131 2.64013L4.9828 0.313075C4.78598 -0.101718 4.2157 -0.10699 4.0172 0.313075Z" />
                                                     </svg>
                                                 @else
                                                     {{-- Empty star --}}
-                                                    <svg class="review-star" style="fill: #ccc;" viewBox="0 0 9 9" xmlns="http://www.w3.org/2000/svg">
+                                                    <svg class="review-star" style="fill: #ccc;" viewBox="0 0 9 9"
+                                                        xmlns="http://www.w3.org/2000/svg">
                                                         <use href="#icon_star" />
                                                     </svg>
                                                 @endif
                                             @endfor
                                         </div>
                                         <span class="reviews-note text-lowercase text-secondary ms-1">
-                                            {{ $product->reviews_count }} {{ $product->reviews_count == 1 ? 'review' : 'reviews' }}
-                                            @if($product->average_rating > 0)
+                                            {{ $product->reviews_count }}
+                                            {{ $product->reviews_count == 1 ? 'review' : 'reviews' }}
+                                            @if ($product->average_rating > 0)
                                                 ({{ number_format($product->average_rating, 1) }})
                                             @endif
                                         </span>

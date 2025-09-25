@@ -5,7 +5,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <link rel="stylesheet" href="{{ asset('css/epub-reader.css') }}" />
+    <link rel="stylesheet" href="{{ secure_asset('css/epub-reader.css') }}" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.5/jszip.min.js"></script>
     <script src="https://unpkg.com/epubjs/dist/epub.min.js"></script>
@@ -387,7 +387,7 @@
             audioPlayer.isLoading = true;
             audioPlayer.currentAudioPath = audioPath;
 
-            const fullPath = `{{ asset('') }}${audioPath}`;
+            const fullPath = `{{ secure_asset('') }}${audioPath}`;
 
             // Create Howler instance
             audioPlayer.sound = new Howl({

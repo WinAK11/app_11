@@ -7,7 +7,7 @@
                 <h3>Edit Slide</h3>
                 <ul class="breadcrumbs flex items-center flex-wrap justify-start gap10">
                     <li>
-                        <a href="{{route('admin.index')}}">
+                        <a href="{{ route('admin.index') }}">
                             <div class="text-tiny">Dashboard</div>
                         </a>
                     </li>
@@ -15,7 +15,7 @@
                         <i class="icon-chevron-right"></i>
                     </li>
                     <li>
-                        <a href="{{route('admin.slides')}}">
+                        <a href="{{ route('admin.slides') }}">
                             <div class="text-tiny">Slides</div>
                         </a>
                     </li>
@@ -29,63 +29,81 @@
             </div>
             <!-- new-slide -->
             <div class="wg-box">
-                <form class="form-new-product form-style-1" action="{{route('admin.slide.update')}}" method="POST" enctype="multipart/form-data">
+                <form class="form-new-product form-style-1" action="{{ route('admin.slide.update') }}" method="POST"
+                    enctype="multipart/form-data">
                     @csrf
                     @method('PUT')
-                    <input type="hidden" name="id" value="{{$slide->id}}"/>
+                    <input type="hidden" name="id" value="{{ $slide->id }}" />
                     <fieldset class="name">
                         <div class="body-title">Tagline <span class="tf-color-1">*</span></div>
-                        <input class="flex-grow" type="text" placeholder="tagline" name="tagline" tabindex="0" value="{{$slide->tagline}}" aria-required="true" required="">
+                        <input class="flex-grow" type="text" placeholder="tagline" name="tagline" tabindex="0"
+                            value="{{ $slide->tagline }}" aria-required="true" required="">
                     </fieldset>
-                    @error('tagline')<span class="alert alert-danger text-center">{{$message}}</span> @enderror
+                    @error('tagline')
+                        <span class="alert alert-danger text-center">{{ $message }}</span>
+                    @enderror
                     <fieldset class="name">
                         <div class="body-title">Title <span class="tf-color-1">*</span></div>
-                        <input class="flex-grow" type="text" placeholder="title" name="title" tabindex="0" value="{{$slide->title}}" aria-required="true" required="">
+                        <input class="flex-grow" type="text" placeholder="title" name="title" tabindex="0"
+                            value="{{ $slide->title }}" aria-required="true" required="">
                     </fieldset>
-                    @error('title')<span class="alert alert-danger text-center">{{$message}}</span> @enderror
+                    @error('title')
+                        <span class="alert alert-danger text-center">{{ $message }}</span>
+                    @enderror
                     <fieldset class="name">
                         <div class="body-title">Subtitle <span class="tf-color-1">*</span></div>
-                        <input class="flex-grow" type="text" placeholder="subtitle" name="subtitle" tabindex="0" value="{{$slide->subtitle}}" aria-required="true" required="">
+                        <input class="flex-grow" type="text" placeholder="subtitle" name="subtitle" tabindex="0"
+                            value="{{ $slide->subtitle }}" aria-required="true" required="">
                     </fieldset>
-                    @error('subtitle')<span class="alert alert-danger text-center">{{$message}}</span> @enderror
+                    @error('subtitle')
+                        <span class="alert alert-danger text-center">{{ $message }}</span>
+                    @enderror
                     <fieldset class="name">
                         <div class="body-title">Link <span class="tf-color-1">*</span></div>
-                        <input class="flex-grow" type="text" placeholder="link" name="link" tabindex="0" value="{{$slide->link}}" aria-required="true" required="">
+                        <input class="flex-grow" type="text" placeholder="link" name="link" tabindex="0"
+                            value="{{ $slide->link }}" aria-required="true" required="">
                     </fieldset>
-                    @error('link')<span class="alert alert-danger text-center">{{$message}}</span> @enderror
+                    @error('link')
+                        <span class="alert alert-danger text-center">{{ $message }}</span>
+                    @enderror
                     <fieldset>
                         <div class="body-title">Upload images <span class="tf-color-1">*</span>
                         </div>
                         <div class="upload-image flex-grow">
                             @if ($slide->image)
-                            <div class="item" id="imgpreview">
-                                <img src="{{asset('uploads/slides')}}/{{$slide->image}}" class="effect8" alt=""/>
-                            </div>
+                                <div class="item" id="imgpreview">
+                                    <img src="{{ secure_asset('uploads/slides') }}/{{ $slide->image }}" class="effect8"
+                                        alt="" />
+                                </div>
                             @endif
                             <div class="item up-load">
                                 <label class="uploadfile" for="myFile">
                                     <span class="icon">
                                         <i class="icon-upload-cloud"></i>
                                     </span>
-                                    <span class="body-text">Drop your images here or select <span
-                                            class="tf-color">click to browse</span></span>
+                                    <span class="body-text">Drop your images here or select <span class="tf-color">click to
+                                            browse</span></span>
                                     <input type="file" id="myFile" name="image">
                                 </label>
                             </div>
                         </div>
                     </fieldset>
-                    @error('image')<span class="alert alert-danger text-center">{{$message}}</span> @enderror
+                    @error('image')
+                        <span class="alert alert-danger text-center">{{ $message }}</span>
+                    @enderror
                     <fieldset class="category">
                         <div class="body-title">Status</div>
                         <div class="select flex-grow">
                             <select class="" name="status">
                                 <option>Select</option>
-                                <option value="1" @if($slide->status=="1") selected @endif>Active</option>
-                                <option value="0" @if($slide->status=="0") selected @endif>Inactive</option>
+                                <option value="1" @if ($slide->status == '1') selected @endif>Active</option>
+                                <option value="0" @if ($slide->status == '0') selected @endif>Inactive</option>
                             </select>
                         </div>
                     </fieldset>
-                    @error('status')<span class="alert alert-danger text-center">{{$message}}</span> @enderror
+                    @error('status')
+                        <span class="alert alert-danger text-center">{{ $message }}</span>
+                    @enderror
                     <div class="bot">
                         <div></div>
                         <button class="tf-button w208" type="submit">Save</button>

@@ -9,7 +9,8 @@
 
         <div class="logo">
             <a href="{{ route('home.index') }}">
-                <img src="{{ asset('assets/images/bookstore.jpg') }}" alt="Uomo" class="logo__image d-block" />
+                <img src="{{ secure_asset('assets/images/bookstore.jpg') }}" alt="Uomo"
+                    class="logo__image d-block" />
             </a>
         </div>
 
@@ -131,8 +132,8 @@
         <div class="header-desk header-desk_type_1">
             <div class="logo">
                 <a href="{{ route('home.index') }}">
-                    <img src="{{ asset('assets/images/bookstore.jpg') }}" alt="Uomo" class="logo__image d-block"
-                        height="50" />
+                    <img src="{{ secure_asset('assets/images/bookstore.jpg') }}" alt="Uomo"
+                        class="logo__image d-block" height="50" />
                 </a>
             </div>
 
@@ -185,39 +186,43 @@
                                 </button>
                                 <button class="btn-icon btn-close-lg search-popup__reset" type="reset"></button>
                                 <!-- Microphone button for speech-to-text -->
-                                    <button type="button" id="mic-btn" class="btn-icon"
-                                        style="position:absolute;right:25px;top:0px;background:none;border:none;display:flex;align-items:center;justify-content:center;">
-                                        <svg width="24" height="24" viewBox="0 0 20 20" fill="none"
-                                            stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
-                                            <rect x="7" y="4" width="6" height="10" rx="3"/>
-                                            <path d="M10 17v-2"/>
-                                            <path d="M7 14a3 3 0 0 0 6 0"/>
-                                        </svg>
-                                    </button>
-                                    <select id="lang-select" style="position:absolute;right:70px;top:3px;">
-                                        <option value="vi-VN">🇻🇳 VN</option>
-                                        <option value="en-US">🇺🇸 EN</option>
-                                    </select>
+                                <button type="button" id="mic-btn" class="btn-icon"
+                                    style="position:absolute;right:25px;top:0px;background:none;border:none;display:flex;align-items:center;justify-content:center;">
+                                    <svg width="24" height="24" viewBox="0 0 20 20" fill="none"
+                                        stroke="currentColor" stroke-width="1" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <rect x="7" y="4" width="6" height="10" rx="3" />
+                                        <path d="M10 17v-2" />
+                                        <path d="M7 14a3 3 0 0 0 6 0" />
+                                    </svg>
+                                </button>
+                                <select id="lang-select" style="position:absolute;right:70px;top:3px;">
+                                    <option value="vi-VN">🇻🇳 VN</option>
+                                    <option value="en-US">🇺🇸 EN</option>
+                                </select>
                             </div>
-                            
+
                             <!-- Search Type Selector -->
                             <div class="mt-3">
                                 <div class="d-flex gap-2 align-items-center">
                                     <small class="text-muted">Search Type:</small>
                                     <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="radio" name="search-type" id="search-hybrid" value="hybrid" checked>
+                                        <input class="form-check-input" type="radio" name="search-type"
+                                            id="search-hybrid" value="hybrid" checked>
                                         <label class="form-check-label" for="search-hybrid">
                                             <small>AI + Text</small>
                                         </label>
                                     </div>
                                     <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="radio" name="search-type" id="search-vector" value="vector">
+                                        <input class="form-check-input" type="radio" name="search-type"
+                                            id="search-vector" value="vector">
                                         <label class="form-check-label" for="search-vector">
                                             <small>AI Only</small>
                                         </label>
                                     </div>
                                     <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="radio" name="search-type" id="search-text" value="text">
+                                        <input class="form-check-input" type="radio" name="search-type"
+                                            id="search-text" value="text">
                                         <label class="form-check-label" for="search-text">
                                             <small>Text Only</small>
                                         </label>

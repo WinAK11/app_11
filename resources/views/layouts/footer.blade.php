@@ -4,7 +4,7 @@
             <div class="footer-column footer-store-info col-12 mb-4 mb-lg-0">
                 <div class="logo">
                     <a href="{{ route('home.index') }}">
-                        <img src="{{ asset('assets/images/bookstore.jpg') }}" alt="SurfsideMedia"
+                        <img src="{{ secure_asset('assets/images/bookstore.jpg') }}" alt="SurfsideMedia"
                             class="logo__image d-block" />
                     </a>
                 </div>

@@ -21,16 +21,23 @@ class DatabaseSeeder extends Seeder
             ProductSeeder::class,
         ]);
 
-        // User::factory(10)->create();
-
-        $user = User::factory()->make([
+        User::create([
             'name' => 'admin',
             'email' => 'admin@admin.com',
             'mobile' => '1234567890',
             'password' => Hash::make('12345678'),
+            'usertype' => 'ADM',
+            'email_verified_at' => now(), // 👈 add this
         ]);
 
-        $user->usertype = 'ADM';
-        $user->save();
+        User::create([
+            'name' => 'user',
+            'email' => 'user@user.com',
+            'mobile' => '1234567891',
+            'password' => Hash::make('12345678'),
+            'usertype' => 'USR',
+            'email_verified_at' => now(), // 👈 add this too
+        ]);
+
     }
 }

@@ -56,7 +56,7 @@
                                         <td>{{ $category->id }}</td>
                                         <td class="pname">
                                             <div class="image">
-                                                <img src="{{ asset('uploads/categories') }}/{{ $category->image }}"
+                                                <img src="{{ secure_asset('uploads/categories') }}/{{ $category->image }}"
                                                     alt="{{ $category->name }}" class="image">
                                             </div>
                                             <div class="name">
@@ -64,7 +64,7 @@
                                             </div>
                                         </td>
                                         <td>{{ $category->slug }}</td>
-                                        <td><a href="#" target="_blank">{{$category->products->count()}}</a></td>
+                                        <td><a href="#" target="_blank">{{ $category->products->count() }}</a></td>
                                         <td>
                                             <div class="list-icon-function">
                                                 <a href="{{ route('admin.category.edit', ['id' => $category->id]) }}">
@@ -72,7 +72,8 @@
                                                         <i class="icon-edit-3"></i>
                                                     </div>
                                                 </a>
-                                                <form action="{{ route('admin.category.delete', ['id' => $category->id]) }}"
+                                                <form
+                                                    action="{{ route('admin.category.delete', ['id' => $category->id]) }}"
                                                     method="POST">
                                                     @csrf
                                                     @method('DELETE')

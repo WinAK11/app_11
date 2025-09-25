@@ -138,8 +138,8 @@
                         <div class="upload-image flex-grow">
                             @if ($product->image)
                                 <div class="item" id="imgpreview">
-                                    <img src="{{ asset('uploads/products') }}/{{ $product->image }}" class="effect8"
-                                        alt="{{ $product->name }}">
+                                    <img src="{{ secure_asset('uploads/products') }}/{{ $product->image }}"
+                                        class="effect8" alt="{{ $product->name }}">
                                 </div>
                             @endif
                             <div id="upload-file" class="item up-load">
@@ -164,7 +164,8 @@
                             @if ($product->images)
                                 @foreach (explode(',', $product->images) as $img)
                                     <div class="item gitems">
-                                        <img src="{{ asset('uploads/products') }}/{{ trim($img) }}" alt="">
+                                        <img src="{{ secure_asset('uploads/products') }}/{{ trim($img) }}"
+                                            alt="">
                                     </div>
                                 @endforeach
                             @endif
@@ -198,8 +199,7 @@
                         <fieldset class="name">
                             <div class="body-title mb-10">Sale Price <span class="tf-color-1">*</span></div>
                             <input class="mb-10" type="text" placeholder="Enter sale price" name="sale_price"
-                                {{-- tabindex="0" value="{{ $product->sale_price }}" aria-required="" required=""> --}}
-                                tabindex="0" value="{{ $product->sale_price }}">
+                                {{-- tabindex="0" value="{{ $product->sale_price }}" aria-required="" required=""> --}} tabindex="0" value="{{ $product->sale_price }}">
                         </fieldset>
                         {{-- @error('sale_price')
                             <span class="alert alert-danger text-center">{{ $message }}</span>

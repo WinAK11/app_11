@@ -13,17 +13,17 @@
     <!-- Roboto hỗ trợ tiếng Việt -->
     <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap&subset=vietnamese" rel="stylesheet">
 
-    <link rel="stylesheet" type="text/css" href={{ asset('css/animate.min.css') }}>
-    <link rel="stylesheet" type="text/css" href={{ asset('css/animation.css') }}>
-    <link rel="stylesheet" type="text/css" href={{ asset('css/bootstrap.css') }}>
-    <link rel="stylesheet" type="text/css" href={{ asset('css/bootstrap-select.min.css') }}>
-    <link rel="stylesheet" type="text/css" href={{ asset('css/style.css') }}>
-    <link rel="stylesheet" href={{ asset('font/fonts.css') }}>
-    <link rel="stylesheet" href={{ asset('icon/style.css') }}>
-    <link rel="shortcut icon" href={{ asset('assets/images/favicon.ico') }}>
-    <link rel="apple-touch-icon-precomposed" href={{ asset('images/favicon.ico') }}>
-    <link rel="stylesheet" type="text/css" href={{ asset('css/sweetalert.min.css') }}>
-    <link rel="stylesheet" type="text/css" href={{ asset('css/custom.css') }}>
+    <link rel="stylesheet" type="text/css" href={{ secure_asset('css/animate.min.css') }}>
+    <link rel="stylesheet" type="text/css" href={{ secure_asset('css/animation.css') }}>
+    <link rel="stylesheet" type="text/css" href={{ secure_asset('css/bootstrap.css') }}>
+    <link rel="stylesheet" type="text/css" href={{ secure_asset('css/bootstrap-select.min.css') }}>
+    <link rel="stylesheet" type="text/css" href={{ secure_asset('css/style.css') }}>
+    <link rel="stylesheet" href={{ secure_asset('font/fonts.css') }}>
+    <link rel="stylesheet" href={{ secure_asset('icon/style.css') }}>
+    <link rel="shortcut icon" href={{ secure_asset('assets/images/favicon.ico') }}>
+    <link rel="apple-touch-icon-precomposed" href={{ secure_asset('images/favicon.ico') }}>
+    <link rel="stylesheet" type="text/css" href={{ secure_asset('css/sweetalert.min.css') }}>
+    <link rel="stylesheet" type="text/css" href={{ secure_asset('css/custom.css') }}>
     <style>
         body {
             font-family: 'Roboto', sans-serif;
@@ -47,9 +47,9 @@
                     <div class="box-logo">
                         <a href={{ route('admin.index') }} id="site-logo-inner">
                             <img style="height: 60px" class="" id="logo_header_1" alt=""
-                                src="{{ asset('assets/images/bookstore.jpg') }}"
-                                data-light="{{ asset('assets/images/bookstore.jpg') }}"
-                                data-dark="{{ asset('assets/images/bookstore.jpg') }}">
+                                src="{{ secure_asset('assets/images/bookstore.jpg') }}"
+                                data-light="{{ secure_asset('assets/images/bookstore.jpg') }}"
+                                data-dark="{{ secure_asset('assets/images/bookstore.jpg') }}">
                         </a>
                         <div class="button-show-hide">
                             <i class="icon-menu-left"></i>
@@ -210,7 +210,7 @@
                             <div class="header-left">
                                 <a href="index-2.html">
                                     <img class="" id="logo_header_mobile" alt=""
-                                        src="{{ asset('assets/images/bookstore.jpg') }}"
+                                        src="{{ secure_asset('assets/images/bookstore.jpg') }}"
                                         data-light="images/logo/bookstore.jpg" data-dark="images/logo/bookstore.jpg"
                                         data-width="154px" data-height="52px"
                                         data-retina="images/logo/bookstore.jpg">
@@ -314,7 +314,7 @@
                                             id="dropdownMenuButton3" data-bs-toggle="dropdown" aria-expanded="false">
                                             <span class="header-user wg-user">
                                                 <span class="image">
-                                                    <img src="{{ asset('images/avatar/user-1.png') }}"
+                                                    <img src="{{ secure_asset('images/avatar/user-1.png') }}"
                                                         alt="">
                                                 </span>
                                                 <span class="flex flex-column">
@@ -382,12 +382,12 @@
         </div>
     </div>
 
-    <script src={{ asset('js/jquery.min.js') }}></script>
-    <script src={{ asset('js/bootstrap.min.js') }}></script>
-    <script src={{ asset('js/bootstrap-select.min.js') }}></script>
-    <script src={{ asset('js/sweetalert.min.js') }}></script>
-    <script src={{ asset('js/apexcharts/apexcharts.js') }}></script>
-    <script src={{ asset('js/main.js') }}></script>
+    <script src={{ secure_asset('js/jquery.min.js') }}></script>
+    <script src={{ secure_asset('js/bootstrap.min.js') }}></script>
+    <script src={{ secure_asset('js/bootstrap-select.min.js') }}></script>
+    <script src={{ secure_asset('js/sweetalert.min.js') }}></script>
+    <script src={{ secure_asset('js/apexcharts/apexcharts.js') }}></script>
+    <script src={{ secure_asset('js/main.js') }}></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.5/jszip.min.js"></script>
     <script src="https://unpkg.com/epubjs/dist/epub.min.js"></script>
     <script>
@@ -414,7 +414,7 @@
                                         <ul>
                                             <li class="product-item gap14 mb-10">
                                                 <div class="image no-bg">
-                                                    <img src="{{ asset('uploads/products/thumbnails') }}/${item.image}" alt="${item.name}">
+                                                    <img src="{{ secure_asset('uploads/products/thumbnails') }}/${item.image}" alt="${item.name}">
                                                 </div>
                                                 <div class="flex items-center justify-between gap20 flex-grow">
                                                     <div class="name">

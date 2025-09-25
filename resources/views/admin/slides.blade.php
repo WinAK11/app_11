@@ -6,7 +6,7 @@
                 <h3>Slides</h3>
                 <ul class="breadcrumbs flex items-center flex-wrap justify-start gap10">
                     <li>
-                        <a href="{{route('admin.index')}}">
+                        <a href="{{ route('admin.index') }}">
                             <div class="text-tiny">Dashboard</div>
                         </a>
                     </li>
@@ -32,8 +32,8 @@
                             </div>
                         </form>
                     </div>
-                    <a class="tf-button style-1 w208" href="{{route('admin.slide.add')}}"><i
-                            class="icon-plus"></i>Add new</a>
+                    <a class="tf-button style-1 w208" href="{{ route('admin.slide.add') }}"><i class="icon-plus"></i>Add
+                        new</a>
                 </div>
                 <div class="wg-table table-all-user">
                     @if (Session::has('status'))
@@ -55,25 +55,27 @@
                         <tbody>
                             @foreach ($slides as $slide)
                                 <tr>
-                                    <td>{{$slide->id}}</td>
+                                    <td>{{ $slide->id }}</td>
                                     <td class="pname">
                                         <div class="image">
-                                            <img src="{{asset('uploads/slides')}}/{{$slide->image}}" alt="" class="{{$slide->title}}">
+                                            <img src="{{ secure_asset('uploads/slides') }}/{{ $slide->image }}"
+                                                alt="" class="{{ $slide->title }}">
                                         </div>
                                     </td>
-                                    <td>{{$slide->tagline}}</td>
-                                    <td>{{$slide->title}}</td>
-                                    <td>{{$slide->subtitle}}</td>
-                                    <td>{{$slide->link}}</td>
-                                    <td>{{$slide->status==1?"Active":"Inactive"}}</td>
+                                    <td>{{ $slide->tagline }}</td>
+                                    <td>{{ $slide->title }}</td>
+                                    <td>{{ $slide->subtitle }}</td>
+                                    <td>{{ $slide->link }}</td>
+                                    <td>{{ $slide->status == 1 ? 'Active' : 'Inactive' }}</td>
                                     <td>
                                         <div class="list-icon-function">
-                                            <a href="{{route('admin.slide.edit', ['id'=>$slide->id])}}">
+                                            <a href="{{ route('admin.slide.edit', ['id' => $slide->id]) }}">
                                                 <div class="item edit">
                                                     <i class="icon-edit-3"></i>
                                                 </div>
                                             </a>
-                                            <form action="{{route('admin.slide.delete', ['id'=>$slide->id])}}" method="POST">
+                                            <form action="{{ route('admin.slide.delete', ['id' => $slide->id]) }}"
+                                                method="POST">
                                                 @csrf
                                                 @method('DELETE')
                                                 <div class="item text-danger delete">
@@ -89,7 +91,7 @@
                 </div>
                 <div class="divider"></div>
                 <div class="flex items-center justify-between flex-wrap gap10 wgp-pagination">
-                    {{$slides->links('pagination::bootstrap-5')}}
+                    {{ $slides->links('pagination::bootstrap-5') }}
                 </div>
             </div>
         </div>
@@ -97,25 +99,23 @@
 @endsection
 
 @push('scripts')
-
-<script>
-    $(function() {
-        $('.delete').on('click', function(e) {
-            e.preventDefault();
-            var form = $(this).closest('form');
-            swal({
-                title: "Are you sure?",
-                text: "You want to delete this record?",
-                type: "warning",
-                buttons: ["No", "Yes"],
-                confirmButtonColor: '#dc3545'
-            }).then(function(result) {
-                if (result) {
-                    form.submit();
-                }
-            })
+    <script>
+        $(function() {
+            $('.delete').on('click', function(e) {
+                e.preventDefault();
+                var form = $(this).closest('form');
+                swal({
+                    title: "Are you sure?",
+                    text: "You want to delete this record?",
+                    type: "warning",
+                    buttons: ["No", "Yes"],
+                    confirmButtonColor: '#dc3545'
+                }).then(function(result) {
+                    if (result) {
+                        form.submit();
+                    }
+                })
+            });
         });
-    });
-</script>
-
+    </script>
 @endpush

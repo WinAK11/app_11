@@ -178,7 +178,7 @@
                                         <tr>
                                             <td class="pname">
                                                 <div class="image">
-                                                    <img src="{{ asset('uploads/products/thumbnails') }}/{{ $item->product->image }}"
+                                                    <img src="{{ secure_asset('uploads/products/thumbnails') }}/{{ $item->product->image }}"
                                                         alt="{{ $item->product->name }}" class="image">
                                                 </div>
                                                 <div class="name">

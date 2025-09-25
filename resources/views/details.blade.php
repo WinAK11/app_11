@@ -11,10 +11,10 @@
                                 <div class="swiper-wrapper">
                                     <div class="swiper-slide product-single__image-item">
                                         <img loading="lazy" class="h-auto"
-                                            src="{{ asset('uploads/products') }}/{{ $product->image }}" width="674"
-                                            height="674" alt="" />
+                                            src="{{ secure_asset('uploads/products') }}/{{ $product->image }}"
+                                            width="674" height="674" alt="" />
                                         <a data-fancybox="gallery"
-                                            href="{{ asset('uploads/products') }}/{{ $product->image }}"
+                                            href="{{ secure_asset('uploads/products') }}/{{ $product->image }}"
                                             data-bs-toggle="tooltip" data-bs-placement="left" title="Zoom">
                                             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"
                                                 xmlns="http://www.w3.org/2000/svg">
@@ -26,10 +26,10 @@
                                     @foreach (explode(',', $product->images) as $gallery_image)
                                         <div class="swiper-slide product-single__image-item">
                                             <img loading="lazy" class="h-auto"
-                                                src="{{ asset('uploads/products') }}/{{ $gallery_image }}" width="674"
-                                                height="674" alt="" />
+                                                src="{{ secure_asset('uploads/products') }}/{{ $gallery_image }}"
+                                                width="674" height="674" alt="" />
                                             <a data-fancybox="gallery"
-                                                href="{{ asset('uploads/products') }}/{{ $gallery_image }}"
+                                                href="{{ secure_asset('uploads/products') }}/{{ $gallery_image }}"
                                                 data-bs-toggle="tooltip" data-bs-placement="left" title="Zoom">
                                                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none"
                                                     xmlns="http://www.w3.org/2000/svg">
@@ -53,12 +53,12 @@
                             <div class="swiper-container">
                                 <div class="swiper-wrapper">
                                     <div class="swiper-slide product-single__image-item"><img loading="lazy" class="h-auto"
-                                            src="{{ asset('uploads/products/thumbnails') }}/{{ $product->image }}"
+                                            src="{{ secure_asset('uploads/products/thumbnails') }}/{{ $product->image }}"
                                             width="104" height="104" alt="" /></div>
                                     @foreach (explode(',', $product->images) as $gallery_image)
                                         <div class="swiper-slide product-single__image-item"><img loading="lazy"
                                                 class="h-auto"
-                                                src="{{ asset('uploads/products/thumbnails') }}/{{ $gallery_image }}"
+                                                src="{{ secure_asset('uploads/products/thumbnails') }}/{{ $gallery_image }}"
                                                 width="104" height="104" alt="" /></div>
                                     @endforeach
                                 </div>
@@ -281,7 +281,8 @@
                                 <button class="btn btn-outline-primary" id="load-more-reviews">
                                     <span class="btn-text">Load More Reviews</span>
                                     <span class="btn-loading" style="display: none;">
-                                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                        <span class="spinner-border spinner-border-sm me-2" role="status"
+                                            aria-hidden="true"></span>
                                         Loading...
                                     </span>
                                 </button>
@@ -383,12 +384,12 @@
                                     <a
                                         href="{{ route('shop.product.details', ['product_slug' => $related_product->slug]) }}">
                                         <img loading="lazy"
-                                            src="{{ asset('uploads/products') }}/{{ $related_product->image }}"
+                                            src="{{ secure_asset('uploads/products') }}/{{ $related_product->image }}"
                                             width="330" height="400" alt="{{ $related_product->name }}"
                                             class="pc__img">
                                         @foreach (explode(',', $related_product->images) as $gallery_image)
                                             <img loading="lazy"
-                                                src="{{ asset('uploads/products') }}/{{ $gallery_image }}"
+                                                src="{{ secure_asset('uploads/products') }}/{{ $gallery_image }}"
                                                 width="330" height="400" alt="{{ $related_product->name }}"
                                                 class="pc__img pc__img-second">
                                         @endforeach
@@ -531,7 +532,7 @@
             if (loadMoreBtn) {
                 loadMoreBtn.addEventListener('click', function() {
                     if (isLoading) return;
-                    
+
                     currentPage++;
                     loadReviews(currentPage);
                 });
@@ -571,11 +572,11 @@
                 }
 
                 fetch(`/products/${productId}/reviews?page=${page}&per_page=5`, {
-                    headers: {
-                        'Accept': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                })
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
                     .then(async response => {
                         if (!response.ok) {
                             throw new Error(`HTTP error! status: ${response.status}`);
@@ -624,7 +625,8 @@
                             if (data.pagination.total > 0) {
                                 const allLoadedMessage = document.createElement('div');
                                 allLoadedMessage.className = 'text-center text-muted mt-3';
-                                allLoadedMessage.innerHTML = '<small><i class="fas fa-check-circle me-1"></i>All reviews loaded</small>';
+                                allLoadedMessage.innerHTML =
+                                    '<small><i class="fas fa-check-circle me-1"></i>All reviews loaded</small>';
                                 loadMoreContainer.appendChild(allLoadedMessage);
                             }
                         }
@@ -640,7 +642,7 @@
                     })
                     .finally(() => {
                         isLoading = false;
-                        
+
                         // Reset load more button state
                         if (loadMoreBtn) {
                             loadMoreBtn.disabled = false;
