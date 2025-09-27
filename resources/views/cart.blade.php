@@ -149,7 +149,7 @@
                                         <tbody>
                                             <tr>
                                                 <th>Subtotal</th>
-                                                <td>{{ number_format(intval(str_replace(',', '', Cart::instance('cart')->subtotal())), 0, ',', ',') }}đ</td>
+                                                <td>{{ number_format((int)ceil(str_replace(',', '', Cart::instance('cart')->subtotal())), 0, ',', ',') }}đ</td>
                                             </tr>
                                             <tr>
                                                 <th>Discount({{ Session::get('coupon')['code'] }})</th>
@@ -174,7 +174,7 @@
                                         <tbody>
                                             <tr>
                                                 <th>Subtotal</th>
-                                                <td>{{ number_format(intval(str_replace(',', '', Cart::instance('cart')->subtotal())), 0, ',', ',') }}đ</td>
+                                                <td>{{ number_format((int)ceil(str_replace(',', '', Cart::instance('cart')->subtotal())), 0, ',', ',') }}đ</td>
                                             </tr>
                                             <tr>
                                                 <th>Discount(None)</th>
@@ -182,7 +182,7 @@
                                             </tr>
                                             <tr>
                                                 <th>Subtotal after Discount</th>
-                                                <td>{{ number_format(intval(str_replace(',', '', Cart::instance('cart')->subtotal())), 0, ',', ',') }}đ</td>
+                                                <td>{{ number_format((int)ceil(str_replace(',', '', Cart::instance('cart')->subtotal())), 0, ',', ',') }}đ</td>
                                             </tr>
                                             {{-- <tr>
                                                 <th>VAT</th>
@@ -190,7 +190,7 @@
                                             </tr> --}}
                                             <tr>
                                                 <th>Total</th>
-                                                <td>{{ number_format(intval(str_replace(',', '', Cart::instance('cart')->total())), 0, ',', ',') }}đ</td>
+                                                <td>{{ number_format((int)ceil(str_replace(',', '', Cart::instance('cart')->total())), 0, ',', ',') }}đ</td>
                                             </tr>
                                         </tbody>
                                     </table>

@@ -13,7 +13,7 @@ class AIService {
 
     public function __construct() {
         $this->apiKey = env( 'DEEPSEEK_API_KEY' );
-        $this->openaiApiKey = env( 'OPENAI_API_KEY' );
+        $this->openaiApiKey = config( 'services.openai.key' );
     }
 
     public function suggestCategory( string $title, string $author ): string {
