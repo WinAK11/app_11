@@ -55,7 +55,7 @@
                         <div class="upload-image flex-grow">
                             @if ($category->image)
                                 <div class="item" id="imgpreview">
-                                    <img src="{{ secure_asset('uploads/categories') }}/{{ $category->image }}"
+                                    <img src="{{ asset('uploads/categories') }}/{{ $category->image }}"
                                         class="effect8" alt="">
                                 </div>
                             @endif

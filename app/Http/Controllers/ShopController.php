@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Author;
 use App\Models\Category;
 use App\Models\Product;
+use App\Services\ProductSearchService;
 use Illuminate\Http\Request;
 
 class ShopController extends Controller
@@ -17,6 +18,7 @@ class ShopController extends Controller
         $f_authors = $request->query('authors');
         $f_categories = $request->query('categories');
         $min_price = $request->query('min')?$request->query('min'):1;
+        $search_query = $request->query('query'); // New: Get search query
         $max_price = $request->query('max')?$request->query('max'):1000000;
         switch($order)
         {

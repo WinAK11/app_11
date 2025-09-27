@@ -2,23 +2,40 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 
 <head>
+
+<style>
+#chatbot {
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    display: none;
+    z-index: 9999;
+}
+#chatToggle {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 10000;
+}
+</style>
+
     <title>Bookstore</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta http-equiv="content-type" content="text/html; charset=utf-8" />
     <meta name="author" content="surfside media" />
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link rel="shortcut icon" href="{{ secure_asset('assets/images/favicon.ico') }}" type="image/x-icon">
+    <link rel="shortcut icon" href="{{ asset('assets/images/favicon.ico') }}" type="image/x-icon">
     <link rel="preconnect" href="https://fonts.gstatic.com/">
     <link
         href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;display=swap"
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Allura&amp;display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ secure_asset('assets/css/plugins/swiper.min.css') }}" type="text/css" />
-    <link rel="stylesheet" href="{{ secure_asset('assets/css/style.css') }}" type="text/css" />
-    <link rel="stylesheet" type="text/css" href={{ secure_asset('css/sweetalert.min.css') }}>
-    <link rel="stylesheet" href="{{ secure_asset('assets/css/custom.css') }}" type="text/css" />
+    <link rel="stylesheet" href="{{ asset('assets/css/plugins/swiper.min.css') }}" type="text/css" />
+    <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}" type="text/css" />
+    <link rel="stylesheet" type="text/css" href={{ asset('css/sweetalert.min.css') }}>
+    <link rel="stylesheet" href="{{ asset('assets/css/custom.css') }}" type="text/css" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="{{ secure_asset('css/audio-player.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/audio-player.css') }}">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <script src="
         https://cdn.jsdelivr.net/npm/@hotwired/turbo@8.0.13/dist/turbo.es2017-umd.min.js
@@ -311,6 +328,149 @@
                 max-width: 1200px !important;
             }
         }
+        /* === CHATBOT === */
+        .chat-toggle-btn {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        background: #ff6a00;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        font-size: 24px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        cursor: pointer;
+        z-index: 1001;
+        transition: background 0.3s ease;
+        }
+
+        .chat-toggle-btn:hover {
+        background: #e65a00;
+        }
+
+        .chatbot-container {
+        position: fixed;
+        bottom: 100px;
+        right: 30px;
+        width: 350px;
+        max-height: 500px;
+        background: #fff;
+        border-radius: 15px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+        display: none;
+        flex-direction: column;
+        z-index: 1000;
+        overflow: hidden;
+        animation: fadeInUp 0.4s ease;
+        }
+
+        @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        }
+
+        .chat-header {
+        background: #111;
+        color: #fff;
+        padding: 15px;
+        font-weight: bold;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        }
+
+        .chat-header button {
+        background: none;
+        border: none;
+        color: #fff;
+        font-size: 20px;
+        cursor: pointer;
+        }
+
+        .chat-body {
+        padding: 15px;
+        overflow-y: auto;
+        flex: 1;
+        max-height: 300px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        }
+
+        .chat-footer {
+        display: flex;
+        border-top: 1px solid #eee;
+        padding: 10px;
+        gap: 10px;
+        }
+
+        .chat-footer input {
+        flex: 1;
+        padding: 10px 15px;
+        border-radius: 30px;
+        border: 1px solid #ccc;
+        outline: none;
+        }
+
+        .chat-footer button {
+        background: #ff6a00;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        font-size: 18px;
+        cursor: pointer;
+        }
+
+        .user-message, .bot-message {
+        padding: 10px 15px;
+        max-width: 75%;
+        border-radius: 20px;
+        line-height: 1.4;
+        }
+
+        .user-message {
+        align-self: flex-end;
+        background: #f0f0f0;
+        color: #111;
+        }
+
+        .bot-message {
+        align-self: flex-start;
+        background: #ff6a00;
+        color: white;
+        }
+
+        .chatbot-options {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .chatbot-button {
+            background-color: #fff;
+            color: #ff6a00;
+            border: 1px solid #ff6a00;
+            padding: 8px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            text-align: center;
+            font-weight: bold;
+            transition: all 0.2s ease;
+        }
+        .chatbot-button:hover {
+            background-color: #ff6a00;
+            color: #fff;
+        }
     </style>
     <div class="header-mobile header_sticky">
         <div class="container d-flex align-items-center h-100">
@@ -324,7 +484,7 @@
 
             <div class="logo">
                 <a href="{{ route('home.index') }}">
-                    <img src="{{ secure_asset('assets/images/bookstore.jpg') }}" alt="Uomo"
+                    <img src="{{ asset('assets/images/bookstore.jpg') }}" alt="Uomo"
                         class="logo__image d-block" />
                 </a>
             </div>
@@ -334,7 +494,9 @@
                     xmlns="http://www.w3.org/2000/svg">
                     <use href="#icon_cart" />
                 </svg>
-                <span class="cart-amount d-block position-absolute js-cart-items-count">3</span>
+                <span class="cart-amount d-block position-absolute js-cart-items-count js-cart-count" @if (Cart::instance('cart')->content()->count() == 0) style="display: none;" @endif>
+                    {{ Cart::instance('cart')->content()->count() }}
+                </span>
             </a>
         </div>
 
@@ -449,7 +611,7 @@
             <div class="header-desk header-desk_type_1">
                 <div class="logo">
                     <a href="{{ route('home.index') }}">
-                        <img src="{{ secure_asset('assets/images/bookstore.jpg') }}" alt="Uomo"
+                        <img src="{{ asset('assets/images/bookstore.jpg') }}" alt="Uomo"
                             class="logo__image d-block" />
                     </a>
                 </div>
@@ -567,10 +729,9 @@
                             xmlns="http://www.w3.org/2000/svg">
                             <use href="#icon_cart" />
                         </svg>
-                        @if (Cart::instance('cart')->content()->count() > 0)
-                            <span
-                                class="cart-amount d-block position-absolute js-cart-items-count">{{ Cart::instance('cart')->content()->count() }}</span>
-                        @endif
+                    <span class="cart-amount d-block position-absolute js-cart-items-count js-cart-count" @if (Cart::instance('cart')->content()->count() == 0) style="display: none;" @endif>
+                        {{ Cart::instance('cart')->content()->count() }}
+                    </span>
                     </a>
                 </div>
             </div>
@@ -587,7 +748,7 @@
                 <div class="footer-column footer-store-info col-12 mb-4 mb-lg-0">
                     <div class="logo">
                         <a href="{{ route('home.index') }}">
-                            <img src="{{ secure_asset('assets/images/bookstore.jpg') }}" alt="SurfsideMedia"
+                            <img src="{{ asset('assets/images/bookstore.jpg') }}" alt="SurfsideMedia"
                                 class="logo__image d-block" />
                         </a>
                     </div>
@@ -765,14 +926,12 @@
     <div id="scrollTop" class="visually-hidden end-0"></div>
     <div class="page-overlay"></div>
 
-    <script src="{{ secure_asset('assets/js/plugins/jquery.min.js') }}"></script>
-    <script src="{{ secure_asset('assets/js/plugins/bootstrap.bundle.min.js') }}"></script>
-    <script src="{{ secure_asset('assets/js/plugins/bootstrap-slider.min.js') }}"></script>
-    <script src="{{ secure_asset('assets/js/plugins/swiper.min.js') }}"></script>
-    <script src="{{ secure_asset('assets/js/plugins/countdown.js') }}"></script>
-    <script src="{{ secure_asset('assets/js/theme.js') }}"></script>
-
-
+    <script src="{{ asset('assets/js/plugins/jquery.min.js') }}"></script>
+    <script src="{{ asset('assets/js/plugins/bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ asset('assets/js/plugins/bootstrap-slider.min.js') }}"></script>
+    <script src="{{ asset('assets/js/plugins/swiper.min.js') }}"></script>
+    <script src="{{ asset('assets/js/plugins/countdown.js') }}"></script>
+    <script src="{{ asset('assets/js/theme.js') }}"></script>
 
     <script>
         $(function() {
@@ -827,8 +986,8 @@
                                             <ul>
                                                 <li class="product-item gap14 mb-10">
                                                     <div class="image no-bg">
-                                                        <img src="{{ secure_asset('uploads/products/thumbnails') }}/${item.image}" alt="${item.name}"
-                                                             onerror="this.src='{{ secure_asset('uploads/book_placeholder.png') }}'">
+                                                        <img src="{{ asset('uploads/products/thumbnails') }}/${item.image}" alt="${item.name}"
+                                                             onerror="this.src='{{ asset('uploads/book_placeholder.png') }}'">
                                                     </div>
                                                     <div class="flex items-center justify-between gap20 flex-grow">
                                                         <div class="name">
@@ -912,29 +1071,12 @@
     </script>
 
     {{-- Chatbot script --}}
-    <script src="https://cdn.botpress.cloud/webchat/v3.2/inject.js"></script>
-    <script src="https://files.bpcontent.cloud/2025/08/03/08/20250803083409-3WIT2L2F.js"></script>
+    <script src="https://cdn.botpress.cloud/webchat/v3.3/inject.js" defer></script>
+    <script src="https://files.bpcontent.cloud/2025/07/06/07/20250706075525-UCOIAEJK.js" defer></script>
 
 
-    <script src={{ secure_asset('js/sweetalert.min.js') }}></script>
-    <!--Start of Tawk.to Script-->
-    {{-- <script type="text/javascript">
-        var Tawk_API = Tawk_API || {},
-            Tawk_LoadStart = new Date();
-        (function() {
-            var s1 = document.createElement("script"),
-                s0 = document.getElementsByTagName("script")[0];
-            s1.async = true;
-            s1.src = 'https://embed.tawk.to/68567fd273ba95190b1b867b/1iu8u6kia';
-            s1.charset = 'UTF-8';
-            s1.setAttribute('crossorigin', '*');
-            s0.parentNode.insertBefore(s1, s0);
-        })();
-    </script> --}}
-    <!--End of Tawk.to Script-->
-    {{-- @livewire('audio-player') --}}
-    @livewireScripts
-    @stack('scripts')
+    <script src={{ asset('js/sweetalert.min.js') }}></script>
+
 </body>
 
 </html>

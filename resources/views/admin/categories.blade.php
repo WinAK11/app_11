@@ -56,7 +56,7 @@
                                         <td>{{ $category->id }}</td>
                                         <td class="pname">
                                             <div class="image">
-                                                <img src="{{ secure_asset('uploads/categories') }}/{{ $category->image }}"
+                                                <img src="{{ asset('uploads/categories') }}/{{ $category->image }}"
                                                     alt="{{ $category->name }}" class="image">
                                             </div>
                                             <div class="name">

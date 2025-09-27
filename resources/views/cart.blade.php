@@ -48,7 +48,7 @@
                                         <td>
                                             <div class="shopping-cart__product-item">
                                                 <img loading="lazy"
-                                                    src="{{ secure_asset('uploads/products/thumbnails') }}/{{ $item->model->image }}"
+                                                    src="{{ asset('uploads/products/thumbnails') }}/{{ $item->model->image }}"
                                                     width="120" height="120" alt="{{ $item->name }}" />
                                             </div>
                                         </td>
@@ -62,7 +62,7 @@
                                             </div>
                                         </td>
                                         <td>
-                                            <span class="shopping-cart__product-price">{{ $item->price }}đ</span>
+                                            <span class="shopping-cart__product-price">{{ number_format($item->price, 0, ',', ',') }}đ</span>
                                         </td>
                                         <td>
                                             <div class="qty-control position-relative">
@@ -83,7 +83,7 @@
                                             </div>
                                         </td>
                                         <td>
-                                            <span class="shopping-cart__subtotal">{{ $item->subTotal() }}đ</span>
+                                            <span class="shopping-cart__subtotal">{{ number_format($item->subTotal(), 0, ',', ',') }}đ</span>
                                         </td>
                                         <td>
                                             <form method = "post"
@@ -149,23 +149,23 @@
                                         <tbody>
                                             <tr>
                                                 <th>Subtotal</th>
-                                                <td>{{ Cart::instance('cart')->subtotal() }}đ</td>
+                                                <td>{{ number_format(intval(str_replace(',', '', Cart::instance('cart')->subtotal())), 0, ',', ',') }}đ</td>
                                             </tr>
                                             <tr>
                                                 <th>Discount({{ Session::get('coupon')['code'] }})</th>
-                                                <td>{{ Session::get('discounts')['discount'] }}đ</td>
+                                                <td>{{ number_format(Session::get('discounts')['discount'], 0, ',', ',') }}đ</td>
                                             </tr>
                                             <tr>
                                                 <th>Subtotal after Discount</th>
-                                                <td>{{ Session::get('discounts')['subtotal'] }}đ</td>
+                                                <td>{{ number_format(Session::get('discounts')['subtotal'], 0, ',', ',') }}đ</td>
                                             </tr>
-                                            <tr>
+                                            {{-- <tr>
                                                 <th>VAT</th>
                                                 <td>{{ Session::get('discounts')['tax'] }}đ</td>
-                                            </tr>
+                                            </tr> --}}
                                             <tr>
                                                 <th>Total</th>
-                                                <td>{{ Session::get('discounts')['total'] }}đ</td>
+                                                <td>{{ number_format(Session::get('discounts')['total'], 0, ',', ',') }}đ</td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -174,7 +174,7 @@
                                         <tbody>
                                             <tr>
                                                 <th>Subtotal</th>
-                                                <td>{{ Cart::instance('cart')->subtotal() }}đ</td>
+                                                <td>{{ number_format(intval(str_replace(',', '', Cart::instance('cart')->subtotal())), 0, ',', ',') }}đ</td>
                                             </tr>
                                             <tr>
                                                 <th>Discount(None)</th>
@@ -182,15 +182,15 @@
                                             </tr>
                                             <tr>
                                                 <th>Subtotal after Discount</th>
-                                                <td>{{ Cart::instance('cart')->subtotal() }}đ</td>
+                                                <td>{{ number_format(intval(str_replace(',', '', Cart::instance('cart')->subtotal())), 0, ',', ',') }}đ</td>
                                             </tr>
-                                            <tr>
+                                            {{-- <tr>
                                                 <th>VAT</th>
-                                                <td>{{ Cart::instance('cart')->tax() }}đ</td>
-                                            </tr>
+                                                <td>{{ number_format(intval(str_replace(',', '', Cart::instance('cart')->tax())), 0, ',', ',') }}đ</td>
+                                            </tr> --}}
                                             <tr>
                                                 <th>Total</th>
-                                                <td>{{ Cart::instance('cart')->total() }}đ</td>
+                                                <td>{{ number_format(intval(str_replace(',', '', Cart::instance('cart')->total())), 0, ',', ',') }}đ</td>
                                             </tr>
                                         </tbody>
                                     </table>

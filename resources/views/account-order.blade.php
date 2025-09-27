@@ -19,7 +19,6 @@
                                     <th>Name</th>
                                     <th class="text-center">Phone</th>
                                     <th class="text-center">Subtotal</th>
-                                    <th class="text-center">Tax</th>
                                     <th class="text-center">Total</th>
 
                                     <th class="text-center">Status</th>
@@ -30,86 +29,43 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td class="text-center">10001</td>
-                                    <td class="text-center">Sudhir Kumar</td>
-                                    <td class="text-center">1234567891</td>
-                                    <td class="text-center">$172.00</td>
-                                    <td class="text-center">$36.12</td>
-                                    <td class="text-center">$208.12</td>
-
-                                    <td class="text-center">
-                                        <span class="badge bg-danger">Canceled</span>
-                                    </td>
-                                    <td class="text-center">2024-07-11 00:54:14</td>
-                                    <td class="text-center">2</td>
-                                    <td>2024-07-07</td>
-                                    <td class="text-center">
-                                        <a href="account-orders-details.html">
-                                            <div class="list-icon-function view-icon">
-                                                <div class="item eye">
-                                                    <i class="fa fa-eye"></i>
+                                @foreach ($orders as $order)
+                                    <tr>
+                                        <td class="text-center">{{ $order->id }}</td>
+                                        <td class="text-center">{{ $order->name }}</td>
+                                        <td class="text-center">{{ $order->phone }}</td>
+                                        <td class="text-center">{{ number_format($order->subtotal, 0, ',', ',') }}đ</td>
+                                        <td class="text-center">{{ number_format($order->total, 0, ',', ',') }}đ</td>
+                                        <td class="text-center">
+                                            @if ($order->status == 'delivered')
+                                                <span class="badge bg-success">Delivered</span>
+                                            @elseif($order->status == 'canceled')
+                                                <span class="badge bg-danger">Canceled</span>
+                                            @else
+                                                <span class="badge bg-warning">Ordered</span>
+                                            @endif
+                                        </td>
+                                        <td class="text-center">{{ $order->created_at }}</td>
+                                        <td class="text-center">{{ $order->orderItems->count() }}</td>
+                                        <td class="text-center">{{ $order->delivered_date }}</td>
+                                        <td class="text-center">
+                                            <a href="{{ route('user.order.details', ['order_id' => $order->id]) }}">
+                                                <div class="list-icon-function view-icon">
+                                                    <div class="item eye">
+                                                        <i class="icon-eye"></i>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        </a>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="text-center">10003</td>
-                                    <td class="text-center">Sudhir Kumar</td>
-                                    <td class="text-center">1234567891</td>
-                                    <td class="text-center">$154.80</td>
-                                    <td class="text-center">$32.51</td>
-                                    <td class="text-center">$187.31</td>
-
-                                    <td class="text-center">
-                                        <span class="badge bg-warning">Ordered</span>
-                                    </td>
-                                    <td class="text-center">2024-06-17 10:41:09</td>
-                                    <td class="text-center">2</td>
-                                    <td></td>
-                                    <td class="text-center">
-                                        <a href="account-orders-details.html">
-                                            <div class="list-icon-function view-icon">
-                                                <div class="item eye">
-                                                    <i class="fa fa-eye"></i>
-                                                </div>
-                                            </div>
-                                        </a>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="text-center">10002</td>
-                                    <td class="text-center">Sudhir Kumar</td>
-                                    <td class="text-center">1234567891</td>
-                                    <td class="text-center">$71.00</td>
-                                    <td class="text-center">$14.91</td>
-                                    <td class="text-center">$85.91</td>
-
-                                    <td class="text-center">
-                                        <span class="badge bg-warning">Ordered</span>
-                                    </td>
-                                    <td class="text-center">2024-06-11 01:02:55</td>
-                                    <td class="text-center">1</td>
-                                    <td></td>
-                                    <td class="text-center">
-                                        <a href="account-orders-details.html">
-                                            <div class="list-icon-function view-icon">
-                                                <div class="item eye">
-                                                    <i class="fa fa-eye"></i>
-                                                </div>
-                                            </div>
-                                        </a>
-                                    </td>
-                                </tr>
-
+                                            </a>
+                                        </td>
+                                    </tr>
+                                @endforeach
                             </tbody>
                         </table>
                     </div>
                 </div>
                 <div class="divider"></div>
                 <div class="flex items-center justify-between flex-wrap gap10 wgp-pagination">
-
+                    {{ $orders->links('pagination::bootstrap-5') }}
                 </div>
             </div>
 

@@ -49,7 +49,7 @@
           </div>
           <div class="order-info__item">
             <label>Total</label>
-            <span>{{$order->total}}đ</span>
+            <span>{{ number_format($order->total, 0, ',', ',') }}đ</span>
           </div>
           <div class="order-info__item">
             <label>Payment Method</label>
@@ -73,7 +73,7 @@
                     {{$item->product->name}} x {{$item->quantity}}
                   </td>
                   <td class="text-right">
-                    {{$item->price}}đ
+                    {{ number_format($item->price, 0, ',', ',') }}đ
                   </td>
                 </tr>
                 @endforeach
@@ -91,12 +91,12 @@
                 </tr>
                 <tr>
                   <th>SHIPPING</th>
-                  <td class="text-right">Free shipping</td>
+                  <td class="text-right">{{ number_format($order->shipping_cost, 0, ',', ',') }}đ</td>
                 </tr>
-                <tr>
+                {{-- <tr>
                   <th>VAT</th>
                   <td class="text-right">{{ number_format($order->tax, 0, ',', ',') }}đ</td>
-                </tr>
+                </tr> --}}
                 <tr>
                   <th>TOTAL</th>
                   <td class="text-right">{{ number_format($order->total, 0, ',', ',') }}đ</td>
