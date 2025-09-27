@@ -83,7 +83,7 @@
                                 <th class="text-center">Quantity</th>
                                 <th class="text-center">SKU</th>
                                 <th class="text-center">Category</th>
-                                <th class="text-center">Brand</th>
+                                <th class="text-center">Author</th>
                                 <th class="text-center">Options</th>
                                 <th class="text-center">Return Status</th>
                                 <th class="text-center">Action</th>
