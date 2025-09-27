@@ -5,6 +5,7 @@ use App\Http\Controllers\AIController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\ChatbotController;
 use App\Http\Controllers\ShopController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WishlistController;
@@ -59,6 +60,11 @@ Route::middleware(['auth', 'verified'])->group(function()
     Route::delete('/reviews/{reviewId}', [App\Http\Controllers\ReviewController::class, 'destroy'])->name('reviews.destroy');
     Route::put('/reviews/{reviewId}/status', [App\Http\Controllers\ReviewController::class, 'updateStatus'])->name('reviews.updateStatus');
 
+    // Review routes (auth required for write operations)
+    Route::post('/products/{productId}/reviews', [App\Http\Controllers\ReviewController::class, 'store'])->name('reviews.store');
+    Route::delete('/reviews/{reviewId}', [App\Http\Controllers\ReviewController::class, 'destroy'])->name('reviews.destroy');
+    Route::put('/reviews/{reviewId}/status', [App\Http\Controllers\ReviewController::class, 'updateStatus'])->name('reviews.updateStatus');
+
     Route::get('/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
     Route::post('/place-order', [CartController::class, 'place_order'])->name('cart.place.order');
     Route::get('/order-confirm',[CartController::class,'order_confirm'])->name('cart.order.confirm');
@@ -68,6 +74,7 @@ Route::middleware(['auth', 'verified'])->group(function()
 Route::middleware(['auth', AuthAdmin::class])->group(function()
 {
     Route::get('/admin', [AdminController::class, 'index'])->name('admin.index');
+    Route::get('/revenue-weekly', [AdminController::class, 'getWeeklyRevenueForMonth'])->name('admin.revenue.weekly');
     Route::get('/admin/publishers', [AdminController::class, 'publishers'])->name('admin.publishers');
     Route::get('/admin/publisher/add', [AdminController::class, 'add_publisher'])->name('admin.publisher.add');
     Route::post('/admin/publisher/store', [AdminController::class, 'publisher_store'])->name('admin.publisher.store');

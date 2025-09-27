@@ -178,7 +178,7 @@
                                         <tr>
                                             <td class="pname">
                                                 <div class="image">
-                                                    <img src="{{ secure_asset('uploads/products/thumbnails') }}/{{ $item->product->image }}"
+                                                    <img src="{{ asset('uploads/products/thumbnails') }}/{{ $item->product->image }}"
                                                         alt="{{ $item->product->name }}" class="image">
                                                 </div>
                                                 <div class="name">
@@ -186,7 +186,7 @@
                                                         target="_blank" class="body-title-2">{{ $item->product->name }}</a>
                                                 </div>
                                             </td>
-                                            <td class="text-center">{{ $item->price }}</td>
+                                            <td class="text-center">{{ number_format($item->price, 0, ',', ',') }}đ</td>
                                             <td class="text-center">{{ $item->quantity }}</td>
                                             <td class="text-center">{{ $item->product->SKU }}</td>
                                             <td class="text-center">{{ $item->product->category->name }}</td>
@@ -219,7 +219,7 @@
                             <div class="my-account__address-item__detail">
                                 <p>{{ $order->name }}</p>
                                 <p>{{ $order->address }}</p>
-                                <p>{{ $order->locality }}</p>
+                                {{-- <p>{{ $order->locality }}</p> --}}
                                 <p>{{ $order->city }}, {{ $order->country }}</p>
                                 <p>{{ $order->landmark }}</p>
                                 <p>{{ $order->zip }}</p>
@@ -235,15 +235,15 @@
                             <tbody>
                                 <tr>
                                     <th>Subtotal</th>
-                                    <td>{{ $order->subtotal }}</td>
-                                    <th>Tax</th>
-                                    <td>{{ $order->tax }}</td>
+                                    <td>{{ number_format($order->subtotal, 0, ',', ',') }}đ</td>
+                                    {{-- <th>Tax</th>
+                                    <td>{{ number_format($order->tax, 0, ',', ',') }}đ</td> --}}
                                     <th>Discount</th>
-                                    <td>{{ $order->discount }}</td>
+                                    <td>{{ number_format($order->discount, 0, ',', ',') }}đ</td>
                                 </tr>
                                 <tr>
                                     <th>Total</th>
-                                    <td>{{ $order->total }}</td>
+                                    <td>{{ number_format($order->total, 0, ',', ',') }}đ</td>
                                     <th>Payment Mode</th>
                                     <td>{{ $transaction->mode }}</td>
                                     <th>Status</th>

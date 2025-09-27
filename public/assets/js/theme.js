@@ -1702,12 +1702,12 @@ function pureFadeOut(e) {
             window.location.href = "./shop_checkout.html";
         });
 
-    $(".checkout-form .btn-checkout")
-        .off("click")
-        .on("click", function () {
-            window.location.href = "./shop_order_complete.html";
-        });
-    const showRegisterLink = document.querySelector(".js-show-register");
+    // $(".checkout-form .btn-checkout")
+    //     .off("click")
+    //     .on("click", function () {
+    //         window.location.href = "./shop_order_complete.html";
+    //     });
+    // const showRegisterLink = document.querySelector(".js-show-register");
 
     if (showRegisterLink) {
         showRegisterLink.addEventListener("click", function (e) {

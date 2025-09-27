@@ -55,7 +55,7 @@
                         <div class="upload-image flex-grow">
                             @if ($author->image)
                                 <div class="item" id="imgpreview">
-                                    <img src="{{ secure_asset('uploads/authors') }}/{{ $author->image }}" class="effect8"
+                                    <img src="{{ asset('uploads/authors') }}/{{ $author->image }}" class="effect8"
                                         alt="">
                                 </div>
                             @endif

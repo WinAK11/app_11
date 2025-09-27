@@ -26,18 +26,19 @@
                                     <tr>
                                         <td>{{ $item->name }}</td>
                                         <td align="center">{{ $item->qty }}</td>
-                                        <td align="right">{{ $item->subtotal() }}đ</td>
+                                        <td align="right">{{ number_format($item->subtotal(), 0, ',', ',') }}đ</td>
                                     </tr>
                                     @endforeach
                                 </tbody>
                             </table>
-                            <p style="font-size: 16px; color: #333; text-align: right;"><strong>Total: {{ $order['total'] }}đ</strong></p>
+                            <p style="font-size: 16px; color: #333; text-align: right;"><strong>Total: {{ number_format($order['total'], 0, ',', ',') }}đ</strong></p>
                             <div style="margin: 30px 0;">
                                 <p style="font-size: 16px; color: #333;">Your order will be delivered to:</p>
                                 <p style="font-size: 15px; color: #555;">
-                                    {{ $order['name'] }}<br>
-                                    {{ $order['address'] }}, {{ $order['city'] }}, {{ $order['state'] }}, {{ $order['country'] }}<br>
-                                    {{ $order['zip'] }}
+                                    {{ $order['name'] }},<br>
+                                    {{ $order['phone'] }},<br>
+                                    {{ $order['address'] }}, {{ $order['district'] }}, {{ $order['country'] }}<br>
+                                    {{-- {{ $order['zip'] }} --}}
                                 </p>
                             </div>
                             <p style="font-size: 15px; color: #888; text-align: center; margin-top: 30px;">Thank you for shopping with us.</p>

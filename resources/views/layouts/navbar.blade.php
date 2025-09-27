@@ -9,7 +9,7 @@
 
         <div class="logo">
             <a href="{{ route('home.index') }}">
-                <img src="{{ secure_asset('assets/images/bookstore.jpg') }}" alt="Uomo"
+                <img src="{{ asset('assets/images/bookstore.jpg') }}" alt="Uomo"
                     class="logo__image d-block" />
             </a>
         </div>
@@ -132,7 +132,7 @@
         <div class="header-desk header-desk_type_1">
             <div class="logo">
                 <a href="{{ route('home.index') }}">
-                    <img src="{{ secure_asset('assets/images/bookstore.jpg') }}" alt="Uomo"
+                    <img src="{{ asset('assets/images/bookstore.jpg') }}" alt="Uomo"
                         class="logo__image d-block" height="50" />
                 </a>
             </div>
@@ -223,6 +223,31 @@
                                     <div class="form-check form-check-inline">
                                         <input class="form-check-input" type="radio" name="search-type"
                                             id="search-text" value="text">
+                                        <label class="form-check-label" for="search-text">
+                                            <small>Text Only</small>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Search Type Selector -->
+                            <div class="mt-3">
+                                <div class="d-flex gap-2 align-items-center">
+                                    <small class="text-muted">Search Type:</small>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="search-type" id="search-hybrid" value="hybrid" checked>
+                                        <label class="form-check-label" for="search-hybrid">
+                                            <small>AI + Text</small>
+                                        </label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="search-type" id="search-vector" value="vector">
+                                        <label class="form-check-label" for="search-vector">
+                                            <small>AI Only</small>
+                                        </label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="search-type" id="search-text" value="text">
                                         <label class="form-check-label" for="search-text">
                                             <small>Text Only</small>
                                         </label>

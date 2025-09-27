@@ -72,7 +72,7 @@
                         <div class="upload-image flex-grow">
                             @if ($slide->image)
                                 <div class="item" id="imgpreview">
-                                    <img src="{{ secure_asset('uploads/slides') }}/{{ $slide->image }}" class="effect8"
+                                    <img src="{{ asset('uploads/slides') }}/{{ $slide->image }}" class="effect8"
                                         alt="" />
                                 </div>
                             @endif

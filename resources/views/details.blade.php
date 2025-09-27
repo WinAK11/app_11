@@ -11,10 +11,10 @@
                                 <div class="swiper-wrapper">
                                     <div class="swiper-slide product-single__image-item">
                                         <img loading="lazy" class="h-auto"
-                                            src="{{ secure_asset('uploads/products') }}/{{ $product->image }}"
+                                            src="{{ asset('uploads/products') }}/{{ $product->image }}"
                                             width="674" height="674" alt="" />
                                         <a data-fancybox="gallery"
-                                            href="{{ secure_asset('uploads/products') }}/{{ $product->image }}"
+                                            href="{{ asset('uploads/products') }}/{{ $product->image }}"
                                             data-bs-toggle="tooltip" data-bs-placement="left" title="Zoom">
                                             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"
                                                 xmlns="http://www.w3.org/2000/svg">
@@ -26,10 +26,10 @@
                                     @foreach (explode(',', $product->images) as $gallery_image)
                                         <div class="swiper-slide product-single__image-item">
                                             <img loading="lazy" class="h-auto"
-                                                src="{{ secure_asset('uploads/products') }}/{{ $gallery_image }}"
+                                                src="{{ asset('uploads/products') }}/{{ $gallery_image }}"
                                                 width="674" height="674" alt="" />
                                             <a data-fancybox="gallery"
-                                                href="{{ secure_asset('uploads/products') }}/{{ $gallery_image }}"
+                                                href="{{ asset('uploads/products') }}/{{ $gallery_image }}"
                                                 data-bs-toggle="tooltip" data-bs-placement="left" title="Zoom">
                                                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none"
                                                     xmlns="http://www.w3.org/2000/svg">
@@ -53,12 +53,12 @@
                             <div class="swiper-container">
                                 <div class="swiper-wrapper">
                                     <div class="swiper-slide product-single__image-item"><img loading="lazy" class="h-auto"
-                                            src="{{ secure_asset('uploads/products/thumbnails') }}/{{ $product->image }}"
+                                            src="{{ asset('uploads/products/thumbnails') }}/{{ $product->image }}"
                                             width="104" height="104" alt="" /></div>
                                     @foreach (explode(',', $product->images) as $gallery_image)
                                         <div class="swiper-slide product-single__image-item"><img loading="lazy"
                                                 class="h-auto"
-                                                src="{{ secure_asset('uploads/products/thumbnails') }}/{{ $gallery_image }}"
+                                                src="{{ asset('uploads/products/thumbnails') }}/{{ $gallery_image }}"
                                                 width="104" height="104" alt="" /></div>
                                     @endforeach
                                 </div>
@@ -79,21 +79,41 @@
                     <h1 class="product-single__name">{{ $product->name }}</h1>
                     <div class="product-single__rating">
                         <div class="reviews-group d-flex">
-                            <svg class="review-star" viewBox="0 0 9 9" xmlns="http://www.w3.org/2000/svg">
-                                <use href="#icon_star" />
-                            </svg>
-                            <svg class="review-star" viewBox="0 0 9 9" xmlns="http://www.w3.org/2000/svg">
-                                <use href="#icon_star" />
-                            </svg>
-                            <svg class="review-star" viewBox="0 0 9 9" xmlns="http://www.w3.org/2000/svg">
-                                <use href="#icon_star" />
-                            </svg>
-                            <svg class="review-star" viewBox="0 0 9 9" xmlns="http://www.w3.org/2000/svg">
-                                <use href="#icon_star" />
-                            </svg>
-                            <svg class="review-star" viewBox="0 0 9 9" xmlns="http://www.w3.org/2000/svg">
-                                <use href="#icon_star" />
-                            </svg>
+                            @for ($i = 1; $i <= 5; $i++)
+                                @if ($i <= $product->star_display['full'])
+                                    {{-- Full star --}}
+                                    <svg class="review-star" style="fill: gold;" viewBox="0 0 9 9"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <use href="#icon_star" />
+                                    </svg>
+                                @elseif ($i == $product->star_display['full'] + 1 && $product->star_display['half'] > 0)
+                                    {{-- Half star --}}
+                                    <svg class="review-star" viewBox="0 0 9 9"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <defs>
+                                            <mask id="half-mask-{{ $product->id }}-{{ $i }}">
+                                                <rect x="0" y="0" width="4.5" height="9"
+                                                    fill="white" />
+                                                <rect x="4.5" y="0" width="4.5" height="9"
+                                                    fill="black" />
+                                            </mask>
+                                        </defs>
+                                        <!-- Background star (empty) -->
+                                        <path fill="#ccc"
+                                            d="M4.0172 0.313075L2.91869 2.64013L0.460942 3.0145C0.0201949 3.08129 -0.15644 3.64899 0.163185 3.97415L1.94131 5.78447L1.52075 8.34177C1.44505 8.80402 1.91103 9.15026 2.30131 8.93408L4.5 7.72661L6.69869 8.93408C7.08897 9.14851 7.55495 8.80402 7.47925 8.34177L7.05869 5.78447L8.83682 3.97415C9.15644 3.64899 8.97981 3.08129 8.53906 3.0145L6.08131 2.64013L4.9828 0.313075C4.78598 -0.101718 4.2157 -0.10699 4.0172 0.313075Z" />
+                                        <!-- Half filled star -->
+                                        <path fill="gold"
+                                            mask="url(#half-mask-{{ $product->id }}-{{ $i }})"
+                                            d="M4.0172 0.313075L2.91869 2.64013L0.460942 3.0145C0.0201949 3.08129 -0.15644 3.64899 0.163185 3.97415L1.94131 5.78447L1.52075 8.34177C1.44505 8.80402 1.91103 9.15026 2.30131 8.93408L4.5 7.72661L6.69869 8.93408C7.08897 9.14851 7.55495 8.80402 7.47925 8.34177L7.05869 5.78447L8.83682 3.97415C9.15644 3.64899 8.97981 3.08129 8.53906 3.0145L6.08131 2.64013L4.9828 0.313075C4.78598 -0.101718 4.2157 -0.10699 4.0172 0.313075Z" />
+                                    </svg>
+                                @else
+                                    {{-- Empty star --}}
+                                    <svg class="review-star" style="fill: #ccc;" viewBox="0 0 9 9"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <use href="#icon_star" />
+                                    </svg>
+                                @endif
+                            @endfor
                         </div>
                         <span class="reviews-note text-lowercase text-secondary ms-1">{{ $product->reviews_count }}
                             review {{ $product->reviews_count > 2 ? 's' : '' }}</span>
@@ -114,23 +134,29 @@
                     @if (Cart::instance('cart')->content()->where('id', $product->id)->count() > 0)
                         <a href = "{{ route('cart.index') }}" class = "btn btn-warning mb-3">Go to cart </a>
                     @else
-                        <form name="addtocart-form" method="post" action="{{ route('cart.add') }}">
-                            @csrf
+                        @if ($product->quantity > 0)
+                            <form name="addtocart-form" method="post" action="{{ route('cart.add') }}">
+                                @csrf
+                                <div class="product-single__addtocart">
+                                    <div class="qty-control position-relative">
+                                        <input type="number" name="quantity" value="1" min="1"
+                                            class="qty-control__number text-center">
+                                        <div class="qty-control__reduce">-</div>
+                                        <div class="qty-control__increase">+</div>
+                                    </div><!-- .qty-control -->
+                                    <input type="hidden" name="id" value="{{ $product->id }}" />
+                                    <input type="hidden" name="name" value="{{ $product->name }}" />
+                                    <input type="hidden" name="price"
+                                        value="{{ $product->sale_price == '' ? $product->regular_price : $product->sale_price }}" />
+                                    <button type="submit" class="btn btn-primary btn-addtocart" data-aside="cartDrawer">Add
+                                        to Cart</button>
+                                </div>
+                            </form>
+                        @else
                             <div class="product-single__addtocart">
-                                <div class="qty-control position-relative">
-                                    <input type="number" name="quantity" value="1" min="1"
-                                        class="qty-control__number text-center">
-                                    <div class="qty-control__reduce">-</div>
-                                    <div class="qty-control__increase">+</div>
-                                </div><!-- .qty-control -->
-                                <input type="hidden" name="id" value="{{ $product->id }}" />
-                                <input type="hidden" name="name" value="{{ $product->name }}" />
-                                <input type="hidden" name="price"
-                                    value="{{ $product->sale_price == '' ? $product->regular_price : $product->sale_price }}" />
-                                <button type="submit" class="btn btn-primary btn-addtocart" data-aside="cartDrawer">Add
-                                    to Cart</button>
+                                <p class="text-danger fw-medium">Sorry, this book is out of stock for now</p>
                             </div>
-                        </form>
+                        @endif
                     @endif
                     <div class="product-single__addtolinks">
                         @if (Cart::instance('wishlist')->content()->where('id', $product->id)->count() > 0)
@@ -384,12 +410,12 @@
                                     <a
                                         href="{{ route('shop.product.details', ['product_slug' => $related_product->slug]) }}">
                                         <img loading="lazy"
-                                            src="{{ secure_asset('uploads/products') }}/{{ $related_product->image }}"
+                                            src="{{ asset('uploads/products') }}/{{ $related_product->image }}"
                                             width="330" height="400" alt="{{ $related_product->name }}"
                                             class="pc__img">
                                         @foreach (explode(',', $related_product->images) as $gallery_image)
                                             <img loading="lazy"
-                                                src="{{ secure_asset('uploads/products') }}/{{ $gallery_image }}"
+                                                src="{{ asset('uploads/products') }}/{{ $gallery_image }}"
                                                 width="330" height="400" alt="{{ $related_product->name }}"
                                                 class="pc__img pc__img-second">
                                         @endforeach
