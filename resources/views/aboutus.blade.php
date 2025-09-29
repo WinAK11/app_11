@@ -10,7 +10,7 @@
             <div class="about-us__content pb-5 mb-5">
                 <p class="mb-5">
                     <img loading="lazy" class="w-100 h-auto d-block"
-                        src="{{ secure_asset('assets/images/about/aboutus.png') }}" width="940" height="366"
+                        src="{{ asset('assets/images/about/aboutus.png') }}" width="940" height="366"
                         alt="" style="max-width: 70%; margin-left: 15%;
                 " />
 
@@ -41,7 +41,7 @@
                 </div>
                 <div class="mw-930 d-lg-flex align-items-lg-center">
                     <div class="image-wrapper col-lg-6">
-                        <img class="h-auto" loading="lazy" src="{{ secure_asset('assets/images/about/about-1.png') }}"
+                        <img class="h-auto" loading="lazy" src="{{ asset('assets/images/about/about-1.png') }}"
                             width="450" height="500" alt="">
                     </div>
                     <div class="content-wrapper col-lg-6 px-lg-4">

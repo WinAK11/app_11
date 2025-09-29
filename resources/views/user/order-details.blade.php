@@ -167,7 +167,7 @@
                                         <th class="text-center">Quantity</th>
                                         <th class="text-center">SKU</th>
                                         <th class="text-center">Category</th>
-                                        <th class="text-center">Brand</th>
+                                        <th class="text-center">Author</th>
                                         <th class="text-center">Options</th>
                                         <th class="text-center">Return Status</th>
                                         <th class="text-center">Action</th>
@@ -178,7 +178,7 @@
                                         <tr>
                                             <td class="pname">
                                                 <div class="image">
-                                                    <img src="{{ secure_asset('uploads/products/thumbnails') }}/{{ $item->product->image }}"
+                                                    <img src="{{ asset('uploads/products/thumbnails') }}/{{ $item->product->image }}"
                                                         alt="{{ $item->product->name }}" class="image">
                                                 </div>
                                                 <div class="name">
@@ -219,7 +219,7 @@
                             <div class="my-account__address-item__detail">
                                 <p>{{ $order->name }}</p>
                                 <p>{{ $order->address }}</p>
-                                <p>{{ $order->locality }}</p>
+                                {{-- <p>{{ $order->locality }}</p> --}}
                                 <p>{{ $order->city }}, {{ $order->country }}</p>
                                 <p>{{ $order->landmark }}</p>
                                 <p>{{ $order->zip }}</p>
@@ -236,8 +236,8 @@
                                 <tr>
                                     <th>Subtotal</th>
                                     <td>{{ $order->subtotal }}</td>
-                                    <th>Tax</th>
-                                    <td>{{ $order->tax }}</td>
+                                    {{-- <th>Tax</th>
+                                    <td>{{ $order->tax }}</td> --}}
                                     <th>Discount</th>
                                     <td>{{ $order->discount }}</td>
                                 </tr>

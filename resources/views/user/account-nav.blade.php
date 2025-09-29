@@ -15,7 +15,7 @@
     </li>
     <li><a href="{{ route('user.account.detail') }}"
             class="menu-link menu-link_us-s {{ active('user.account.detail') }}">Account Details</a></li>
-    <li><a href="account-wishlist.html"
+    <li><a href="{{ route('wishlist.index')}}"
             class="menu-link menu-link_us-s {{ request()->is('account-wishlist*') ? 'menu-link_active' : '' }}">Wishlist</a>
     </li>
     <li>

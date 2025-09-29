@@ -2,23 +2,40 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 
 <head>
+
+<style>
+#chatbot {
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    display: none;
+    z-index: 9999;
+}
+#chatToggle {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 10000;
+}
+</style>
+
     <title>Bookstore</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta http-equiv="content-type" content="text/html; charset=utf-8" />
     <meta name="author" content="surfside media" />
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link rel="shortcut icon" href="{{ secure_asset('assets/images/favicon.ico') }}" type="image/x-icon">
+    <link rel="shortcut icon" href="{{ asset('assets/images/favicon.ico') }}" type="image/x-icon">
     <link rel="preconnect" href="https://fonts.gstatic.com/">
     <link
         href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;display=swap"
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Allura&amp;display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ secure_asset('assets/css/plugins/swiper.min.css') }}" type="text/css" />
-    <link rel="stylesheet" href="{{ secure_asset('assets/css/style.css') }}" type="text/css" />
-    <link rel="stylesheet" type="text/css" href={{ secure_asset('css/sweetalert.min.css') }}>
-    <link rel="stylesheet" href="{{ secure_asset('assets/css/custom.css') }}" type="text/css" />
+    <link rel="stylesheet" href="{{ asset('assets/css/plugins/swiper.min.css') }}" type="text/css" />
+    <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}" type="text/css" />
+    <link rel="stylesheet" type="text/css" href={{ asset('css/sweetalert.min.css') }}>
+    <link rel="stylesheet" href="{{ asset('assets/css/custom.css') }}" type="text/css" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="{{ secure_asset('css/audio-player.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/audio-player.css') }}">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     {{-- <script src="
         https://cdn.jsdelivr.net/npm/@hotwired/turbo@8.0.13/dist/turbo.es2017-umd.min.js
@@ -324,7 +341,7 @@
 
             <div class="logo">
                 <a href="{{ route('home.index') }}">
-                    <img src="{{ secure_asset('assets/images/bookstore.jpg') }}" alt="Uomo"
+                    <img src="{{ asset('assets/images/bookstore.jpg') }}" alt="Uomo"
                         class="logo__image d-block" />
                 </a>
             </div>
@@ -334,7 +351,10 @@
                     xmlns="http://www.w3.org/2000/svg">
                     <use href="#icon_cart" />
                 </svg>
-                <span class="cart-amount d-block position-absolute js-cart-items-count">3</span>
+                
+                <span class="cart-amount d-block position-absolute js-cart-items-count js-cart-count" @if (Cart::instance('cart')->content()->count() == 0) style="display: none;" @endif>
+                    {{ Cart::instance('cart')->content()->count() }}
+                </span>
             </a>
         </div>
 
@@ -449,7 +469,7 @@
             <div class="header-desk header-desk_type_1">
                 <div class="logo">
                     <a href="{{ route('home.index') }}">
-                        <img src="{{ secure_asset('assets/images/bookstore.jpg') }}" alt="Uomo"
+                        <img src="{{ asset('assets/images/bookstore.jpg') }}" alt="Uomo"
                             class="logo__image d-block" />
                     </a>
                 </div>
@@ -567,10 +587,9 @@
                             xmlns="http://www.w3.org/2000/svg">
                             <use href="#icon_cart" />
                         </svg>
-                        @if (Cart::instance('cart')->content()->count() > 0)
-                            <span
-                                class="cart-amount d-block position-absolute js-cart-items-count">{{ Cart::instance('cart')->content()->count() }}</span>
-                        @endif
+                    <span class="cart-amount d-block position-absolute js-cart-items-count js-cart-count" @if (Cart::instance('cart')->content()->count() == 0) style="display: none;" @endif>
+                        {{ Cart::instance('cart')->content()->count() }}
+                    </span>
                     </a>
                 </div>
             </div>
@@ -587,7 +606,7 @@
                 <div class="footer-column footer-store-info col-12 mb-4 mb-lg-0">
                     <div class="logo">
                         <a href="{{ route('home.index') }}">
-                            <img src="{{ secure_asset('assets/images/bookstore.jpg') }}" alt="SurfsideMedia"
+                            <img src="{{ asset('assets/images/bookstore.jpg') }}" alt="SurfsideMedia"
                                 class="logo__image d-block" />
                         </a>
                     </div>
@@ -765,12 +784,12 @@
     <div id="scrollTop" class="visually-hidden end-0"></div>
     <div class="page-overlay"></div>
 
-    <script src="{{ secure_asset('assets/js/plugins/jquery.min.js') }}"></script>
-    <script src="{{ secure_asset('assets/js/plugins/bootstrap.bundle.min.js') }}"></script>
-    <script src="{{ secure_asset('assets/js/plugins/bootstrap-slider.min.js') }}"></script>
-    <script src="{{ secure_asset('assets/js/plugins/swiper.min.js') }}"></script>
-    <script src="{{ secure_asset('assets/js/plugins/countdown.js') }}"></script>
-    <script src="{{ secure_asset('assets/js/theme.js') }}"></script>
+    <script src="{{ asset('assets/js/plugins/jquery.min.js') }}"></script>
+    <script src="{{ asset('assets/js/plugins/bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ asset('assets/js/plugins/bootstrap-slider.min.js') }}"></script>
+    <script src="{{ asset('assets/js/plugins/swiper.min.js') }}"></script>
+    <script src="{{ asset('assets/js/plugins/countdown.js') }}"></script>
+    <script src="{{ asset('assets/js/theme.js') }}"></script>
 
 
 
@@ -827,8 +846,8 @@
                                             <ul>
                                                 <li class="product-item gap14 mb-10">
                                                     <div class="image no-bg">
-                                                        <img src="{{ secure_asset('uploads/products/thumbnails') }}/${item.image}" alt="${item.name}"
-                                                             onerror="this.src='{{ secure_asset('uploads/book_placeholder.png') }}'">
+                                                        <img src="{{ asset('uploads/products/thumbnails') }}/${item.image}" alt="${item.name}"
+                                                             onerror="this.src='{{ asset('uploads/book_placeholder.png') }}'">
                                                     </div>
                                                     <div class="flex items-center justify-between gap20 flex-grow">
                                                         <div class="name">
@@ -916,7 +935,7 @@
     <script src="https://files.bpcontent.cloud/2025/08/03/08/20250803083409-3WIT2L2F.js"></script>
 
 
-    <script src={{ secure_asset('js/sweetalert.min.js') }}></script>
+    <script src={{ asset('js/sweetalert.min.js') }}></script>
     <!--Start of Tawk.to Script-->
     {{-- <script type="text/javascript">
         var Tawk_API = Tawk_API || {},

@@ -48,7 +48,7 @@
                                         <td>
                                             <div class="shopping-cart__product-item">
                                                 <img loading="lazy"
-                                                    src="{{ secure_asset('uploads/products/thumbnails') }}/{{ $item->model->image }}"
+                                                    src="{{ asset('uploads/products/thumbnails') }}/{{ $item->model->image }}"
                                                     width="120" height="120" alt="{{ $item->name }}" />
                                             </div>
                                         </td>
@@ -159,10 +159,10 @@
                                                 <th>Subtotal after Discount</th>
                                                 <td>{{ Session::get('discounts')['subtotal'] }}đ</td>
                                             </tr>
-                                            <tr>
+                                            {{-- <tr>
                                                 <th>VAT</th>
                                                 <td>{{ Session::get('discounts')['tax'] }}đ</td>
-                                            </tr>
+                                            </tr> --}}
                                             <tr>
                                                 <th>Total</th>
                                                 <td>{{ Session::get('discounts')['total'] }}đ</td>
@@ -184,10 +184,10 @@
                                                 <th>Subtotal after Discount</th>
                                                 <td>{{ Cart::instance('cart')->subtotal() }}đ</td>
                                             </tr>
-                                            <tr>
+                                            {{-- <tr>
                                                 <th>VAT</th>
                                                 <td>{{ Cart::instance('cart')->tax() }}đ</td>
-                                            </tr>
+                                            </tr> --}}
                                             <tr>
                                                 <th>Total</th>
                                                 <td>{{ Cart::instance('cart')->total() }}đ</td>

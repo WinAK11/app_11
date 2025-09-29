@@ -9,7 +9,7 @@
 
         <div class="logo">
             <a href="{{ route('home.index') }}">
-                <img src="{{ secure_asset('assets/images/bookstore.jpg') }}" alt="Uomo"
+                <img src="{{ asset('assets/images/bookstore.jpg') }}" alt="Uomo"
                     class="logo__image d-block" />
             </a>
         </div>
@@ -132,7 +132,7 @@
         <div class="header-desk header-desk_type_1">
             <div class="logo">
                 <a href="{{ route('home.index') }}">
-                    <img src="{{ secure_asset('assets/images/bookstore.jpg') }}" alt="Uomo"
+                    <img src="{{ asset('assets/images/bookstore.jpg') }}" alt="Uomo"
                         class="logo__image d-block" height="50" />
                 </a>
             </div>

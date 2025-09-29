@@ -93,10 +93,10 @@
                   <th>SHIPPING</th>
                   <td class="text-right">Free shipping</td>
                 </tr>
-                <tr>
+                {{-- <tr>
                   <th>VAT</th>
                   <td class="text-right">{{ number_format($order->tax, 0, ',', ',') }}đ</td>
-                </tr>
+                </tr> --}}
                 <tr>
                   <th>TOTAL</th>
                   <td class="text-right">{{ number_format($order->total, 0, ',', ',') }}đ</td>

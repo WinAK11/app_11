@@ -11,10 +11,10 @@
                                 <div class="swiper-wrapper">
                                     <div class="swiper-slide product-single__image-item">
                                         <img loading="lazy" class="h-auto"
-                                            src="{{ secure_asset('uploads/products') }}/{{ $product->image }}"
+                                            src="{{ asset('uploads/products') }}/{{ $product->image }}"
                                             width="674" height="674" alt="" />
                                         <a data-fancybox="gallery"
-                                            href="{{ secure_asset('uploads/products') }}/{{ $product->image }}"
+                                            href="{{ asset('uploads/products') }}/{{ $product->image }}"
                                             data-bs-toggle="tooltip" data-bs-placement="left" title="Zoom">
                                             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"
                                                 xmlns="http://www.w3.org/2000/svg">
@@ -26,10 +26,10 @@
                                     @foreach (explode(',', $product->images) as $gallery_image)
                                         <div class="swiper-slide product-single__image-item">
                                             <img loading="lazy" class="h-auto"
-                                                src="{{ secure_asset('uploads/products') }}/{{ $gallery_image }}"
+                                                src="{{ asset('uploads/products') }}/{{ $gallery_image }}"
                                                 width="674" height="674" alt="" />
                                             <a data-fancybox="gallery"
-                                                href="{{ secure_asset('uploads/products') }}/{{ $gallery_image }}"
+                                                href="{{ asset('uploads/products') }}/{{ $gallery_image }}"
                                                 data-bs-toggle="tooltip" data-bs-placement="left" title="Zoom">
                                                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none"
                                                     xmlns="http://www.w3.org/2000/svg">
@@ -53,12 +53,12 @@
                             <div class="swiper-container">
                                 <div class="swiper-wrapper">
                                     <div class="swiper-slide product-single__image-item"><img loading="lazy" class="h-auto"
-                                            src="{{ secure_asset('uploads/products/thumbnails') }}/{{ $product->image }}"
+                                            src="{{ asset('uploads/products/thumbnails') }}/{{ $product->image }}"
                                             width="104" height="104" alt="" /></div>
                                     @foreach (explode(',', $product->images) as $gallery_image)
                                         <div class="swiper-slide product-single__image-item"><img loading="lazy"
                                                 class="h-auto"
-                                                src="{{ secure_asset('uploads/products/thumbnails') }}/{{ $gallery_image }}"
+                                                src="{{ asset('uploads/products/thumbnails') }}/{{ $gallery_image }}"
                                                 width="104" height="104" alt="" /></div>
                                     @endforeach
                                 </div>
@@ -114,23 +114,29 @@
                     @if (Cart::instance('cart')->content()->where('id', $product->id)->count() > 0)
                         <a href = "{{ route('cart.index') }}" class = "btn btn-warning mb-3">Go to cart </a>
                     @else
-                        <form name="addtocart-form" method="post" action="{{ route('cart.add') }}">
-                            @csrf
+                        @if ($product->quantity > 0)
+                            <form name="addtocart-form" method="post" action="{{ route('cart.add') }}">
+                                @csrf
+                                <div class="product-single__addtocart">
+                                    <div class="qty-control position-relative">
+                                        <input type="number" name="quantity" value="1" min="1"
+                                            class="qty-control__number text-center">
+                                        <div class="qty-control__reduce">-</div>
+                                        <div class="qty-control__increase">+</div>
+                                    </div><!-- .qty-control -->
+                                    <input type="hidden" name="id" value="{{ $product->id }}" />
+                                    <input type="hidden" name="name" value="{{ $product->name }}" />
+                                    <input type="hidden" name="price"
+                                        value="{{ $product->sale_price == '' ? $product->regular_price : $product->sale_price }}" />
+                                    <button type="submit" class="btn btn-primary btn-addtocart" data-aside="cartDrawer">Add
+                                        to Cart</button>
+                                </div>
+                            </form>
+                        @else
                             <div class="product-single__addtocart">
-                                <div class="qty-control position-relative">
-                                    <input type="number" name="quantity" value="1" min="1"
-                                        class="qty-control__number text-center">
-                                    <div class="qty-control__reduce">-</div>
-                                    <div class="qty-control__increase">+</div>
-                                </div><!-- .qty-control -->
-                                <input type="hidden" name="id" value="{{ $product->id }}" />
-                                <input type="hidden" name="name" value="{{ $product->name }}" />
-                                <input type="hidden" name="price"
-                                    value="{{ $product->sale_price == '' ? $product->regular_price : $product->sale_price }}" />
-                                <button type="submit" class="btn btn-primary btn-addtocart" data-aside="cartDrawer">Add
-                                    to Cart</button>
+                                <p class="text-danger fw-medium">Sorry, this book is out of stock for now</p>
                             </div>
-                        </form>
+                        @endif
                     @endif
                     <div class="product-single__addtolinks">
                         @if (Cart::instance('wishlist')->content()->where('id', $product->id)->count() > 0)
@@ -278,14 +284,7 @@
                                 <p class="text-muted">No reviews yet. Be the first to review this product!</p>
                             </div>
                             <div class="text-center" id="load-more-container" style="display: none;">
-                                <button class="btn btn-outline-primary" id="load-more-reviews">
-                                    <span class="btn-text">Load More Reviews</span>
-                                    <span class="btn-loading" style="display: none;">
-                                        <span class="spinner-border spinner-border-sm me-2" role="status"
-                                            aria-hidden="true"></span>
-                                        Loading...
-                                    </span>
-                                </button>
+                                <button class="btn btn-outline-primary" id="load-more-reviews">Load More Reviews</button>
                             </div>
                         </div>
 
@@ -384,12 +383,12 @@
                                     <a
                                         href="{{ route('shop.product.details', ['product_slug' => $related_product->slug]) }}">
                                         <img loading="lazy"
-                                            src="{{ secure_asset('uploads/products') }}/{{ $related_product->image }}"
+                                            src="{{ asset('uploads/products') }}/{{ $related_product->image }}"
                                             width="330" height="400" alt="{{ $related_product->name }}"
                                             class="pc__img">
                                         @foreach (explode(',', $related_product->images) as $gallery_image)
                                             <img loading="lazy"
-                                                src="{{ secure_asset('uploads/products') }}/{{ $gallery_image }}"
+                                                src="{{ asset('uploads/products') }}/{{ $gallery_image }}"
                                                 width="330" height="400" alt="{{ $related_product->name }}"
                                                 class="pc__img pc__img-second">
                                         @endforeach
