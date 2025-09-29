@@ -931,8 +931,8 @@
     </script>
 
     {{-- Chatbot script --}}
-    <script src="https://cdn.botpress.cloud/webchat/v3.2/inject.js"></script>
-    <script src="https://files.bpcontent.cloud/2025/08/03/08/20250803083409-3WIT2L2F.js"></script>
+    <script src="https://cdn.botpress.cloud/webchat/v3.3/inject.js" defer></script>
+    <script src="https://files.bpcontent.cloud/2025/07/06/07/20250706075525-UCOIAEJK.js" defer></script>
 
 
     <script src={{ asset('js/sweetalert.min.js') }}></script>
