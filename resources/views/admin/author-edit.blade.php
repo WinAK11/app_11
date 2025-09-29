@@ -55,8 +55,8 @@
                         <div class="upload-image flex-grow">
                             @if ($author->image)
                                 <div class="item" id="imgpreview">
-                                    <img src="{{ secure_asset('uploads/authors') }}/{{ $author->image }}" class="effect8"
-                                        alt="">
+                                    <img src="{{ Storage::disk('s3')->url('uploads/authors/' . $author->image) }}"
+                                        class="effect8" alt="">
                                 </div>
                             @endif
                             <div id="upload-file" class="item up-load">

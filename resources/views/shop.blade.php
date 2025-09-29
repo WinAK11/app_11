@@ -277,7 +277,9 @@
                                                 <a
                                                     href="{{ route('shop.product.details', ['product_slug' => $product->slug]) }}">
                                                     <img loading="lazy"
-                                                        src="{{ $product->image ? secure_asset('uploads/products/' . $product->image) : secure_asset('uploads/book_placeholder.png') }}"
+                                                        src="{{ $product->image
+                                                            ? Storage::disk('s3')->url('uploads/products/' . $product->image)
+                                                            : secure_asset('uploads/book_placeholder.png') }}"
                                                         width="310" height="400" alt="{{ $product->name }}"
                                                         class="pc__img" />
                                                 </a>
@@ -285,9 +287,9 @@
                                             <div class="swiper-slide">
                                                 @foreach (explode(',', $product->images) as $gallery_image)
                                                     <a
-                                                        href="{{ route('shop.product.details', ['product_slug' => $product->slug]) }}"><img
-                                                            loading="lazy"
-                                                            src="{{ secure_asset('uploads/products') }}/{{ $gallery_image }}"
+                                                        href="{{ route('shop.product.details', ['product_slug' => $product->slug]) }}">
+                                                        <img loading="lazy"
+                                                            src="{{ Storage::disk('s3')->url('uploads/products/' . $gallery_image) }}"
                                                             width="310" height="400" alt="{{ $product->name }}"
                                                             class="pc__img" />
                                                     </a>

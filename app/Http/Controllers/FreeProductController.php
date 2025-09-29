@@ -82,28 +82,41 @@ class FreeProductController extends Controller {
         $format = strtolower( $request->file( 'file' )->getClientOriginalExtension() );
 
         // Sanitize folder name from title
-        $folderName = Str::slug( $validatedData[ 'title' ] );
-        $basePath = public_path( "uploads/ebooks/$folderName" );
+        // $folderName = Str::slug( $validatedData[ 'title' ] );
+        // // $basePath = public_path( "uploads/ebooks/$folderName" );
 
-        // Create folder if missing
-        if ( !file_exists( $basePath ) ) {
-            mkdir( $basePath, 0755, true );
-        }
+        // // Create folder if missing
+        // if ( !file_exists( $basePath ) ) {
+        //     mkdir( $basePath, 0755, true );
+        // // }
 
-        // Move EPUB file
-        $ebookName = time() . '_' . $request->file( 'file' )->getClientOriginalName();
-        $request->file( 'file' )->move( $basePath, $ebookName );
-        $filePath = "uploads/ebooks/$folderName/$ebookName";
+        // // Move EPUB file
+        // $ebookName = time() . '_' . $request->file( 'file' )->getClientOriginalName();
+        // $request->file( 'file' )->move( $basePath, $ebookName );
+        // $filePath = "uploads/ebooks/$folderName/$ebookName";
 
         // Decode and save cover image
+        $folderName = Str::slug( $validatedData[ 'title' ] );
+
+        // Store EPUB file on S3
+        $ebookFile = $request->file( 'file' );
+        $ebookName = time() . '_' . $ebookFile->getClientOriginalName();
+        $filePath = $ebookFile->storeAs( "uploads/ebooks/{$folderName}", $ebookName, 's3' );
+        Storage::disk( 's3' )->setVisibility( $filePath, 'public' );
+
         $coverPath = null;
+        // if ( $request->filled( 'cover_image_data' ) ) {
         if ( $request->filled( 'cover_image_data' ) ) {
             $base64 = $request->cover_image_data;
+            // $imageData = base64_decode( preg_replace( '#^data:image/\w+;base64,#i', '', $base64 ) );
             $imageData = base64_decode( preg_replace( '#^data:image/\w+;base64,#i', '', $base64 ) );
             $coverName = time() . '_cover.jpg';
-            $coverFullPath = "$basePath/$coverName";
-            file_put_contents( $coverFullPath, $imageData );
-            $coverPath = "uploads/ebooks/$folderName/$coverName";
+            // $coverFullPath = "$basePath/$coverName";
+            // file_put_contents( $coverFullPath, $imageData );
+            // $coverPath = "uploads/ebooks/$folderName/$coverName";
+            $coverPath = "uploads/ebooks/{$folderName}/{$coverName}";
+            Storage::disk( 's3' )->put( $coverPath, $imageData, 'public' );
+
         }
 
         // Save to database
@@ -204,13 +217,29 @@ class FreeProductController extends Controller {
     public function ebook_delete( $id ) {
         $ebook = Ebook::findOrFail( $id );
 
-        if ( $ebook->file_path && file_exists( public_path( $ebook->file_path ) ) ) {
-            unlink( public_path( $ebook->file_path ) );
+        // if ( $ebook->file_path && file_exists( public_path( $ebook->file_path ) ) ) {
+        //     unlink( public_path( $ebook->file_path ) );
+        // }
+
+        // if ( $ebook->cover_path && file_exists( public_path( $ebook->cover_path ) ) ) {
+        //     unlink( public_path( $ebook->cover_path ) );
+        // }
+
+        if ( $ebook->file_path && Storage::disk( 's3' )->exists( $ebook->file_path ) ) {
+            Storage::disk( 's3' )->delete( $ebook->file_path );
         }
 
-        if ( $ebook->cover_path && file_exists( public_path( $ebook->cover_path ) ) ) {
-            unlink( public_path( $ebook->cover_path ) );
+        if ( $ebook->cover_path && Storage::disk( 's3' )->exists( $ebook->cover_path ) ) {
+            Storage::disk( 's3' )->delete( $ebook->cover_path );
         }
+
+        // Optionally, delete the entire directory if it's now empty
+        $folderName = Str::slug($ebook->title);
+        $directory = "uploads/ebooks/{$folderName}";
+        if (Storage::disk('s3')->exists($directory) && count(Storage::disk('s3')->files($directory)) === 0) {
+            Storage::disk('s3')->deleteDirectory($directory);
+        }
+
 
         $ebook->delete();
         return back()->with( 'status', 'Ebook deleted!' );
@@ -225,7 +254,7 @@ class FreeProductController extends Controller {
 
     public function audiobook_store( Request $request ) {
         $validatedData = $request->validate( [
-            'ebook_id' => 'required|exists:ebooks,id',
+            'ebook_id' => 'required|exists:ebooks, id',
             'chapters_data' => 'required|string'
         ] );
 
@@ -297,9 +326,13 @@ class FreeProductController extends Controller {
 
         foreach ( $chapters as $chapter ) {
             // Delete audio file if exists
-            if ( $chapter->audio_path && file_exists( public_path( $chapter->audio_path ) ) ) {
-                unlink( public_path( $chapter->audio_path ) );
+            // if ( $chapter->audio_path && file_exists( public_path( $chapter->audio_path ) ) ) {
+            //     unlink( public_path( $chapter->audio_path ) );
+            // }
+            if ($chapter->audio_path && Storage::disk('s3')->exists($chapter->audio_path)) {
+                Storage::disk('s3')->delete($chapter->audio_path);
             }
+
             $chapter->delete();
         }
 
@@ -313,8 +346,11 @@ class FreeProductController extends Controller {
         // Delete existing chapters
         $existingChapters = Chapter::where( 'ebook_id', $ebook_id )->get();
         foreach ( $existingChapters as $chapter ) {
-            if ( $chapter->audio_path && file_exists( public_path( $chapter->audio_path ) ) ) {
-                unlink( public_path( $chapter->audio_path ) );
+            // if ( $chapter->audio_path && file_exists( public_path( $chapter->audio_path ) ) ) {
+            //     unlink( public_path( $chapter->audio_path ) );
+            // }
+            if ($chapter->audio_path && Storage::disk('s3')->exists($chapter->audio_path)) {
+                Storage::disk('s3')->delete($chapter->audio_path);
             }
             $chapter->delete();
         }
@@ -327,7 +363,7 @@ class FreeProductController extends Controller {
 
     public function generate_chapter_audio( Request $request ) {
         $validatedData = $request->validate( [
-            'chapter_id' => 'required|integer|exists:chapters,id',
+            'chapter_id' => 'required|integer|exists:chapters, id',
             'voice_id' => 'nullable|string'
         ] );
 
@@ -339,35 +375,50 @@ class FreeProductController extends Controller {
             $pollyService = new PollyService();
 
             // Create folder structure
-            $folderName = Str::slug( $ebook->title );
-            $audioFolder = "uploads/audiobooks/{$folderName}";
-            $audioFileName = "chapter_{$chapter->index}_" . time() . '.mp3';
-            $audioPath = "{$audioFolder}/{$audioFileName}";
+            // $folderName = Str::slug( $ebook->title );
+            // $audioFolder = "uploads/audiobooks/{$folderName}";
+            // $audioFileName = "chapter_{$chapter->index}_" . time() . '.mp3';
+            // $audioPath = "{$audioFolder}/{$audioFileName}";
 
-            // Ensure directory exists
-            $fullAudioFolder = public_path( $audioFolder );
-            if ( !file_exists( $fullAudioFolder ) ) {
-                mkdir( $fullAudioFolder, 0755, true );
-            }
+            // // Ensure directory exists
+            // $fullAudioFolder = public_path( $audioFolder );
+            // if ( !file_exists( $fullAudioFolder ) ) {
+            //     mkdir( $fullAudioFolder, 0755, true );
+            // }
+            $folderName = Str::slug($ebook->title);
+            $audioFileName = "chapter_{$chapter->index}_" . time() . '.mp3';
+            $s3Path = "uploads/audiobooks/{$folderName}/{$audioFileName}";
+
+            // Create a temporary local file path
+            $tempPath = tempnam(sys_get_temp_dir(), 'polly_audio');
+
 
             Log::info( 'Generating audio for chapter', [
                 'chapter_id' => $chapter->id,
                 'ebook_id' => $ebook->id,
                 'text_length' => strlen( $chapter->text ),
-                'output_path' => $audioPath
+                // 'output_path' => $audioPath
+                'output_path' => $s3Path
             ] );
 
             // Generate audio using Polly
             $result = $pollyService->textToSpeech(
                 $chapter->text,
-                $audioPath,
+                // $audioPath,
+                $tempPath,
                 $validatedData[ 'voice_id' ] ?? null
             );
 
             if ( $result[ 'success' ] ) {
+                Storage::disk('s3')->put($s3Path, file_get_contents($tempPath), 'public');
+
+                // Clean up the temporary file
+                @unlink($tempPath);
+
                 // Update chapter with audio path
                 $chapter->update( [
-                    'audio_path' => $audioPath,
+                    // 'audio_path' => $audioPath,
+                    'audio_path' => $s3Path,
                     'audio_duration' => $result[ 'duration_estimate' ] ?? null
                 ] );
 
@@ -380,7 +431,8 @@ class FreeProductController extends Controller {
                 return response()->json( [
                     'success' => true,
                     'message' => 'Audio generated successfully',
-                    'audio_path' => $audioPath,
+                    // 'audio_path' => $audioPath,
+                    'audio_path' => Storage::disk('s3')->url($s3Path),
                     'file_size' => $result[ 'file_size' ],
                     'duration' => $result[ 'duration_estimate' ]
                 ] );
@@ -417,7 +469,7 @@ class FreeProductController extends Controller {
 
     public function generate_all_chapters_audio( Request $request ) {
         $validatedData = $request->validate( [
-            'ebook_id' => 'required|integer|exists:ebooks,id',
+            'ebook_id' => 'required|integer|exists:ebooks, id',
             'voice_id' => 'nullable|string'
         ] );
 
@@ -443,34 +495,44 @@ class FreeProductController extends Controller {
             foreach ( $chapters as $chapter ) {
                 try {
                     // Create audio path
-                    $folderName = Str::slug( $ebook->title );
-                    $audioFolder = "uploads/audiobooks/{$folderName}";
+                    // $folderName = Str::slug( $ebook->title );
+                    // $audioFolder = "uploads/audiobooks/{$folderName}";
+                    $folderName = Str::slug($ebook->title);
                     $audioFileName = "chapter_{$chapter->index}_" . time() . '.mp3';
-                    $audioPath = "{$audioFolder}/{$audioFileName}";
+                    // $audioPath = "{$audioFolder}/{$audioFileName}";
 
                     // Ensure directory exists
-                    $fullAudioFolder = public_path( $audioFolder );
-                    if ( !file_exists( $fullAudioFolder ) ) {
-                        mkdir( $fullAudioFolder, 0755, true );
-                    }
+                    // $fullAudioFolder = public_path( $audioFolder );
+                    // if ( !file_exists( $fullAudioFolder ) ) {
+                    //     mkdir( $fullAudioFolder, 0755, true );
+                    // }
 
                     // Generate audio
+                    $s3Path = "uploads/audiobooks/{$folderName}/{$audioFileName}";
+                    $tempPath = tempnam(sys_get_temp_dir(), 'polly_audio_bulk');
+
                     $result = $pollyService->textToSpeech(
                         $chapter->text,
-                        $audioPath,
+                        // $audioPath,
+                        $tempPath,
                         $validatedData[ 'voice_id' ] ?? null
                     );
 
                     if ( $result[ 'success' ] ) {
+                        Storage::disk('s3')->put($s3Path, file_get_contents($tempPath), 'public');
+                        @unlink($tempPath);
+
                         $chapter->update( [
-                            'audio_path' => $audioPath,
+                            // 'audio_path' => $audioPath,
+                            'audio_path' => $s3Path,
                             'audio_duration' => $result[ 'duration_estimate' ] ?? null
                         ] );
 
                         $results[] = [
                             'chapter_id' => $chapter->id,
                             'success' => true,
-                            'audio_path' => $audioPath
+                            // 'audio_path' => $audioPath
+                            'audio_path' => $s3Path
                         ];
                         $successCount++;
 
@@ -481,6 +543,7 @@ class FreeProductController extends Controller {
                             'error' => $result[ 'message' ]
                         ];
                         $errorCount++;
+                        @unlink($tempPath);
                     }
 
                     // Add a small delay between requests to avoid rate limiting
@@ -494,6 +557,7 @@ class FreeProductController extends Controller {
                         'error' => $e->getMessage()
                     ];
                     $errorCount++;
+                    @unlink($tempPath);
                 }
             }
 
@@ -587,8 +651,11 @@ class FreeProductController extends Controller {
         try {
             $chapter = Chapter::findOrFail( $chapter_id );
 
-            if ( $chapter->audio_path && file_exists( public_path( $chapter->audio_path ) ) ) {
-                unlink( public_path( $chapter->audio_path ) );
+            // if ( $chapter->audio_path && file_exists( public_path( $chapter->audio_path ) ) ) {
+            //     unlink( public_path( $chapter->audio_path ) );
+            // }
+            if ($chapter->audio_path && Storage::disk('s3')->exists($chapter->audio_path)) {
+                Storage::disk('s3')->delete($chapter->audio_path);
             }
 
             $chapter->update( [
@@ -621,13 +688,15 @@ class FreeProductController extends Controller {
             // Create preview folder
             $previewFolder = 'uploads/previews';
             $previewFileName = 'preview_' . $validatedData['voice_id'] . '_' . time() . '.mp3';
-            $previewPath = "{$previewFolder}/{$previewFileName}";
+            // // $previewPath = "{$previewFolder}/{$previewFileName}";
 
-            // Ensure directory exists
-            $fullPreviewFolder = public_path($previewFolder);
-            if (!file_exists($fullPreviewFolder)) {
-                mkdir($fullPreviewFolder, 0755, true);
-            }
+            // // Ensure directory exists
+            // $fullPreviewFolder = public_path($previewFolder);
+            // if (!file_exists($fullPreviewFolder)) {
+            //     mkdir($fullPreviewFolder, 0755, true);
+            // }
+            $s3Path = "{$previewFolder}/{$previewFileName}";
+            $tempPath = tempnam(sys_get_temp_dir(), 'preview_audio');
 
             Log::info('Generating voice preview', [
                 'voice_id' => $validatedData['voice_id'],
@@ -637,22 +706,29 @@ class FreeProductController extends Controller {
             // Generate preview audio
             $result = $pollyService->textToSpeech(
                 $validatedData['text'],
-                $previewPath,
+                // $previewPath,
+                $tempPath,
                 $validatedData['voice_id']
             );
 
             if ($result['success']) {
                 // Schedule file deletion after 1 hour
-                dispatch(function() use ($previewPath) {
-                    if (file_exists(public_path($previewPath))) {
-                        unlink(public_path($previewPath));
-                    }
+                // dispatch(function() use ($previewPath) {
+                //     if (file_exists(public_path($previewPath))) {
+                //         unlink(public_path($previewPath));
+                Storage::disk('s3')->put($s3Path, file_get_contents($tempPath), 'public');
+                @unlink($tempPath);
+                dispatch(function() use ($s3Path) {
+                if (Storage::disk('s3')->exists($s3Path)) {
+                    Storage::disk('s3')->delete($s3Path);
+                }
                 })->delay(now()->addHour());
 
                 return response()->json([
                     'success' => true,
                     'message' => 'Preview generated successfully',
-                    'audio_url' => asset($previewPath),
+                    // 'audio_url' => asset($previewPath),
+                    'audio_url' => Storage::disk('s3')->url($s3Path),
                     'duration' => $result['duration_estimate']
                 ]);
             } else {
@@ -661,6 +737,8 @@ class FreeProductController extends Controller {
                     'message' => $result['message']
                 ], 500);
             }
+            @unlink($tempPath); // Ensure cleanup on failure
+
 
         } catch (\Exception $e) {
             Log::error('Voice preview generation error', [
@@ -696,8 +774,14 @@ public function getEbookChapters($ebook_id)
         $chapters = Chapter::where('ebook_id', $ebook_id)
             ->whereNotNull('audio_path') // Only return chapters with audio
             ->orderBy('index', 'ASC')
-            ->select(['id', 'index', 'title', 'audio_path'])
-            ->get();
+            // ->select(['id', 'index', 'title', 'audio_path'])
+            // ->get();
+            ->select(['id', 'index', 'title', 'audio_path', 'audio_duration'])
+            ->get()
+            ->map(function ($chapter) {
+                $chapter->audio_path = $chapter->audio_path ? Storage::disk('s3')->url($chapter->audio_path) : null;
+                return $chapter;
+            });
 
         return response()->json([
             'success' => true,
@@ -731,14 +815,14 @@ public function ebook_details($id) {
     // Get related ebooks from the same category (excluding current ebook)
     $related_ebooks = Ebook::with('category')
         ->where('category_id', $ebook->category_id)
-        ->where('id', '!=', $ebook->id)
+        ->where('id', ' != ', $ebook->id)
         ->limit(4)
         ->get();
 
     // If not enough related ebooks from same category, get random ones
     if ($related_ebooks->count() < 4) {
         $additional_ebooks = Ebook::with('category')
-            ->where('id', '!=', $ebook->id)
+            ->where('id', ' != ', $ebook->id)
             ->whereNotIn('id', $related_ebooks->pluck('id'))
             ->inRandomOrder()
             ->limit(4 - $related_ebooks->count())
@@ -747,6 +831,6 @@ public function ebook_details($id) {
         $related_ebooks = $related_ebooks->concat($additional_ebooks);
     }
 
-    return view('ebook-details', compact('ebook', 'related_ebooks'));
-}
+    return view('ebook-details', compact('ebook', 'related_ebooks' ) );
+    }
 }

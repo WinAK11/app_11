@@ -9,12 +9,14 @@
                     <div class="product-single__media">
                         <div class="product-single__image">
                             <div class="ebook-cover-container text-center">
+                                {{-- <img loading="lazy" class="ebook-cover-image"
+                                    src="{{ asset($ebook->cover_path ?? 'https://via.placeholder.com/400x600?text=No+Cover') }}" --}}
                                 <img loading="lazy" class="ebook-cover-image"
-                                    src="{{ asset($ebook->cover_path ?? 'https://via.placeholder.com/400x600?text=No+Cover') }}"
+                                    src="{{ $ebook->cover_path ? Storage::disk('s3')->url($ebook->cover_path) : 'https://via.placeholder.com/400x600?text=No+Cover' }}"
                                     alt="{{ $ebook->title }}"
                                     style="max-width: 100%; max-height: 600px; object-fit: contain; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);" />
-                                <a data-fancybox="gallery"
-                                    href="{{ asset($ebook->cover_path ?? 'https://via.placeholder.com/400x600?text=No+Cover') }}"
+                                <a data-fancybox="gallery" {{-- href="{{ asset($ebook->cover_path ?? 'https://via.placeholder.com/400x600?text=No+Cover') }}" --}}
+                                    href="{{ $ebook->cover_path ? Storage::disk('s3')->url($ebook->cover_path) : 'https://via.placeholder.com/400x600?text=No+Cover' }}"
                                     data-bs-toggle="tooltip" data-bs-placement="left" title="Zoom">
                                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none"
                                         xmlns="http://www.w3.org/2000/svg">
@@ -67,8 +69,11 @@
                                 <i class="fas fa-book-open me-2"></i> Read Online
                             </button>
 
-                            @if ($ebook->file_path && file_exists(public_path($ebook->file_path)))
-                                <a href="{{ asset($ebook->file_path) }}" class="btn btn-outline-primary btn-lg flex-fill"
+                            {{-- @if ($ebook->file_path && file_exists(public_path($ebook->file_path)))
+                                <a href="{{ asset($ebook->file_path) }}" class="btn btn-outline-primary btn-lg flex-fill" --}}
+                            @if ($ebook->file_path && Storage::disk('s3')->exists($ebook->file_path))
+                                <a href="{{ Storage::disk('s3')->url($ebook->file_path) }}"
+                                    class="btn btn-outline-primary btn-lg flex-fill"
                                     download="{{ $ebook->title }}.{{ $ebook->format }}">
                                     <i class="fas fa-download me-2"></i> Download
                                 </a>
@@ -184,7 +189,8 @@
                             <div class="card h-100 ebook-card">
                                 <div class="card-body d-flex flex-column">
                                     <div class="ebook-cover mb-3 text-center">
-                                        <img src="{{ asset($related_ebook->cover_path ?? 'https://via.placeholder.com/150x200') }}"
+                                        {{-- <img src="{{ asset($related_ebook->cover_path ?? 'https://via.placeholder.com/150x200') }}" --}}
+                                        <img src="{{ $related_ebook->cover_path ? Storage::disk('s3')->url($related_ebook->cover_path) : 'https://via.placeholder.com/150x200' }}"
                                             alt="{{ $related_ebook->title }}" class="img-fluid rounded"
                                             style="max-height: 150px; object-fit: cover;">
                                     </div>

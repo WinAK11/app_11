@@ -56,7 +56,7 @@
                                         <td>{{ $category->id }}</td>
                                         <td class="pname">
                                             <div class="image">
-                                                <img src="{{ secure_asset('uploads/categories') }}/{{ $category->image }}"
+                                                <img src="{{ Storage::disk('s3')->url('uploads/categories/' . $category->image) }}"
                                                     alt="{{ $category->name }}" class="image">
                                             </div>
                                             <div class="name">
@@ -72,8 +72,7 @@
                                                         <i class="icon-edit-3"></i>
                                                     </div>
                                                 </a>
-                                                <form
-                                                    action="{{ route('admin.category.delete', ['id' => $category->id]) }}"
+                                                <form action="{{ route('admin.category.delete', ['id' => $category->id]) }}"
                                                     method="POST">
                                                     @csrf
                                                     @method('DELETE')

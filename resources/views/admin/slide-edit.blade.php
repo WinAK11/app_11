@@ -72,8 +72,8 @@
                         <div class="upload-image flex-grow">
                             @if ($slide->image)
                                 <div class="item" id="imgpreview">
-                                    <img src="{{ secure_asset('uploads/slides') }}/{{ $slide->image }}" class="effect8"
-                                        alt="" />
+                                    <img src="{{ Storage::disk('s3')->url('uploads/slides/' . $slide->image) }}"
+                                        class="effect8" alt="" />
                                 </div>
                             @endif
                             <div class="item up-load">

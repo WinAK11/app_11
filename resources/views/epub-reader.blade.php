@@ -159,8 +159,9 @@
     <div class="audio-player" id="audioPlayer">
         <div class="audio-controls">
             <div class="audio-info">
-                <img src="{{ asset($ebook->cover_path ?? 'https://via.placeholder.com/40x40') }}" alt="Cover"
-                    class="audio-cover">
+                {{-- <img src="{{ asset($ebook->cover_path ?? 'https://via.placeholder.com/40x40') }}" alt="Cover" --}}
+                <img src="{{ $ebook->cover_path ? Storage::disk('s3')->url($ebook->cover_path) : 'https://via.placeholder.com/40x40' }}"
+                    alt="Cover" class="audio-cover">
                 <div class="audio-details">
                     <p class="audio-title">{{ $ebook->title }}</p>
                     <p class="audio-author">by {{ $ebook->author }}</p>
@@ -232,7 +233,8 @@
         let progressInterval = null;
 
         // Initialize the book (ePub.js part - keep this)
-        const book = ePub("{{ asset($ebook->file_path) }}");
+        // const book = ePub("{{ asset($ebook->file_path) }}");
+        const book = ePub("{{ Storage::disk('s3')->url($ebook->file_path) }}");
         const rendition = book.renderTo("viewer", {
             width: "100%",
             height: "100%",
@@ -387,11 +389,12 @@
             audioPlayer.isLoading = true;
             audioPlayer.currentAudioPath = audioPath;
 
-            const fullPath = `{{ secure_asset('') }}${audioPath}`;
+            // const fullPath = `{{ secure_asset('') }}${audioPath}`;
 
             // Create Howler instance
             audioPlayer.sound = new Howl({
-                src: [fullPath],
+                // src: [fullPath],
+                src: [audioPath],
                 html5: false,
                 volume: audioPlayer.volume,
 

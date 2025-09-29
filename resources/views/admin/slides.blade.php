@@ -58,7 +58,7 @@
                                     <td>{{ $slide->id }}</td>
                                     <td class="pname">
                                         <div class="image">
-                                            <img src="{{ secure_asset('uploads/slides') }}/{{ $slide->image }}"
+                                            <img src="{{ Storage::disk('s3')->url('uploads/slides/' . $slide->image) }}"
                                                 alt="" class="{{ $slide->title }}">
                                         </div>
                                     </td>

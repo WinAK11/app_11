@@ -47,9 +47,11 @@
                                     <tr>
                                         <td>
                                             <div class="shopping-cart__product-item">
-                                                <img loading="lazy"
-                                                    src="{{ secure_asset('uploads/products/thumbnails') }}/{{ $item->model->image }}"
-                                                    width="120" height="120" alt="{{ $item->name }}" />
+                                                <img loading="lazy" {{-- src="{{ secure_asset('uploads/products/thumbnails') }}/{{ $item->model->image }}" --}} {{-- width="120" height="120" alt="{{ $item->name }}" /> --}}
+                                                    src="{{ $item->model->image ? Storage::disk('s3')->url('uploads/products/thumbnails/' . $item->model->image) : 'https://via.placeholder.com/120' }}"
+                                                    width="120" height="120" alt="{{ $item->name }}"
+                                                    style="object-fit: cover;" />
+
                                             </div>
                                         </td>
                                         <td>

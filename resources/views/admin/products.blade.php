@@ -61,8 +61,11 @@
                                     <td>{{ $product->id }}</td>
                                     <td class="pname">
                                         <div class="image">
-                                            <img src="{{ secure_asset('uploads/products/thumbnails') }}/{{ $product->image }}"
-                                                alt="{{ $product->name }}" class="image">
+                                            {{-- <img src="{{ secure_asset('uploads/products/thumbnails') }}/{{ $product->image }}"
+                                                alt="{{ $product->name }}" class="image"> --}}
+                                            <img src="{{ $product->image ? Storage::disk('s3')->url('uploads/products/thumbnails/' . $product->image) : '' }}"
+                                                alt="{{ $product->name }}" class="image"
+                                                style="width: 40px; height: 40px; object-fit: cover;">
                                         </div>
                                         <div class="name">
                                             <a href="#" class="body-title-2">{{ $product->name }}</a>
@@ -79,7 +82,10 @@
                                     <td>{{ $product->quantity }}</td>
                                     <td>
                                         <div class="list-icon-function">
-                                            <a href="#" target="_blank">
+                                            {{-- <a href="#" target="_blank"> --}}
+                                            <a href="{{ route('shop.product.details', ['product_slug' => $product->slug]) }}"
+                                                target="_blank">
+
                                                 <div class="item eye">
                                                     <i class="icon-eye"></i>
                                                 </div>

@@ -39,7 +39,9 @@
                     <fieldset>
                         <label class="body-title">Cover Preview</label>
                         <div id="cover-preview" style="max-width: 200px; margin-top: 10px;">
-                            <img id="cover-img" src="{{ asset($ebook->cover_path ?? '') }}" alt="Cover Image"
+                            <img id="cover-img"
+                                src="{{ $ebook->cover_path ? Storage::disk('s3')->url($ebook->cover_path) : '' }}"
+                                alt="Cover Image"
                                 style="width: 100%; border-radius: 4px; {{ $ebook->cover_path ? '' : 'display:none;' }}" />
                         </div>
                     </fieldset>

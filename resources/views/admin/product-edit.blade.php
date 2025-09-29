@@ -138,7 +138,7 @@
                         <div class="upload-image flex-grow">
                             @if ($product->image)
                                 <div class="item" id="imgpreview">
-                                    <img src="{{ secure_asset('uploads/products') }}/{{ $product->image }}"
+                                    <img src="{{ Storage::disk('s3')->url('uploads/products/' . $product->image) }}"
                                         class="effect8" alt="{{ $product->name }}">
                                 </div>
                             @endif
@@ -164,7 +164,7 @@
                             @if ($product->images)
                                 @foreach (explode(',', $product->images) as $img)
                                     <div class="item gitems">
-                                        <img src="{{ secure_asset('uploads/products') }}/{{ trim($img) }}"
+                                        <img src="{{ Storage::disk('s3')->url('uploads/products/' . trim($img)) }}"
                                             alt="">
                                     </div>
                                 @endforeach

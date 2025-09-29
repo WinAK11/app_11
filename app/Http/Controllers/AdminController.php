@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 
 class AdminController extends Controller {
     public function index() {
@@ -112,12 +113,17 @@ $monthlyDatas = DB::select("
 
     public function GenerateCategoryThumbailsImage($image, $imageName)
     {
-        $destinationPath = public_path('uploads/categories');
+        // $destinationPath = public_path('uploads/categories');
+        $path = 'uploads/categories/' . $imageName;
         $img = Image::read($image->path());
         $img->cover(124, 124, 'top');
         $img->resize(124, 124, function ($constraint){
             $constraint->aspectRatio();
-        })->save($destinationPath.'/'.$imageName);
+        // })->save($destinationPath.'/'.$imageName);
+        });
+        $encodedImage = $img->encode();
+        Storage::disk('s3')->put($path, (string) $encodedImage, 'public');
+
     }
 
     public function category_edit($id)
@@ -137,9 +143,14 @@ $monthlyDatas = DB::select("
         $category->name = $request->name;
         $category->slug = Str::slug( $request->name );
         if($request->hasFile('image')){
-            if(File::exists(public_path('uploads/categories').'/'.$category->image)){
-                File::delete(public_path('uploads/categories').'/'.$category->image);
+            // if(File::exists(public_path('uploads/categories').'/'.$category->image)){
+            //     File::delete(public_path('uploads/categories').'/'.$category->image);
+            // }
+            $path = 'uploads/categories/' . $category->image;
+            if ($category->image && Storage::disk('s3')->exists($path)) {
+                Storage::disk('s3')->delete($path);
             }
+
             $image = $request->file( 'image' );
             $file_extension = $request->file( 'image' )->extension();
             $file_name = Carbon::now()->timestamp.'.'.$file_extension;
@@ -153,9 +164,14 @@ $monthlyDatas = DB::select("
     public function category_delete($id)
     {
         $category = Category::find($id);
-        if(File::exists(public_path('uploads/categories').'/'.$category->image)){
-            File::delete(public_path('uploads/categories').'/'.$category->image);
+        // if(File::exists(public_path('uploads/categories').'/'.$category->image)){
+        //     File::delete(public_path('uploads/categories').'/'.$category->image);
+        // }
+        $path = 'uploads/categories/' . $category->image;
+        if ($category->image && Storage::disk('s3')->exists($path)) {
+            Storage::disk('s3')->delete($path);
         }
+
         $category->delete();
         return redirect()->route('admin.categories')->with('status', 'Category has been deleted sucessfully.');
     }
@@ -239,30 +255,42 @@ $monthlyDatas = DB::select("
 
     public function GenerateProductThumbnailImage($image, $imageName)
     {
-        $destinationPath = public_path('uploads/products');
-        $destinationPathThumbnail = public_path('uploads/products/thumbnails');
+        // $destinationPath = public_path('uploads/products');
+        // $destinationPathThumbnail = public_path('uploads/products/thumbnails');
 
         // Create directories if they do not exist
-        if (!File::exists($destinationPath)) {
-            File::makeDirectory($destinationPath, 0755, true);
-        }
+        // if (!File::exists($destinationPath)) {
+        //     File::makeDirectory($destinationPath, 0755, true);
+        // }
 
-        if (!File::exists($destinationPathThumbnail)) {
-            File::makeDirectory($destinationPathThumbnail, 0755, true);
-        }
+        // if (!File::exists($destinationPathThumbnail)) {
+        //     File::makeDirectory($destinationPathThumbnail, 0755, true);
+        // }
 
         $img = Image::read($image->path());
+        $mainPath = 'uploads/products/' . $imageName;
+
 
         // Resize to main image dimensions
         $img->cover(540, 689, 'top');
         $img->resize(540, 689, function ($constraint) {
             $constraint->aspectRatio();
-        })->save($destinationPath.'/'.$imageName);
+        // })->save($destinationPath.'/'.$imageName);
+        });
+        $encodedMain = $img->encode();
+        Storage::disk('s3')->put($mainPath, (string) $encodedMain, 'public');
+
+        $thumbPath = 'uploads/products/thumbnails/' . $imageName;
+
 
         // Resize to thumbnail dimensions
         $img->resize(104, 104, function ($constraint) {
             $constraint->aspectRatio();
-        })->save($destinationPathThumbnail.'/'.$imageName);
+        // })->save($destinationPathThumbnail.'/'.$imageName);
+        });
+        $encodedThumb = $img->encode();
+        Storage::disk('s3')->put($thumbPath, (string) $encodedThumb, 'public');
+
     }
 
 
@@ -306,12 +334,19 @@ $monthlyDatas = DB::select("
         $current_timestamp = Carbon::now()->timestamp;
 
         if($request->hasFile('image')){
-            if(File::exists(public_path('uploads/products').'/'.$product->image)){
-                File::delete(public_path('uploads/products').'/'.$product->image);
+            // if(File::exists(public_path('uploads/products').'/'.$product->image)){
+            //     File::delete(public_path('uploads/products').'/'.$product->image);
+            // }
+            // if(File::exists(public_path('uploads/products/thumbnails').'/'.$product->image)){
+            //     File::delete(public_path('uploads/products/thumbnails').'/'.$product->image);
+            // }
+            if ($product->image) {
+                $mainPath = 'uploads/products/' . $product->image;
+                $thumbPath = 'uploads/products/thumbnails/' . $product->image;
+                if (Storage::disk('s3')->exists($mainPath)) Storage::disk('s3')->delete($mainPath);
+                if (Storage::disk('s3')->exists($thumbPath)) Storage::disk('s3')->delete($thumbPath);
             }
-            if(File::exists(public_path('uploads/products/thumbnails').'/'.$product->image)){
-                File::delete(public_path('uploads/products/thumbnails').'/'.$product->image);
-            }
+
             $image = $request->file('image');
             $imageName = $current_timestamp . '.' . $image->extension();
             $this->GenerateProductThumbnailImage($image, $imageName);
@@ -323,12 +358,17 @@ $monthlyDatas = DB::select("
         $counter = 1;
         if($request->hasFile('images')){
             foreach (explode(', ', $product->images) as $ofile) {
-                if(File::exists(public_path('uploads/products').'/'.$ofile)){
-                    File::delete(public_path('uploads/products').'/'.$ofile);
-                }
-                if(File::exists(public_path('uploads/products/thumbnails').'/'.$ofile)){
-                    File::delete(public_path('uploads/products/thumbnails').'/'.$ofile);
-                }
+                // if(File::exists(public_path('uploads/products').'/'.$ofile)){
+                //     File::delete(public_path('uploads/products').'/'.$ofile);
+                // }
+                // if(File::exists(public_path('uploads/products/thumbnails').'/'.$ofile)){
+                //     File::delete(public_path('uploads/products/thumbnails').'/'.$ofile);
+                // }
+                $mainPath = 'uploads/products/' . $ofile;
+                $thumbPath = 'uploads/products/thumbnails/' . $ofile;
+                if ($ofile && Storage::disk('s3')->exists($mainPath)) Storage::disk('s3')->delete($mainPath);
+                if ($ofile && Storage::disk('s3')->exists($thumbPath)) Storage::disk('s3')->delete($thumbPath);
+
             }
             $allowedfileExtion = ['jpg', 'png', 'jpeg'];
             $files = $request->file('images');
@@ -354,20 +394,32 @@ $monthlyDatas = DB::select("
     public function product_delete($id)
     {
         $product = Product::find($id);
-        if(File::exists(public_path('uploads/products').'/'.$product->image)){
-            File::delete(public_path('uploads/products').'/'.$product->image);
-        }
-        if(File::exists(public_path('uploads/products/thumbnails').'/'.$product->image)){
-            File::delete(public_path('uploads/products/thumbnails').'/'.$product->image);
+        // if(File::exists(public_path('uploads/products').'/'.$product->image)){
+        //     File::delete(public_path('uploads/products').'/'.$product->image);
+        // }
+        // if(File::exists(public_path('uploads/products/thumbnails').'/'.$product->image)){
+        //     File::delete(public_path('uploads/products/thumbnails').'/'.$product->image);
+        // }
+        if ($product->image) {
+            $mainPath = 'uploads/products/' . $product->image;
+            $thumbPath = 'uploads/products/thumbnails/' . $product->image;
+            if (Storage::disk('s3')->exists($mainPath)) Storage::disk('s3')->delete($mainPath);
+            if (Storage::disk('s3')->exists($thumbPath)) Storage::disk('s3')->delete($thumbPath);
         }
 
+
         foreach (explode(', ', $product->images) as $ofile) {
-            if(File::exists(public_path('uploads/products').'/'.$ofile)){
-                File::delete(public_path('uploads/products').'/'.$ofile);
-            }
-            if(File::exists(public_path('uploads/products/thumbnails').'/'.$ofile)){
-                File::delete(public_path('uploads/products/thumbnails').'/'.$ofile);
-            }
+            // if(File::exists(public_path('uploads/products').'/'.$ofile)){
+            //     File::delete(public_path('uploads/products').'/'.$ofile);
+            // }
+            // if(File::exists(public_path('uploads/products/thumbnails').'/'.$ofile)){
+            //     File::delete(public_path('uploads/products/thumbnails').'/'.$ofile);
+            // }
+            $mainPath = 'uploads/products/' . $ofile;
+            $thumbPath = 'uploads/products/thumbnails/' . $ofile;
+            if ($ofile && Storage::disk('s3')->exists($mainPath)) Storage::disk('s3')->delete($mainPath);
+            if ($ofile && Storage::disk('s3')->exists($thumbPath)) Storage::disk('s3')->delete($thumbPath);
+
         }
 
         $product->delete();
@@ -431,10 +483,15 @@ $monthlyDatas = DB::select("
 
         if ($request->hasFile('image'))
         {
-            if (File::exists(public_path('uploads/authors').'/'.$author->image))
-            {
-                File::delete(public_path('uploads/authors').'/'.$author->image);
+            // if (File::exists(public_path('uploads/authors').'/'.$author->image))
+            // {
+            //     File::delete(public_path('uploads/authors').'/'.$author->image);
+            // }
+            $path = 'uploads/authors/' . $author->image;
+            if ($author->image && Storage::disk('s3')->exists($path)) {
+                Storage::disk('s3')->delete($path);
             }
+
             $image = $request->file('image');
             $file_extension = $request->file('image')->extension();
             $file_name = Carbon::now()->timestamp.'.'.$file_extension;
@@ -450,22 +507,32 @@ $monthlyDatas = DB::select("
 
     public function GenerateAuthorThumbnailsImage($image, $imageName)
     {
-        $destinationPath = public_path('uploads/authors');
+        // $destinationPath = public_path('uploads/authors');
+        $path = 'uploads/authors/' . $imageName;
         $img = Image::read($image->path());
         $img->cover(124, 124, "top");
         $img->resize(124, 124, function($constraint)
         {
             $constraint->aspectRatio();
-        })->save($destinationPath.'/'.$imageName);
+        // })->save($destinationPath.'/'.$imageName);
+        });
+        $encodedImage = $img->encode();
+        Storage::disk('s3')->put($path, (string) $encodedImage, 'public');
+
     }
 
     public function author_delete($id)
     {
         $author=Author::find($id);
-        if (File::exists(public_path('uploads/authors').'/'.$author->image))
-        {
-            File::delete(public_path('uploads/authors').'/'.$author->image);
+        // if (File::exists(public_path('uploads/authors').'/'.$author->image))
+        // {
+        //     File::delete(public_path('uploads/authors').'/'.$author->image);
+        // }
+        $path = 'uploads/authors/' . $author->image;
+        if ($author->image && Storage::disk('s3')->exists($path)) {
+            Storage::disk('s3')->delete($path);
         }
+
         $author->delete();
         return redirect()->route('admin.authors')->with('status', "Author has been deleted successfully!");
     }
@@ -656,13 +723,18 @@ $monthlyDatas = DB::select("
 
     public function GenerateSlideThumbnailImage($image, $imageName)
     {
-        $destinationPath = public_path('uploads/slides');
+        // $destinationPath = public_path('uploads/slides');
+        $path = 'uploads/slides/' . $imageName;
+
         $img = Image::read($image->path());
         $img->cover(400, 690, "top");
         $img->resize(400, 690, function($constraint)
         {
             $constraint->aspectRatio();
-        })->save($destinationPath.'/'.$imageName);
+        // })->save($destinationPath.'/'.$imageName);
+        });
+        $encodedImage = $img->encode();
+        Storage::disk('s3')->put($path, (string) $encodedImage, 'public');
     }
 
     public function slide_edit($id)
@@ -690,10 +762,15 @@ $monthlyDatas = DB::select("
 
         if ($request->hasFile('image'))
         {
-            if (File::exists(public_path('uploads/slides').'/'.$slide->image))
-            {
-                File::delete(public_path('uploads/slides').'/'.$slide->image);
+            // if (File::exists(public_path('uploads/slides').'/'.$slide->image))
+            // {
+            //     File::delete(public_path('uploads/slides').'/'.$slide->image);
+            // }
+            $path = 'uploads/slides/' . $slide->image;
+            if ($slide->image && Storage::disk('s3')->exists($path)) {
+                Storage::disk('s3')->delete($path);
             }
+
             $image = $request->file('image');
             $imageName = Carbon::now()->timestamp . '.' . $image->extension();
             $this->GenerateSlideThumbnailImage($image, $imageName);
@@ -706,62 +783,17 @@ $monthlyDatas = DB::select("
     public function slide_delete($id)
     {
         $slide = Slide::find($id);
-        if (File::exists(public_path('uploads/slides').'/'.$slide->image))
-        {
-            File::delete(public_path('uploads/slides').'/'.$slide->image);
+        // if (File::exists(public_path('uploads/slides').'/'.$slide->image))
+        // {
+        //     File::delete(public_path('uploads/slides').'/'.$slide->image);
+        // }
+        $path = 'uploads/slides/' . $slide->image;
+        if ($slide->image && Storage::disk('s3')->exists($path)) {
+            Storage::disk('s3')->delete($path);
         }
+
         $slide->delete();
         return redirect()->route('admin.slides')->with("status", "Slide has been deleted successfully.");
     }
 
-    // public function store(Request $request)
-    // {
-    //     // 1. Validate and create the product
-    //     $product = Product::create([
-    //         'name' => $request->name,
-    //         'slug' => Str::slug($request->name),
-    //         'short_description' => $request->short_description,
-    //         'description' => $request->description,
-    //         'regular_price' => $request->regular_price,
-    //         'sale_price' => $request->sale_price,
-    //         'SKU' => $request->SKU,
-    //         'stock_status' => $request->stock_status,
-    //         'featured' => $request->featured,
-    //         'quantity' => $request->quantity,
-    //         'image' => $request->image,
-    //         'category_id' => $request->category_id,
-    //         'author_id' => $request->author_id,
-    //     ]);
-
-    //     // 2. Generate embedding with OpenAI
-    //     $text = $product->name . ' ' . $product->description;
-    //     $embeddingResponse = Http::withHeaders([
-    //         'Authorization' => 'Bearer ' . env('OPENAI_API_KEY'),
-    //     ])->post('https://api.openai.com/v1/embeddings', [
-    //         'input' => $text,
-    //         'model' => 'text-embedding-ada-002',
-    //     ]);
-    //     $embedding = $embeddingResponse->json('data.0.embedding');
-    //     $product->vector = json_encode($embedding);
-    //     $product->save();
-
-    //     // 3. Upsert to Pinecone
-    //     $pineconeUrl = "https://" . env('PINECONE_INDEX') . ".svc." . env('PINECONE_ENVIRONMENT') . ".pinecone.io/vectors/upsert";
-    //     Http::withHeaders([
-    //         'Api-Key' => env('PINECONE_API_KEY'),
-    //         'Content-Type' => 'application/json',
-    //     ])->post($pineconeUrl, [
-    //         'vectors' => [
-    //             [
-    //                 'id' => (string)$product->id,
-    //                 'values' => $embedding,
-    //                 'metadata' => [
-    //                     'id' => $product->id,
-    //                 ],
-    //             ],
-    //         ],
-    //     ]);
-
-    //     // ...rest of your logic...
-    // }
 }

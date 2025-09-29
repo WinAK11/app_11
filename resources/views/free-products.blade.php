@@ -106,7 +106,8 @@
                                     {{-- Make cover image clickable --}}
                                     <div class="audiobook-cover mb-3 text-center">
                                         <a href="{{ route('ebook.details', $ebook->id) }}">
-                                            <img src="{{ asset($ebook->cover_path ?? 'https://via.placeholder.com/150x200') }}"
+                                            {{-- <img src="{{ asset($ebook->cover_path ?? 'https://via.placeholder.com/150x200') }}" --}}
+                                            <img src="{{ $ebook->cover_path ? Storage::disk('s3')->url($ebook->cover_path) : 'https://via.placeholder.com/150x200' }}"
                                                 alt="{{ $ebook->title }}" class="img-fluid rounded"
                                                 style="max-height: 200px; object-fit: cover;">
                                         </a>

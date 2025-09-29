@@ -24,7 +24,9 @@
             <div class="wg-box mb-20">
                 <div class="flex items-center gap20">
                     @if ($ebook->cover_path)
-                        <img src="{{ asset($ebook->cover_path) }}" alt="Cover"
+                        {{-- <img src="{{ asset($ebook->cover_path) }}" alt="Cover"
+                            style="width: 80px; height: 120px; object-fit: cover; border-radius: 8px;"> --}}
+                        <img src="{{ Storage::disk('s3')->url($ebook->cover_path) }}" alt="Cover"
                             style="width: 80px; height: 120px; object-fit: cover; border-radius: 8px;">
                     @else
                         <div
@@ -136,11 +138,12 @@
                                         <div class="flex items-center gap-1">
                                             @if ($chapter->audio_path)
                                                 <button class="btn-lg btn-primary"
-                                                    onclick="playAudio('{{ asset($chapter->audio_path) }}', {{ $chapter->id }})"
+                                                    onclick="playAudio('{{ Storage::disk('s3')->url($chapter->audio_path) }}', {{ $chapter->id }})"
                                                     style="background: #17a2b8;">
                                                     <i class="icon-play"></i>
                                                 </button>
-                                                <a href="{{ asset($chapter->audio_path) }}" download
+
+                                                <a href="{{ Storage::disk('s3')->url($chapter->audio_path) }}" download
                                                     class="btn-lg btn-primary" style="background: #28a745;">
                                                     <i class="icon-download"></i>
                                                 </a>

@@ -19,6 +19,7 @@
         "laravel/scout": "^10.17",
         "laravel/tinker": "^2.9",
         "laravel/ui": "^4.6",
+        "league/flysystem-aws-s3-v3": "^3.0",
         "livewire/livewire": "^3.6",
         "meilisearch/meilisearch-php": "^1.15",
         "surfsidemedia/shoppingcart": "^2.0"

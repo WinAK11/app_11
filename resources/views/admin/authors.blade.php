@@ -58,7 +58,7 @@
                                         <td>{{ $author->id }}</td>
                                         <td class="pname">
                                             <div class="image">
-                                                <img src="{{ secure_asset('uploads/authors') }}/{{ $author->image }}"
+                                                <img src="{{ Storage::disk('s3')->url('uploads/authors/' . $author->image) }}"
                                                     alt="{{ $author->name }}" class="image">
                                             </div>
                                             <div class="name">

@@ -59,7 +59,8 @@
                                     <td class="text-center">{{ $ebook->id }}</td>
                                     <td class="text-center">
                                         @if ($ebook->cover_path)
-                                            <img src="{{ asset($ebook->cover_path) }}" alt="cover" width="60">
+                                            <img src="{{ Storage::disk('s3')->url($ebook->cover_path) }}" alt="cover"
+                                                width="60">
                                         @else
                                             <span class="text-muted">No cover</span>
                                         @endif
@@ -71,7 +72,7 @@
                                     <td>{{ \Illuminate\Support\Str::limit($ebook->description, 150) }}</td>
                                     <td>
                                         <div class="list-icon-function">
-                                            <a href="{{ asset($ebook->file_path) }}" target="_blank">
+                                            <a href="{{ Storage::disk('s3')->url($ebook->file_path) }}" target="_blank">
                                                 <div class="item eye" title="Download/View">
                                                     <i class="icon-download"></i>
                                                 </div>

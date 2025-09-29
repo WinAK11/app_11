@@ -10,11 +10,11 @@
                             <div class="swiper-container">
                                 <div class="swiper-wrapper">
                                     <div class="swiper-slide product-single__image-item">
-                                        <img loading="lazy" class="h-auto"
-                                            src="{{ secure_asset('uploads/products') }}/{{ $product->image }}"
+                                        <img loading="lazy" class="h-auto" {{-- src="{{ secure_asset('uploads/products') }}/{{ $product->image }}" --}}
+                                            src="{{ $product->image ? Storage::disk('s3')->url('uploads/products/' . $product->image) : '' }}"
                                             width="674" height="674" alt="" />
-                                        <a data-fancybox="gallery"
-                                            href="{{ secure_asset('uploads/products') }}/{{ $product->image }}"
+                                        <a data-fancybox="gallery" {{-- href="{{ secure_asset('uploads/products') }}/{{ $product->image }}" --}}
+                                            href="{{ $product->image ? Storage::disk('s3')->url('uploads/products/' . $product->image) : '' }}"
                                             data-bs-toggle="tooltip" data-bs-placement="left" title="Zoom">
                                             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"
                                                 xmlns="http://www.w3.org/2000/svg">
@@ -23,7 +23,7 @@
                                         </a>
                                     </div>
 
-                                    @foreach (explode(',', $product->images) as $gallery_image)
+                                    {{-- @foreach (explode(',', $product->images) as $gallery_image)
                                         <div class="swiper-slide product-single__image-item">
                                             <img loading="lazy" class="h-auto"
                                                 src="{{ secure_asset('uploads/products') }}/{{ $gallery_image }}"
@@ -37,7 +37,26 @@
                                                 </svg>
                                             </a>
                                         </div>
-                                    @endforeach
+                                    @endforeach --}}
+                                    @if ($product->images)
+                                        @foreach (explode(', ', $product->images) as $gallery_image)
+                                            @if (trim($gallery_image))
+                                                <div class="swiper-slide product-single__image-item">
+                                                    <img loading="lazy" class="h-auto"
+                                                        src="{{ Storage::disk('s3')->url('uploads/products/' . trim($gallery_image)) }}"
+                                                        width="674" height="674" alt="" />
+                                                    <a data-fancybox="gallery"
+                                                        href="{{ Storage::disk('s3')->url('uploads/products/' . trim($gallery_image)) }}"
+                                                        data-bs-toggle="tooltip" data-bs-placement="left" title="Zoom">
+                                                        <svg width="16" height="16" viewBox="0 0 16 16"
+                                                            fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                            <use href="#icon_zoom" />
+                                                        </svg>
+                                                    </a>
+                                                </div>
+                                            @endif
+                                        @endforeach
+                                    @endif
                                 </div>
                                 <div class="swiper-button-prev"><svg width="7" height="11" viewBox="0 0 7 11"
                                         xmlns="http://www.w3.org/2000/svg">
@@ -53,14 +72,26 @@
                             <div class="swiper-container">
                                 <div class="swiper-wrapper">
                                     <div class="swiper-slide product-single__image-item"><img loading="lazy" class="h-auto"
-                                            src="{{ secure_asset('uploads/products/thumbnails') }}/{{ $product->image }}"
+                                            {{-- src="{{ secure_asset('uploads/products/thumbnails') }}/{{ $product->image }}" --}}
+                                            src="{{ $product->image ? Storage::disk('s3')->url('uploads/products/thumbnails/' . $product->image) : '' }}"
                                             width="104" height="104" alt="" /></div>
-                                    @foreach (explode(',', $product->images) as $gallery_image)
+                                    {{-- @foreach (explode(',', $product->images) as $gallery_image)
                                         <div class="swiper-slide product-single__image-item"><img loading="lazy"
                                                 class="h-auto"
                                                 src="{{ secure_asset('uploads/products/thumbnails') }}/{{ $gallery_image }}"
                                                 width="104" height="104" alt="" /></div>
-                                    @endforeach
+                                    @endforeach --}}
+                                    @if ($product->images)
+                                        @foreach (explode(', ', $product->images) as $gallery_image)
+                                            @if (trim($gallery_image))
+                                                <div class="swiper-slide product-single__image-item"><img loading="lazy"
+                                                        class="h-auto"
+                                                        src="{{ Storage::disk('s3')->url('uploads/products/thumbnails/' . trim($gallery_image)) }}"
+                                                        width="104" height="104" alt="" /></div>
+                                            @endif
+                                        @endforeach
+                                    @endif
+
                                 </div>
                             </div>
                         </div>
@@ -383,16 +414,25 @@
                                 <div class="pc__img-wrapper">
                                     <a
                                         href="{{ route('shop.product.details', ['product_slug' => $related_product->slug]) }}">
-                                        <img loading="lazy"
-                                            src="{{ secure_asset('uploads/products') }}/{{ $related_product->image }}"
+                                        <img loading="lazy" {{-- src="{{ secure_asset('uploads/products') }}/{{ $related_product->image }}" --}}
+                                            src="{{ $related_product->image ? Storage::disk('s3')->url('uploads/products/' . $related_product->image) : '' }}"
                                             width="330" height="400" alt="{{ $related_product->name }}"
                                             class="pc__img">
-                                        @foreach (explode(',', $related_product->images) as $gallery_image)
+                                        {{-- @foreach (explode(',', $related_product->images) as $gallery_image)
                                             <img loading="lazy"
                                                 src="{{ secure_asset('uploads/products') }}/{{ $gallery_image }}"
                                                 width="330" height="400" alt="{{ $related_product->name }}"
                                                 class="pc__img pc__img-second">
-                                        @endforeach
+                                        @endforeach --}}
+                                        @if ($related_product->images)
+                                            @php $gallery = explode(', ', $related_product->images); @endphp
+                                            @if (isset($gallery[0]) && trim($gallery[0]))
+                                                <img loading="lazy"
+                                                    src="{{ Storage::disk('s3')->url('uploads/products/' . trim($gallery[0])) }}"
+                                                    width="330" height="400" alt="{{ $related_product->name }}"
+                                                    class="pc__img pc__img-second">
+                                            @endif
+                                        @endif
                                     </a>
                                     @if (Cart::instance('cart')->content()->where('id', $related_product->id)->count() > 0)
                                         <a href = "{{ route('cart.index') }}"

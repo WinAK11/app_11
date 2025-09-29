@@ -15,8 +15,8 @@
                     <div class="accordion-item mb-4 pb-3">
                         <h5 class="accordion-header" id="accordion-heading-search-type">
                             <button class="accordion-button p-0 border-0 fs-5 text-uppercase" type="button"
-                                data-bs-toggle="collapse" data-bs-target="#accordion-filter-search-type" aria-expanded="true"
-                                aria-controls="accordion-filter-search-type">
+                                data-bs-toggle="collapse" data-bs-target="#accordion-filter-search-type"
+                                aria-expanded="true" aria-controls="accordion-filter-search-type">
                                 Search Type
                                 <svg class="accordion-button__icon type2" viewBox="0 0 10 6"
                                     xmlns="http://www.w3.org/2000/svg">
@@ -275,7 +275,8 @@
                                                 {{ in_array('5', explode(',', $f_rating)) ? 'checked' : '' }} />
                                             <div class="reviews-group d-flex">
                                                 @for ($i = 1; $i <= 5; $i++)
-                                                    <svg class="review-star" style="fill: gold;" viewBox="0 0 9 9" xmlns="http://www.w3.org/2000/svg">
+                                                    <svg class="review-star" style="fill: gold;" viewBox="0 0 9 9"
+                                                        xmlns="http://www.w3.org/2000/svg">
                                                         <use href="#icon_star" />
                                                     </svg>
                                                 @endfor
@@ -288,11 +289,13 @@
                                                 {{ in_array('4', explode(',', $f_rating)) ? 'checked' : '' }} />
                                             <div class="reviews-group d-flex">
                                                 @for ($i = 1; $i <= 4; $i++)
-                                                    <svg class="review-star" style="fill: gold;" viewBox="0 0 9 9" xmlns="http://www.w3.org/2000/svg">
+                                                    <svg class="review-star" style="fill: gold;" viewBox="0 0 9 9"
+                                                        xmlns="http://www.w3.org/2000/svg">
                                                         <use href="#icon_star" />
                                                     </svg>
                                                 @endfor
-                                                <svg class="review-star" style="fill: #ccc;" viewBox="0 0 9 9" xmlns="http://www.w3.org/2000/svg">
+                                                <svg class="review-star" style="fill: #ccc;" viewBox="0 0 9 9"
+                                                    xmlns="http://www.w3.org/2000/svg">
                                                     <use href="#icon_star" />
                                                 </svg>
                                             </div>
@@ -305,12 +308,14 @@
                                                 {{ in_array('3', explode(',', $f_rating)) ? 'checked' : '' }} />
                                             <div class="reviews-group d-flex">
                                                 @for ($i = 1; $i <= 3; $i++)
-                                                    <svg class="review-star" style="fill: gold;" viewBox="0 0 9 9" xmlns="http://www.w3.org/2000/svg">
+                                                    <svg class="review-star" style="fill: gold;" viewBox="0 0 9 9"
+                                                        xmlns="http://www.w3.org/2000/svg">
                                                         <use href="#icon_star" />
                                                     </svg>
                                                 @endfor
                                                 @for ($i = 1; $i <= 2; $i++)
-                                                    <svg class="review-star" style="fill: #ccc;" viewBox="0 0 9 9" xmlns="http://www.w3.org/2000/svg">
+                                                    <svg class="review-star" style="fill: #ccc;" viewBox="0 0 9 9"
+                                                        xmlns="http://www.w3.org/2000/svg">
                                                         <use href="#icon_star" />
                                                     </svg>
                                                 @endfor
@@ -332,7 +337,7 @@
                         <div>
                             <h2 class="h4 mb-1">Search Results</h2>
                             <p class="text-muted mb-0">
-                                @if($query)
+                                @if ($query)
                                     Showing results for "<strong>{{ $query }}</strong>"
                                 @else
                                     All Products
@@ -341,7 +346,7 @@
                             </p>
                         </div>
                         <div class="search-type-badge">
-                            @if($search_type == 'vector')
+                            @if ($search_type == 'vector')
                                 <span class="badge bg-primary">AI-Powered Search</span>
                             @elseif($search_type == 'text')
                                 <span class="badge bg-secondary">Text Search</span>
@@ -352,7 +357,7 @@
                     </div>
 
                     <!-- Search Suggestions -->
-                    @if($products->total() == 0 && $query)
+                    @if ($products->total() == 0 && $query)
                         <div class="alert alert-info">
                             <h5>No results found for "{{ $query }}"</h5>
                             <p class="mb-2">Try these suggestions:</p>
@@ -375,7 +380,8 @@
                     @elseif($products->total() == 0 && !$query)
                         <div class="alert alert-info">
                             <h5>Browse All Products</h5>
-                            <p class="mb-3">Use the filters on the left to narrow down your search, or search for specific items using the search box.</p>
+                            <p class="mb-3">Use the filters on the left to narrow down your search, or search for
+                                specific items using the search box.</p>
                             <a href="{{ route('shop.index') }}" class="btn btn-primary">
                                 Go to Shop
                             </a>
@@ -385,21 +391,26 @@
 
                 <div class="d-flex justify-content-between mb-4 pb-md-2">
                     <div class="breadcrumb mb-0 d-none d-md-block flex-grow-1">
-                        <a href="{{ route('home.index') }}" class="menu-link menu-link_us-s text-uppercase fw-medium">Home</a>
+                        <a href="{{ route('home.index') }}"
+                            class="menu-link menu-link_us-s text-uppercase fw-medium">Home</a>
                         <span class="breadcrumb-separator menu-link fw-medium ps-1 pe-1">/</span>
-                        <a href="{{ route('shop.index') }}" class="menu-link menu-link_us-s text-uppercase fw-medium">Shop</a>
+                        <a href="{{ route('shop.index') }}"
+                            class="menu-link menu-link_us-s text-uppercase fw-medium">Shop</a>
                         <span class="breadcrumb-separator menu-link fw-medium ps-1 pe-1">/</span>
                         <span class="menu-link menu-link_us-s text-uppercase fw-medium">Search Results</span>
                     </div>
 
-                    <div class="shop-acs d-flex align-items-center justify-content-between justify-content-md-end flex-grow-1">
+                    <div
+                        class="shop-acs d-flex align-items-center justify-content-between justify-content-md-end flex-grow-1">
                         <select class="shop-acs__select form-select w-auto border-0 py-0 order-1 order-md-0"
                             aria-label="Sort Items" name="orderby" id="orderby">
                             <option value="relevance" {{ $sort == 'relevance' ? 'selected' : '' }}>Most Relevant</option>
                             <option value="name_asc" {{ $sort == 'name_asc' ? 'selected' : '' }}>Name (A-Z)</option>
                             <option value="name_desc" {{ $sort == 'name_desc' ? 'selected' : '' }}>Name (Z-A)</option>
-                            <option value="price_asc" {{ $sort == 'price_asc' ? 'selected' : '' }}>Price (Low-High)</option>
-                            <option value="price_desc" {{ $sort == 'price_desc' ? 'selected' : '' }}>Price (High-Low)</option>
+                            <option value="price_asc" {{ $sort == 'price_asc' ? 'selected' : '' }}>Price (Low-High)
+                            </option>
+                            <option value="price_desc" {{ $sort == 'price_desc' ? 'selected' : '' }}>Price (High-Low)
+                            </option>
                             <option value="rating" {{ $sort == 'rating' ? 'selected' : '' }}>Highest Rated</option>
                             <option value="newest" {{ $sort == 'newest' ? 'selected' : '' }}>Newest First</option>
                         </select>
@@ -441,18 +452,20 @@
                                                 <a
                                                     href="{{ route('shop.product.details', ['product_slug' => $product->slug]) }}">
                                                     <img loading="lazy"
-                                                        src="{{ $product->image ? asset('uploads/products/' . $product->image) : asset('uploads/book_placeholder.png') }}"
+                                                        src="{{ $product->image
+                                                            ? Storage::disk('s3')->url('uploads/products/' . $product->image)
+                                                            : asset('uploads/book_placeholder.png') }}"
                                                         width="310" height="400" alt="{{ $product->name }}"
                                                         class="pc__img" />
                                                 </a>
                                             </div>
-                                            @if($product->images)
+                                            @if ($product->images)
                                                 <div class="swiper-slide">
                                                     @foreach (explode(',', $product->images) as $gallery_image)
                                                         <a
-                                                            href="{{ route('shop.product.details', ['product_slug' => $product->slug]) }}"><img
-                                                                loading="lazy"
-                                                                src="{{ asset('uploads/products') }}/{{ $gallery_image }}"
+                                                            href="{{ route('shop.product.details', ['product_slug' => $product->slug]) }}">
+                                                            <img loading="lazy"
+                                                                src="{{ Storage::disk('s3')->url('uploads/products/' . $gallery_image) }}"
                                                                 width="310" height="400" alt="{{ $product->name }}"
                                                                 class="pc__img" />
                                                         </a>
@@ -510,34 +523,43 @@
                                             @for ($i = 1; $i <= 5; $i++)
                                                 @if ($i <= $product->star_display['full'])
                                                     {{-- Full star --}}
-                                                    <svg class="review-star" style="fill: gold;" viewBox="0 0 9 9" xmlns="http://www.w3.org/2000/svg">
+                                                    <svg class="review-star" style="fill: gold;" viewBox="0 0 9 9"
+                                                        xmlns="http://www.w3.org/2000/svg">
                                                         <use href="#icon_star" />
                                                     </svg>
                                                 @elseif ($i == $product->star_display['full'] + 1 && $product->star_display['half'] > 0)
                                                     {{-- Half star --}}
-                                                    <svg class="review-star" viewBox="0 0 9 9" xmlns="http://www.w3.org/2000/svg">
+                                                    <svg class="review-star" viewBox="0 0 9 9"
+                                                        xmlns="http://www.w3.org/2000/svg">
                                                         <defs>
                                                             <mask id="half-mask-{{ $product->id }}-{{ $i }}">
-                                                                <rect x="0" y="0" width="4.5" height="9" fill="white" />
-                                                                <rect x="4.5" y="0" width="4.5" height="9" fill="black" />
+                                                                <rect x="0" y="0" width="4.5" height="9"
+                                                                    fill="white" />
+                                                                <rect x="4.5" y="0" width="4.5" height="9"
+                                                                    fill="black" />
                                                             </mask>
                                                         </defs>
                                                         <!-- Background star (empty) -->
-                                                        <path fill="#ccc" d="M4.0172 0.313075L2.91869 2.64013L0.460942 3.0145C0.0201949 3.08129 -0.15644 3.64899 0.163185 3.97415L1.94131 5.78447L1.52075 8.34177C1.44505 8.80402 1.91103 9.15026 2.30131 8.93408L4.5 7.72661L6.69869 8.93408C7.08897 9.14851 7.55495 8.80402 7.47925 8.34177L7.05869 5.78447L8.83682 3.97415C9.15644 3.64899 8.97981 3.08129 8.53906 3.0145L6.08131 2.64013L4.9828 0.313075C4.78598 -0.101718 4.2157 -0.10699 4.0172 0.313075Z" />
+                                                        <path fill="#ccc"
+                                                            d="M4.0172 0.313075L2.91869 2.64013L0.460942 3.0145C0.0201949 3.08129 -0.15644 3.64899 0.163185 3.97415L1.94131 5.78447L1.52075 8.34177C1.44505 8.80402 1.91103 9.15026 2.30131 8.93408L4.5 7.72661L6.69869 8.93408C7.08897 9.14851 7.55495 8.80402 7.47925 8.34177L7.05869 5.78447L8.83682 3.97415C9.15644 3.64899 8.97981 3.08129 8.53906 3.0145L6.08131 2.64013L4.9828 0.313075C4.78598 -0.101718 4.2157 -0.10699 4.0172 0.313075Z" />
                                                         <!-- Half filled star -->
-                                                        <path fill="gold" mask="url(#half-mask-{{ $product->id }}-{{ $i }})" d="M4.0172 0.313075L2.91869 2.64013L0.460942 3.0145C0.0201949 3.08129 -0.15644 3.64899 0.163185 3.97415L1.94131 5.78447L1.52075 8.34177C1.44505 8.80402 1.91103 9.15026 2.30131 8.93408L4.5 7.72661L6.69869 8.93408C7.08897 9.14851 7.55495 8.80402 7.47925 8.34177L7.05869 5.78447L8.83682 3.97415C9.15644 3.64899 8.97981 3.08129 8.53906 3.0145L6.08131 2.64013L4.9828 0.313075C4.78598 -0.101718 4.2157 -0.10699 4.0172 0.313075Z" />
+                                                        <path fill="gold"
+                                                            mask="url(#half-mask-{{ $product->id }}-{{ $i }})"
+                                                            d="M4.0172 0.313075L2.91869 2.64013L0.460942 3.0145C0.0201949 3.08129 -0.15644 3.64899 0.163185 3.97415L1.94131 5.78447L1.52075 8.34177C1.44505 8.80402 1.91103 9.15026 2.30131 8.93408L4.5 7.72661L6.69869 8.93408C7.08897 9.14851 7.55495 8.80402 7.47925 8.34177L7.05869 5.78447L8.83682 3.97415C9.15644 3.64899 8.97981 3.08129 8.53906 3.0145L6.08131 2.64013L4.9828 0.313075C4.78598 -0.101718 4.2157 -0.10699 4.0172 0.313075Z" />
                                                     </svg>
                                                 @else
                                                     {{-- Empty star --}}
-                                                    <svg class="review-star" style="fill: #ccc;" viewBox="0 0 9 9" xmlns="http://www.w3.org/2000/svg">
+                                                    <svg class="review-star" style="fill: #ccc;" viewBox="0 0 9 9"
+                                                        xmlns="http://www.w3.org/2000/svg">
                                                         <use href="#icon_star" />
                                                     </svg>
                                                 @endif
                                             @endfor
                                         </div>
                                         <span class="reviews-note text-lowercase text-secondary ms-1">
-                                            {{ $product->reviews_count }} {{ $product->reviews_count == 1 ? 'review' : 'reviews' }}
-                                            @if($product->average_rating > 0)
+                                            {{ $product->reviews_count }}
+                                            {{ $product->reviews_count == 1 ? 'review' : 'reviews' }}
+                                            @if ($product->average_rating > 0)
                                                 ({{ number_format($product->average_rating, 1) }})
                                             @endif
                                         </span>

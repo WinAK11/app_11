@@ -14,8 +14,10 @@
                 @foreach ($slides as $slide)
                     <div class="swiper-slide">
                         <div class="overflow-hidden position-relative h-100">
+                            {{-- <div class="slideshow-character position-absolute bottom-0 pos_right-center">
+                                <img loading="lazy" src="{{ secure_asset('uploads/slides') }}/{{ $slide->image }}" --}}
                             <div class="slideshow-character position-absolute bottom-0 pos_right-center">
-                                <img loading="lazy" src="{{ secure_asset('uploads/slides') }}/{{ $slide->image }}"
+                                <img loading="lazy" src="{{ Storage::disk('s3')->url('uploads/slides/' . $slide->image) }}"
                                     width="600" height="700" alt="Highlight book"
                                     class="slideshow-character__img animate animate_fade animate_btt animate_delay-9 w-auto h-auto" />
                                 <div class="character_markup type2">
@@ -100,8 +102,8 @@
                                 <div class="swiper-slide">
                                     <a href="{{ route('shop.index', ['categories' => $category->id]) }}"
                                         class="menu-link fw-medium">
-                                        <img loading="lazy" class="mb-3 rounded-circle"
-                                            src="{{ secure_asset('uploads/categories') }}/{{ $category->image }}"
+                                        <img loading="lazy" class="mb-3 rounded-circle" {{-- src="{{ secure_asset('uploads/categories') }}/{{ $category->image }}" --}}
+                                            src="{{ Storage::disk('s3')->url('uploads/categories/' . $category->image) }}"
                                             width="124" height="124" alt=""
                                             style="width:124px; height:124px; object-fit:cover; border-radius:10%;" />
                                         <div class="text-center">{{ $category->name }}</div>
@@ -211,8 +213,8 @@
                                             <div class="pc__img-wrapper">
                                                 <a
                                                     href="{{ route('shop.product.details', ['product_slug' => $product->slug]) }}">
-                                                    <img loading="lazy"
-                                                        src="{{ secure_asset('uploads/products') }}/{{ $product->image }}"
+                                                    <img loading="lazy" {{-- src="{{ secure_asset('uploads/products') }}/{{ $product->image }}" --}}
+                                                        src="{{ Storage::disk('s3')->url('uploads/products/' . $product->image) }}"
                                                         width="258" height="313" alt="{{ $product->name }}"
                                                         class="pc__img" />
                                                 </a>
@@ -282,8 +284,8 @@
                             <div class="product-card product-card_style3 mb-3 mb-md-4 mb-xxl-5">
                                 <div class="pc__img-wrapper">
                                     <a href="{{ route('shop.product.details', ['product_slug' => $product->slug]) }}">
-                                        <img loading="lazy"
-                                            src="{{ secure_asset('uploads/products') }}/{{ $product->image }}"
+                                        <img loading="lazy" {{-- src="{{ secure_asset('uploads/products') }}/{{ $product->image }}" --}}
+                                            src="{{ Storage::disk('s3')->url('uploads/products/' . $product->image) }}"
                                             width="330" height="400" alt="{{ $product->name }}" class="pc__img" />
                                     </a>
                                 </div>
