@@ -1,5 +1,5 @@
 [phases.setup]
-nixPkgs = ['php82', 'php82Packages.composer', 'nodejs_18', 'mysql80']
+nixPkgs = ['php82', 'php82Packages.composer', 'php82Extensions.pdo', 'php82Extensions.pdo_mysql', 'nodejs_18', 'mysql80', 'nginx']
 
 [phases.install]
 cmds = [
@@ -16,4 +16,4 @@ cmds = [
 ]
 
 [start]
-cmd = 'php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=$PORT'
+cmd = 'php artisan migrate --force && bash start.sh'
