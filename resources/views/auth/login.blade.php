@@ -39,6 +39,11 @@
                 @enderror
               </div>
 
+              <div class="d-flex justify-content-between mb-3">
+                <div class="form-check"></div>
+                <a href="{{ route('password.forgot') }}" class="btn-text">Forgot password?</a>
+              </div>
+
               <button class="btn btn-primary w-100 text-uppercase" type="submit">Log In</button>
 
               <div class="customer-option mt-4 text-center">
