@@ -21,7 +21,9 @@
         "laravel/ui": "^4.6",
         "meilisearch/meilisearch-php": "^1.15",
         "openai-php/client": "^0.15.0",
-        "surfsidemedia/shoppingcart": "^2.0"
+        "surfsidemedia/shoppingcart": "^2.0",
+        "symfony/http-client": "*",
+        "symfony/mailgun-mailer": "*"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",

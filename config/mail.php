@@ -14,7 +14,7 @@ return [
     |
     */
 
-    'default' => env('MAIL_MAILER', 'log'),
+    'default' => env('MAIL_MAILER', 'mailgun'),
 
     /*
     |--------------------------------------------------------------------------
@@ -50,6 +50,13 @@ return [
             'local_domain' => env('MAIL_EHLO_DOMAIN', parse_url(env('APP_URL', 'http://localhost'), PHP_URL_HOST)),
         ],
 
+        'mailgun' => [
+            'transport' => 'mailgun',
+            'client' => [
+                'timeout' => 5,
+            ],
+        ],  
+        
         'ses' => [
             'transport' => 'ses',
         ],
