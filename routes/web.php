@@ -120,6 +120,11 @@ Route::middleware(['auth', AuthAdmin::class])->group(function()
     Route::put('/admin/slide/update', [AdminController::class, 'slide_update'])->name('admin.slide.update');
     Route::delete('/admin/slide/{id}/delete', [AdminController::class, 'slide_delete'])->name('admin.slide.delete');
 
+    // User Management
+    Route::get('/admin/users', [AdminController::class, 'users'])->name('admin.users');
+    Route::get('/admin/user/{id}/edit', [AdminController::class, 'user_edit'])->name('admin.user.edit');
+    Route::put('/admin/user/update', [AdminController::class, 'user_update'])->name('admin.user.update');
+    Route::delete('/admin/user/{id}/delete', [AdminController::class, 'user_delete'])->name('admin.user.delete');
 });
 
 Route::prefix('admin/free-products')->middleware(['auth', AuthAdmin::class])->group(function() {

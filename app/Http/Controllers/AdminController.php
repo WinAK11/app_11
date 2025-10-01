@@ -11,6 +11,7 @@ use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\Slide;
 use App\Models\Transaction;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
@@ -866,5 +867,57 @@ $monthlyDatas = DB::select("
             'delivered' => $weeklyDelivered,
             'canceled' => $weeklyCanceled,
         ]);
+    }
+
+    public function users()
+    {
+        $users = User::orderBy('id', 'ASC')->paginate(10);
+        return view('admin.users', compact('users'));
+    }
+
+    public function user_edit($id)
+    {
+        $user = User::findOrFail($id);
+        return view('admin.user-edit', compact('user'));
+    }
+
+    public function user_update(Request $request)
+    {
+        $request->validate([
+            'id' => 'required|exists:users,id',
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users,email,' . $request->id,
+            'usertype' => 'required|in:USR,ADM',
+            'mobile' => 'nullable|string|max:20|unique:users,mobile,' . $request->id,
+            'password' => 'nullable|string|min:8|confirmed',
+        ]);
+
+        $user = User::findOrFail($request->id);
+        $user->name = $request->name;
+        $user->email = $request->email;
+        $user->usertype = $request->usertype;
+        $user->mobile = $request->mobile;
+
+        if ($request->filled('password')) {
+            $user->password = Hash::make($request->password);
+        }
+
+        $user->save();
+
+        return redirect()->route('admin.users')->with('status', 'User has been updated successfully!');
+    }
+
+    public function user_delete($id)
+    {
+        $user = User::findOrFail($id);
+
+        // Prevent admin from deleting themselves
+        if ($user->id === Auth::id()) {
+            return back()->with('error', 'You cannot delete your own account.');
+        }
+
+        $user->delete();
+
+        return redirect()->route('admin.users')->with('status', 'User has been deleted successfully!');
     }
 }
