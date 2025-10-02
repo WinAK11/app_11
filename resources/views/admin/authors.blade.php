@@ -56,10 +56,11 @@
                                 @foreach ($authors as $author)
                                     <tr>
                                         <td>{{ $author->id }}</td>
-                                        <td class="pname">
+                                        <td class="">
                                             <div class="image">
-                                                <img src="{{ asset('uploads/authors') }}/{{ $author->image }}"
-                                                    alt="{{ $author->name }}" class="image">
+                                                <img src="{{ $author->image ? asset('uploads/authors/' . $author->image) : asset('uploads/photo_placeholder.jpg') }}"
+                                                    alt="{{ $author->name }}" class="image" />
+
                                             </div>
                                             <div class="name">
                                                 <a href="#" class="body-title-2">{{ $author->name }}</a>

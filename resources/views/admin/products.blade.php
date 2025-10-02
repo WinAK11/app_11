@@ -61,8 +61,16 @@
                                     <td>{{ $product->id }}</td>
                                     <td class="pname">
                                         <div class="image">
-                                            <img src="{{ asset('uploads/products/thumbnails') }}/{{ $product->image }}"
-                                                alt="{{ $product->name }}" class="image">
+                                            @if ($product->image)
+                                                <img src="{{ Storage::disk('s3')->url($product->image) }}"
+                                                    alt="{{ $product->name }}" class="image" />
+                                            @else
+                                                <!-- Optional: placeholder image -->
+                                                <img src="{{ asset('uploads/book_placeholder.png') }}"
+                                                    alt="No image available" class="image" />
+                                            @endif
+
+
                                         </div>
                                         <div class="name">
                                             <a href="#" class="body-title-2">{{ $product->name }}</a>

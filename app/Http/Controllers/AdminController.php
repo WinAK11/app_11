@@ -23,6 +23,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 
 class AdminController extends Controller {
     public function index() {
@@ -147,7 +148,7 @@ $monthlyDatas = DB::select("
     FROM month_names M
     LEFT JOIN (
         SELECT
-            MONTH(created_at) AS MonthNo, 
+            MONTH(created_at) AS MonthNo,
             SUM(IF(status != 'canceled', total, 0)) AS TotalAmount,
             SUM(IF(status = 'ordered', total, 0)) AS TotalOrderedAmount,
             SUM(IF(status = 'delivered', total, 0)) AS TotalDeliveredAmount,
@@ -276,69 +277,71 @@ $monthlyDatas = DB::select("
         return view('admin.product-add', compact('categories', 'authors'));
     }
 
-    public function product_store(Request $request)
-    {
-        $request->validate([
-            'name' => 'required',
-            'slug' => 'required|unique:products,slug',
-            'short_description' => 'required',
-            'regular_price' => 'required',
-            'sale_price' => 'nullable|numeric',
-            'SKU' => 'required',
-            'stock_status' => 'required',
-            'featured' => 'required',
-            'quantity' => 'required',
-            'image' => 'mimes:png,jpg,jpeg|max:2048',
-            'category_id' => 'required',
-            'author_id' => 'required'
-        ]);
-        $product = new Product();
-        $product->name = $request->name;
-        $product->slug = Str::slug($request->name);
-        $product->short_description = $request->short_description;
-        $product->description = $request->description;
-        $product->regular_price = $request->regular_price;
-        // $product->sale_price = $request->sale_price;
-        $product->sale_price = $request->filled('sale_price') ? $request->sale_price : null;
-        $product->SKU = $request->SKU;
-        $product->stock_status = $request->stock_status;
-        $product->featured = $request->featured;
-        $product->quantity = $request->quantity;
-        $product->image = $request->image;
-        $product->category_id = $request->category_id;
-        $product->author_id = $request->author_id;
+public function product_store(Request $request)
+{
+    $request->validate([
+        'name' => 'required',
+        'slug' => 'required|unique:products,slug',
+        'short_description' => 'required',
+        'regular_price' => 'required',
+        'sale_price' => 'nullable|numeric',
+        'SKU' => 'required',
+        'stock_status' => 'required',
+        'featured' => 'required',
+        'quantity' => 'required',
+        'image' => 'mimes:png,jpg,jpeg|max:2048',
+        'category_id' => 'required',
+        'author_id' => 'required'
+    ]);
 
-        $current_timestamp = Carbon::now()->timestamp;
+    $product = new Product();
+    $product->name = $request->name;
+    $product->slug = Str::slug($request->name);
+    $product->short_description = $request->short_description;
+    $product->description = $request->description;
+    $product->regular_price = $request->regular_price;
+    $product->sale_price = $request->filled('sale_price') ? $request->sale_price : null;
+    $product->SKU = $request->SKU;
+    $product->stock_status = $request->stock_status;
+    $product->featured = $request->featured;
+    $product->quantity = $request->quantity;
+    $product->category_id = $request->category_id;
+    $product->author_id = $request->author_id;
 
-        if($request->hasFile('image')){
-            $image = $request->file('image');
-            $imageName = $current_timestamp . '.' . $image->extension();
-            $this->GenerateProductThumbnailImage($image, $imageName);
-            $product->image = $imageName;
-        }
+    $current_timestamp = Carbon::now()->timestamp;
 
-        $gallery_arr = array();
-        $gallery_images = "";
-        $counter = 1;
-        if($request->hasFile('images')){
-            $allowedfileExtion = ['jpg', 'png', 'jpeg'];
-            $files = $request->file('images');
-            foreach ($files as $file) {
-                $gextension = $file->getClientOriginalExtension();
-                $gcheck = in_array($gextension, $allowedfileExtion);
-                if($gcheck){
-                    $gfileName = $current_timestamp . "-" . $counter . "." . $gextension;
-                    $this->GenerateProductThumbnailImage($file, $gfileName);
-                    array_push($gallery_arr, $gfileName);
-                    $counter = $counter + 1;
-                }
-            }
-            $gallery_images = implode(', ', $gallery_arr);
-        }
-        $product->images = $gallery_images;
-        $product->save();
-        return redirect()->route('admin.products')->with('status', 'Product has been added successfully.');
+    // Handle main image upload
+    if ($request->hasFile('image')) {
+        $image = $request->file('image');
+        $imageName = $current_timestamp . '.' . $image->extension();
+        $path = $image->storeAs('products', $imageName, 's3');
+        Storage::disk('s3')->setVisibility($path, 'public');
+        $product->image = $path;
     }
+
+    // Handle gallery images upload
+    $gallery_arr = [];
+    if ($request->hasFile('images')) {
+        $allowedExtensions = ['jpg', 'png', 'jpeg'];
+        $files = $request->file('images');
+        $counter = 1;
+
+        foreach ($files as $file) {
+            $extension = $file->getClientOriginalExtension();
+            if (in_array($extension, $allowedExtensions)) {
+                $fileName = $current_timestamp . "-" . $counter . "." . $extension;
+                $path = $file->storeAs('products/gallery', $fileName, 's3');
+                Storage::disk('s3')->setVisibility($path, 'public');
+                $gallery_arr[] = $path;
+                $counter++;
+            }
+        }
+    }
+    $product->images = implode(', ', $gallery_arr);
+    $product->save();
+
+    return redirect()->route('admin.products')->with('status', 'Product has been added successfully.');
+}
 
     public function GenerateProductThumbnailImage($image, $imageName)
     {
@@ -377,105 +380,99 @@ $monthlyDatas = DB::select("
         return view('admin.product-edit', compact('product', 'categories', 'authors'));
     }
 
-    public function product_update(Request $request)
-    {
-        $request->validate([
-            'name' => 'required',
-            'slug' => 'required|unique:products,slug,' .$request->id,
-            'short_description' => 'required',
-            'regular_price' => 'required',
-            'sale_price' => 'nullable|numeric',
-            'SKU' => 'required',
-            'stock_status' => 'required',
-            'featured' => 'required',
-            'quantity' => 'required',
-            'image' => 'mimes:png,jpg,jpeg|max:2048',
-            'category_id' => 'required',
-            'author_id' => 'required'
-        ]);
-        $product = Product::find($request->id);
-        $product->name = $request->name;
-        $product->slug = Str::slug($request->name);
-        $product->short_description = $request->short_description;
-        $product->regular_price = $request->regular_price;
-        // $product->sale_price = $request->sale_price;
-        $product->sale_price = $request->filled('sale_price') ? $request->sale_price : null;
-        $product->SKU = $request->SKU;
-        $product->stock_status = $request->stock_status;
-        $product->featured = $request->featured;
-        $product->quantity = $request->quantity;
-        $product->category_id = $request->category_id;
-        $product->author_id = $request->author_id;
-        $current_timestamp = Carbon::now()->timestamp;
+public function product_update(Request $request)
+{
+    $request->validate([
+        'name' => 'required',
+        'slug' => 'required|unique:products,slug,' . $request->id,
+        'short_description' => 'required',
+        'regular_price' => 'required',
+        'sale_price' => 'nullable|numeric',
+        'SKU' => 'required',
+        'stock_status' => 'required',
+        'featured' => 'required',
+        'quantity' => 'required',
+        'image' => 'mimes:png,jpg,jpeg|max:2048',
+        'category_id' => 'required',
+        'author_id' => 'required'
+    ]);
 
-        if($request->hasFile('image')){
-            if(File::exists(public_path('uploads/products').'/'.$product->image)){
-                File::delete(public_path('uploads/products').'/'.$product->image);
-            }
-            if(File::exists(public_path('uploads/products/thumbnails').'/'.$product->image)){
-                File::delete(public_path('uploads/products/thumbnails').'/'.$product->image);
-            }
-            $image = $request->file('image');
-            $imageName = $current_timestamp . '.' . $image->extension();
-            $this->GenerateProductThumbnailImage($image, $imageName);
-            $product->image = $imageName;
+    $product = Product::find($request->id);
+    $product->name = $request->name;
+    $product->slug = Str::slug($request->name);
+    $product->short_description = $request->short_description;
+    $product->regular_price = $request->regular_price;
+    $product->sale_price = $request->filled('sale_price') ? $request->sale_price : null;
+    $product->SKU = $request->SKU;
+    $product->stock_status = $request->stock_status;
+    $product->featured = $request->featured;
+    $product->quantity = $request->quantity;
+    $product->category_id = $request->category_id;
+    $product->author_id = $request->author_id;
+
+    $current_timestamp = Carbon::now()->timestamp;
+
+    // Handle main image update
+    if ($request->hasFile('image')) {
+        if ($product->image) {
+            Storage::disk('s3')->delete($product->image);
         }
 
-        $gallery_arr = array();
-        $gallery_images = "";
+        $image = $request->file('image');
+        $imageName = $current_timestamp . '.' . $image->extension();
+        $path = $image->storeAs('products', $imageName, 's3');
+        Storage::disk('s3')->setVisibility($path, 'public');
+        $product->image = $path;
+    }
+
+    // Handle gallery images update
+    $gallery_arr = [];
+    if ($request->hasFile('images')) {
+        // Delete old gallery images
+        foreach (explode(', ', $product->images) as $image) {
+            Storage::disk('s3')->delete($image);
+        }
+
+        $allowedExtensions = ['jpg', 'png', 'jpeg'];
+        $files = $request->file('images');
         $counter = 1;
-        if($request->hasFile('images')){
-            foreach (explode(', ', $product->images) as $ofile) {
-                if(File::exists(public_path('uploads/products').'/'.$ofile)){
-                    File::delete(public_path('uploads/products').'/'.$ofile);
-                }
-                if(File::exists(public_path('uploads/products/thumbnails').'/'.$ofile)){
-                    File::delete(public_path('uploads/products/thumbnails').'/'.$ofile);
-                }
+
+        foreach ($files as $file) {
+            $extension = $file->getClientOriginalExtension();
+            if (in_array($extension, $allowedExtensions)) {
+                $fileName = $current_timestamp . "-" . $counter . "." . $extension;
+                $path = $file->storeAs('products/gallery', $fileName, 's3');
+                Storage::disk('s3')->setVisibility($path, 'public');
+                $gallery_arr[] = $path;
+                $counter++;
             }
-            $allowedfileExtion = ['jpg', 'png', 'jpeg'];
-            $files = $request->file('images');
-            // Log::info('Request::UploadMultipleImage' . $request); // Debug line
-            Log::info($request->file('images')); // Debug line
-            foreach ($files as $file) {
-                $gextension = $file->getClientOriginalExtension();
-                $gcheck = in_array($gextension, $allowedfileExtion);
-                if($gcheck){
-                    $gfileName = $current_timestamp . "-" . $counter . "." . $gextension;
-                    $this->GenerateProductThumbnailImage($file, $gfileName);
-                    array_push($gallery_arr, $gfileName);
-                    $counter = $counter + 1;
-                }
-            }
-            $gallery_images = implode(', ', $gallery_arr);
-            $product->images = $gallery_images;
         }
-        $product->save();
-        return redirect()->route('admin.products')->with('status', 'Product has been updated successfully.');
+    }
+    $product->images = implode(', ', $gallery_arr);
+    $product->save();
+
+    return redirect()->route('admin.products')->with('status', 'Product has been updated successfully.');
+}
+
+public function product_delete($id)
+{
+    $product = Product::find($id);
+
+    // Delete main image
+    if ($product->image) {
+        $imagePath = str_replace(Storage::disk('s3')->url(''), '', $product->image);
+        Storage::disk('s3')->delete($imagePath);
     }
 
-    public function product_delete($id)
-    {
-        $product = Product::find($id);
-        if(File::exists(public_path('uploads/products').'/'.$product->image)){
-            File::delete(public_path('uploads/products').'/'.$product->image);
-        }
-        if(File::exists(public_path('uploads/products/thumbnails').'/'.$product->image)){
-            File::delete(public_path('uploads/products/thumbnails').'/'.$product->image);
-        }
-
-        foreach (explode(', ', $product->images) as $ofile) {
-            if(File::exists(public_path('uploads/products').'/'.$ofile)){
-                File::delete(public_path('uploads/products').'/'.$ofile);
-            }
-            if(File::exists(public_path('uploads/products/thumbnails').'/'.$ofile)){
-                File::delete(public_path('uploads/products/thumbnails').'/'.$ofile);
-            }
-        }
-
-        $product->delete();
-        return redirect()->route('admin.products')->with('status', 'Product has been deleted successfully.');
+    // Delete gallery images
+    foreach (explode(', ', $product->images) as $image) {
+        $imagePath = str_replace(Storage::disk('s3')->url(''), '', $image);
+        Storage::disk('s3')->delete($imagePath);
     }
+
+    $product->delete();
+    return redirect()->route('admin.products')->with('status', 'Product has been deleted successfully.');
+}
 
     public function authors()
     {

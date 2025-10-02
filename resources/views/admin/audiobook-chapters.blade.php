@@ -24,7 +24,8 @@
             <div class="wg-box mb-20">
                 <div class="flex items-center gap20">
                     @if ($ebook->cover_path)
-                        <img src="{{ asset($ebook->cover_path) }}" alt="Cover"
+                        {{-- <img src="{{ asset($ebook->cover_path) }}" alt="Cover" --}}
+                        <img src="{{ Storage::disk('s3')->url($ebook->cover_path) }}" alt="Cover"
                             style="width: 80px; height: 120px; object-fit: cover; border-radius: 8px;">
                     @else
                         <div
@@ -136,11 +137,11 @@
                                         <div class="flex items-center gap-1">
                                             @if ($chapter->audio_path)
                                                 <button class="btn-lg btn-primary"
-                                                    onclick="playAudio('{{ asset($chapter->audio_path) }}', {{ $chapter->id }})"
+                                                    onclick="playAudio('{{ method_exists(Storage::disk('s3'), 'temporaryUrl') ? Storage::disk('s3')->temporaryUrl($chapter->audio_path, now()->addMinutes(60)) : Storage::disk('s3')->url($chapter->audio_path) }}', {{ $chapter->id }})"
                                                     style="background: #17a2b8;">
                                                     <i class="icon-play"></i>
                                                 </button>
-                                                <a href="{{ asset($chapter->audio_path) }}" download
+                                                <a href="{{ method_exists(Storage::disk('s3'), 'temporaryUrl') ? Storage::disk('s3')->temporaryUrl($chapter->audio_path, now()->addMinutes(60)) : Storage::disk('s3')->url($chapter->audio_path) }}" download
                                                     class="btn-lg btn-primary" style="background: #28a745;">
                                                     <i class="icon-download"></i>
                                                 </a>
@@ -358,7 +359,7 @@
                         updateChapterProgress(chapterId, 75, 'Generating audio...');
                     }
 
-                    const result = await response.json();
+                const result = await response.json();
 
                     if (response.ok && result.success) {
                         if (showIndividualProgress) {
@@ -375,7 +376,7 @@
                         }
 
                         // Add the play/download buttons to the UI
-                        addAudioButtonsToRow(chapterId, result.audio_path);
+                        addAudioButtonsToRow(chapterId, result.audio_url || result.audio_path);
 
                         return true; // Success
 
@@ -416,8 +417,7 @@
                 const existingDownloadBtn = actionsCell.querySelector('.btn-primary[style*="#28a745"]');
 
                 // Construct full URL
-                const baseUrl = window.location.origin;
-                const fullAudioUrl = audioPath.startsWith('http') ? audioPath : `${baseUrl}/${audioPath}`;
+                const fullAudioUrl = audioPath;
 
                 if (!existingPlayBtn) {
                     // Create play button

@@ -232,7 +232,10 @@
         let progressInterval = null;
 
         // Initialize the book (ePub.js part - keep this)
-        const book = ePub("{{ asset($ebook->file_path) }}");
+        // const book = ePub("{{ asset($ebook->file_path) }}");
+        const book = ePub("{{ Storage::disk('s3')->url($ebook->file_path) }}");
+        // console.log('ehehe', {{ Storage::disk('s3')->url($ebook->file_path) }});
+
         const rendition = book.renderTo("viewer", {
             width: "100%",
             height: "100%",
@@ -368,10 +371,10 @@
         }
 
         // Load chapter with Howler
-        function loadChapterAudio(audioPath) {
-            console.log('Loading audio with Howler:', audioPath);
+        function loadChapterAudio(audioUrl) {
+            console.log('Loading audio with Howler:', audioUrl);
 
-            if (audioPlayer.currentAudioPath === audioPath && audioPlayer.sound) {
+            if (audioPlayer.currentAudioPath === audioUrl && audioPlayer.sound) {
                 console.log('Audio already loaded');
                 return;
             }
@@ -385,9 +388,9 @@
             }
 
             audioPlayer.isLoading = true;
-            audioPlayer.currentAudioPath = audioPath;
+            audioPlayer.currentAudioPath = audioUrl;
 
-            const fullPath = `{{ asset('') }}${audioPath}`;
+            const fullPath = audioUrl;
 
             // Create Howler instance
             audioPlayer.sound = new Howl({
@@ -508,8 +511,9 @@
 
             updateChapterUI();
 
-            if (chapter.audio_path) {
-                loadChapterAudio(chapter.audio_path);
+            const audioUrl = chapter.audio_url || chapter.audio_path;
+            if (audioUrl) {
+                loadChapterAudio(audioUrl);
             } else {
                 alert('This chapter does not have an audio file yet.');
             }
@@ -549,8 +553,9 @@
                 }
 
                 const currentChapter = audioPlayer.chapters[audioPlayer.currentChapterIndex];
-                if (currentChapter?.audio_path) {
-                    loadChapterAudio(currentChapter.audio_path);
+                const audioUrl = currentChapter?.audio_url || currentChapter?.audio_path;
+                if (audioUrl) {
+                    loadChapterAudio(audioUrl);
                     return;
                 }
                 return;

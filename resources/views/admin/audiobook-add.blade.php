@@ -32,6 +32,7 @@
                                 <option value="">Choose an eBook to convert</option>
                                 @foreach ($ebooks as $ebook)
                                     <option value="{{ $ebook->id }}" data-file-path="{{ $ebook->file_path }}"
+                                        data-file-url="{{ method_exists(Storage::disk('s3'), 'temporaryUrl') ? Storage::disk('s3')->temporaryUrl($ebook->file_path, now()->addMinutes(60)) : Storage::disk('s3')->url($ebook->file_path) }}"
                                         data-format="{{ $ebook->format }}"
                                         {{ old('ebook_id') == $ebook->id ? 'selected' : '' }}>
                                         {{ $ebook->title }} by {{ $ebook->author }}
@@ -130,17 +131,17 @@
                 const selectedOption = ebookSelect.options[ebookSelect.selectedIndex];
                 if (!selectedOption.value) return;
 
-                const filePath = selectedOption.dataset.filePath;
-                await extractChaptersFromEpub(filePath);
+                const fileUrl = selectedOption.dataset.fileUrl;
+                await extractChaptersFromEpub(fileUrl);
             });
 
-            async function extractChaptersFromEpub(filePath) {
+            async function extractChaptersFromEpub(fileUrl) {
                 try {
                     updateProgress(0, 'Loading EPUB file...');
                     extractBtn.disabled = true;
 
                     // Fetch the EPUB file
-                    const response = await fetch(`/${filePath}`);
+                    const response = await fetch(fileUrl);
                     if (!response.ok) {
                         throw new Error('Failed to load EPUB file');
                     }

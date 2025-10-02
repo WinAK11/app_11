@@ -15,8 +15,8 @@
                     <div class="swiper-slide">
                         <div class="overflow-hidden position-relative h-100">
                             <div class="slideshow-character position-absolute bottom-0 pos_right-center">
-                                <img loading="lazy" src="{{ asset('uploads/slides') }}/{{ $slide->image }}"
-                                    width="600" height="700" alt="Highlight book"
+                                <img loading="lazy" src="{{ asset('uploads/slides') }}/{{ $slide->image }}" width="600"
+                                    height="700" alt="Highlight book"
                                     class="slideshow-character__img animate animate_fade animate_btt animate_delay-9 w-auto h-auto" />
                                 <div class="character_markup type2">
                                     <p
@@ -101,8 +101,8 @@
                                     <a href="{{ route('shop.index', ['categories' => $category->id]) }}"
                                         class="menu-link fw-medium">
                                         <img loading="lazy" class="mb-3 rounded-circle"
-                                            src="{{ asset('uploads/categories') }}/{{ $category->image }}"
-                                            width="124" height="124" alt=""
+                                            src="{{ $category->image ? asset('uploads/categories/' . $category->image) : asset('uploads/photo_placeholder.jpg') }}"
+                                            width="124" height="124" alt="{{ $category->name ?? 'Category Image' }}"
                                             style="width:124px; height:124px; object-fit:cover; border-radius:10%;" />
                                         <div class="text-center">{{ $category->name }}</div>
                                     </a>
@@ -212,9 +212,10 @@
                                                 <a
                                                     href="{{ route('shop.product.details', ['product_slug' => $product->slug]) }}">
                                                     <img loading="lazy"
-                                                        src="{{ asset('uploads/products') }}/{{ $product->image }}"
+                                                        src="{{ $product->image ? Storage::disk('s3')->url($product->image) : asset('uploads/book_placeholder.png') }}"
                                                         width="258" height="313" alt="{{ $product->name }}"
                                                         class="pc__img" />
+
                                                 </a>
                                             </div>
 
@@ -283,8 +284,9 @@
                                 <div class="pc__img-wrapper">
                                     <a href="{{ route('shop.product.details', ['product_slug' => $product->slug]) }}">
                                         <img loading="lazy"
-                                            src="{{ asset('uploads/products') }}/{{ $product->image }}"
+                                            src="{{ $product->image ? Storage::disk('s3')->url($product->image) : asset('uploads/book_placeholder.png') }}"
                                             width="330" height="400" alt="{{ $product->name }}" class="pc__img" />
+
                                     </a>
                                 </div>
 

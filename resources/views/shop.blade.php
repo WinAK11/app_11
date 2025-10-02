@@ -150,8 +150,7 @@
                                 </div>
                                 <div class="slide-split_media position-relative">
                                     <div class="slideshow-bg" style="background-color: #f5e6e0;">
-                                        <img loading="lazy"
-                                            src="{{ asset('assets/images/shop/shop-banner1.jpg') }}"
+                                        <img loading="lazy" src="{{ asset('assets/images/shop/shop-banner1.jpg') }}"
                                             width="630" height="450" alt=""
                                             class="slideshow-bg__img object-fit-cover" />
                                     </div>
@@ -172,8 +171,7 @@
                                 </div>
                                 <div class="slide-split_media position-relative">
                                     <div class="slideshow-bg" style="background-color: #f5e6e0;">
-                                        <img loading="lazy"
-                                            src="{{ asset('assets/images/shop/shop-banner2.jpg') }}"
+                                        <img loading="lazy" src="{{ asset('assets/images/shop/shop-banner2.jpg') }}"
                                             width="630" height="450" alt="Women's accessories"
                                             class="slideshow-bg__img object-fit-cover" />
                                     </div>
@@ -194,8 +192,7 @@
                                 </div>
                                 <div class="slide-split_media position-relative">
                                     <div class="slideshow-bg" style="background-color: #f5e6e0;">
-                                        <img loading="lazy"
-                                            src="{{ asset('assets/images/shop/shop-banner3.jpg') }}"
+                                        <img loading="lazy" src="{{ asset('assets/images/shop/shop-banner3.jpg') }}"
                                             width="630" height="450" alt="Women's accessories"
                                             class="slideshow-bg__img object-fit-cover" />
                                     </div>
@@ -277,10 +274,11 @@
                                                 <a
                                                     href="{{ route('shop.product.details', ['product_slug' => $product->slug]) }}">
                                                     <img loading="lazy"
-                                                        src="{{ $product->image ? asset('uploads/products/' . $product->image) : asset('uploads/book_placeholder.png') }}"
+                                                        src="{{ $product->image ? Storage::disk('s3')->url($product->image) : asset('uploads/book_placeholder.png') }}"
                                                         width="310" height="400" alt="{{ $product->name }}"
                                                         class="pc__img" />
                                                 </a>
+
                                             </div>
                                             <div class="swiper-slide">
                                                 @foreach (explode(',', $product->images) as $gallery_image)
@@ -314,13 +312,17 @@
                                                 <input type="hidden" name="id" value="{{ $product->id }}">
                                                 <input type="hidden" name="quantity" value="1">
                                                 <input type="hidden" name="name" value="{{ $product->name }}">
-                                                <input type="hidden" name="price" value="{{ $product->sale_price ?? $product->regular_price }}">
-                                                <button class="pc__atc btn anim_appear-bottom btn position-absolute border-0 text-uppercase fw-medium" data-aside="cartDrawer" title="Add To Cart">
+                                                <input type="hidden" name="price"
+                                                    value="{{ $product->sale_price ?? $product->regular_price }}">
+                                                <button
+                                                    class="pc__atc btn anim_appear-bottom btn position-absolute border-0 text-uppercase fw-medium"
+                                                    data-aside="cartDrawer" title="Add To Cart">
                                                     Add To Cart
                                                 </button>
                                             </form>
                                         @else
-                                            <button class="pc__atc btn anim_appear-bottom btn position-absolute border-0 text-uppercase fw-medium out-of-stock-wrapper">
+                                            <button
+                                                class="pc__atc btn anim_appear-bottom btn position-absolute border-0 text-uppercase fw-medium out-of-stock-wrapper">
                                                 Out of Stock
                                             </button>
                                         @endif
@@ -345,7 +347,8 @@
                                         @if ($product->quantity == 0)
                                             <span class="badge bg-danger ms-2">Out of stock</span>
                                         @elseif ($product->quantity < 10)
-                                            <span class="badge bg-warning text-dark ms-2">Only {{ $product->quantity }} left</span>
+                                            <span class="badge bg-warning text-dark ms-2">Only {{ $product->quantity }}
+                                                left</span>
                                         @endif
                                     </div>
                                     <div class="product-card__review d-flex align-items-center">

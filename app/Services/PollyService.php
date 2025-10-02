@@ -79,18 +79,35 @@ class PollyService
             // Combine audio streams if multiple chunks
             $finalAudioContent = $this->combineAudioStreams($audioStreams);
 
-            // Ensure directory exists
-            $directory = dirname(public_path($outputPath));
-            if (!file_exists($directory)) {
-                mkdir($directory, 0755, true);
+            // Save the audio file to S3 with diagnostics
+            $bytesWritten = strlen($finalAudioContent);
+            $putOk = false;
+            try {
+                $putOk = Storage::disk('s3')->put($outputPath, $finalAudioContent, [
+                    'ContentType' => 'audio/mpeg',
+                ]);
+            } catch (\Throwable $e) {
+                Log::error('Polly S3 put exception', [
+                    'path' => $outputPath,
+                    'error' => $e->getMessage(),
+                ]);
+                throw new \Exception('Failed to upload audio to S3: '.$e->getMessage());
             }
 
-            // Save the audio file
-            $fullPath = public_path($outputPath);
-            $bytesWritten = file_put_contents($fullPath, $finalAudioContent);
+            if (!$putOk) {
+                Log::error('Polly S3 put returned false', [ 'path' => $outputPath ]);
+                throw new \Exception('S3 upload returned false for '.$outputPath);
+            }
 
-            if ($bytesWritten === false) {
-                throw new \Exception('Failed to write audio file to disk');
+            // Verify existence
+            $exists = Storage::disk('s3')->exists($outputPath);
+            Log::info('Polly S3 upload verification', [
+                'path' => $outputPath,
+                'exists' => $exists,
+                'url' => method_exists(Storage::disk('s3'), 'url') ? Storage::disk('s3')->url($outputPath) : null,
+            ]);
+            if (!$exists) {
+                throw new \Exception('S3 reports object not found after upload: '.$outputPath);
             }
 
             Log::info('Polly TTS Success', [
