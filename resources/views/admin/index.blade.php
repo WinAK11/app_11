@@ -11,8 +11,6 @@
         }
         .left-column .row {
             display: flex;
-            /* flex-direction: column; */
-            /* align-items: center; */
             flex-grow: 1;
         }
         .left-column .col-md-6 {
@@ -22,6 +20,20 @@
         }
         .wg-chart-default, .wg-box {
             flex-grow: 1;
+        }
+        /* Decrease height for stat boxes */
+        .wg-chart-default {
+            min-height: 80px;
+            padding: 10px 12px;
+        }
+        .wg-chart-default h4 {
+            margin-bottom: 2px;
+        }
+        .wg-chart-default .body-text {
+            margin-bottom: 2px;
+        }
+        .wg-chart-default .text-tiny {
+            font-size: 1rem;
         }
     </style>
     <div class="main-content-inner">
@@ -183,24 +195,7 @@
                             </div>
                             <div id="revenue-chart"></div>
                         </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-4">
-                                <div class="wg-box">
-                                    <div class="flex items-center justify-between">
-                                        <h5>Top Products</h5>
-                                    </div>
-                                    <div id="top-products-chart"></div>
-                                </div>
-                            </div>
-                            <div class="col-md-6 mb-4">
-                                <div class="wg-box">
-                                    <div class="flex items-center justify-between">
-                                        <h5>Top Categories</h5>
-                                    </div>
-                                    <div id="top-categories-chart"></div>
-                                </div>
-                            </div>
-                        </div>
+                        <!-- Removed Top Products and Top Categories charts -->
                     </div>
                 </div>
             </div>
@@ -225,7 +220,6 @@
                                         <th class="text-center">Subtotal</th>
                                         <th class="text-center">Tax</th>
                                         <th class="text-center">Total</th>
-
                                         <th class="text-center">Status</th>
                                         <th class="text-center">Order Date</th>
                                         <th class="text-center">Total Items</th>
@@ -242,7 +236,6 @@
                                             <td class="text-center">{{ number_format($order->subtotal, 0, ',', ',') }} đ</td>
                                             <td class="text-center">{{ number_format($order->tax, 0, ',', ',') }} đ</td>
                                             <td class="text-center">{{ number_format($order->total, 0, ',', ',') }} đ</td>
-
                                             <td class="text-center">
                                                 @if ($order->status == 'delivered')
                                                     <span class="badge bg-success">Delivered</span>
@@ -271,7 +264,6 @@
                         </div>
                     </div>
                 </div>
-
             </div>
         </div>
 
@@ -599,76 +591,6 @@
                     updateLeftStats(-1);
                 }
             });
-
-            // Top Products Pie Chart
-            var topProductQty = @json($topProductQty);
-            var topProductsOptions = {
-                series: @json($topProductData),
-                chart: {
-                    type: 'pie',
-                    height: 350
-                },
-                plotOptions: {
-                    pie: {
-                        donut: { labels: { show: false } }
-                    }
-                },
-                labels: @json($topProductLabels),
-                legend: {
-                    position: 'bottom'
-                },
-                tooltip: {
-                    y: {
-                        formatter: function(val, opts) {
-                            var idx = opts.dataPointIndex;
-                            return topProductQty[idx] + " sold (" + val + "%)";
-                        },
-                        title: {
-                            formatter: (seriesName) => seriesName,
-                        }
-                    }
-                }
-            };
-
-            var topProductsChart = new ApexCharts(document.querySelector("#top-products-chart"), topProductsOptions);
-            if ($("#top-products-chart").length > 0) {
-                topProductsChart.render();
-            }
-
-            // Top Categories Pie Chart
-            var topCategoryQty = @json($topCategoryQty);
-            var topCategoriesOptions = {
-                series: @json($topCategoryData),
-                chart: {
-                    type: 'pie',
-                    height: 350
-                },
-                plotOptions: {
-                    pie: {
-                        donut: { labels: { show: false } }
-                    }
-                },
-                labels: @json($topCategoryLabels),
-                legend: {
-                    position: 'bottom'
-                },
-                tooltip: {
-                    y: {
-                        formatter: function(val, opts) {
-                            var idx = opts.dataPointIndex;
-                            return topCategoryQty[idx] + " sold (" + val + "%)";
-                        },
-                        title: {
-                            formatter: (seriesName) => seriesName,
-                        }
-                    }
-                }
-            };
-
-            var topCategoriesChart = new ApexCharts(document.querySelector("#top-categories-chart"), topCategoriesOptions);
-            if ($("#top-categories-chart").length > 0) {
-                topCategoriesChart.render();
-            }
 
         })(jQuery);
     </script>
