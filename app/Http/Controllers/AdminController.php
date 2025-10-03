@@ -24,6 +24,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Artisan;
 
 class AdminController extends Controller {
     public function index() {
@@ -339,6 +340,7 @@ public function product_store(Request $request)
     }
     $product->images = implode(', ', $gallery_arr);
     $product->save();
+    Artisan::call('embeddings:generate');
 
     return redirect()->route('admin.products')->with('status', 'Product has been added successfully.');
 }
