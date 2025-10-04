@@ -417,16 +417,18 @@
                                     <a
                                         href="{{ route('shop.product.details', ['product_slug' => $related_product->slug]) }}">
                                         <img loading="lazy"
-                                            src="{{ asset('uploads/products') }}/{{ $related_product->image }}"
+                                            src="{{ $related_product->image ? Storage::disk('s3')->url($related_product->image) : asset('uploads/book_placeholder.png') }}"
                                             width="330" height="400" alt="{{ $related_product->name }}"
-                                            class="pc__img">
+                                            class="pc__img" />
+
                                         @foreach (explode(',', $related_product->images) as $gallery_image)
                                             <img loading="lazy"
-                                                src="{{ asset('uploads/products') }}/{{ $gallery_image }}"
+                                                src="{{ $gallery_image ? Storage::disk('s3')->url($gallery_image) : asset('uploads/book_placeholder.png') }}"
                                                 width="330" height="400" alt="{{ $related_product->name }}"
-                                                class="pc__img pc__img-second">
+                                                class="pc__img pc__img-second" />
                                         @endforeach
                                     </a>
+
                                     @if (Cart::instance('cart')->content()->where('id', $related_product->id)->count() > 0)
                                         <a href = "{{ route('cart.index') }}"
                                             class = "pc__atc btn anim_appear-bottom btn position-absolute border-0 text-uppercase fw-medium btn-warning mb-3">Go

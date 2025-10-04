@@ -17,8 +17,8 @@ return new class extends Migration
             $table->string('slug')->unique();
             $table->string('short_description');
             $table->string('description');
-            $table->decimal('regular_price');
-            $table->decimal('sale_price')->nullable();
+            $table->unsignedBigInteger('regular_price'); // price in VND
+            $table->unsignedBigInteger('sale_price')->nullable(); // price in VND
             $table->string('SKU');
             $table->enum('stock_status', ['instock', 'outofstock']);
             $table->boolean('featured')->default(false);
@@ -31,6 +31,7 @@ return new class extends Migration
             $table->foreign('category_id')->references('id')->on('categories')->onDelete('cascade');
             $table->foreign('author_id')->references('id')->on('authors')->onDelete('cascade');
         });
+
     }
 
     /**

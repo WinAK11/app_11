@@ -48,8 +48,9 @@
                                         <td>
                                             <div class="shopping-cart__product-item">
                                                 <img loading="lazy"
-                                                    src="{{ asset('uploads/products/thumbnails') }}/{{ $item->model->image }}"
+                                                    src="{{ $item->model->image ? Storage::disk('s3')->url('thumbnails/' . $item->model->image) : asset('uploads/book_placeholder.png') }}"
                                                     width="120" height="120" alt="{{ $item->name }}" />
+
                                             </div>
                                         </td>
                                         <td>

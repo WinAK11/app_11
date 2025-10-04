@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             CategorySeeder::class,
             AuthorSeeder::class,
             ProductSeeder::class,
+            SlideSeeder::class
         ]);
 
         User::create([
