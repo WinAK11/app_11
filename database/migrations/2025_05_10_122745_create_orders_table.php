@@ -17,6 +17,7 @@ return new class extends Migration
             $table->decimal('subtotal');
             $table->decimal('discount')->default(0);
             $table->decimal('shipping_cost');
+            $table->decimal('tax')->default(0);
             $table->decimal('total');
             $table->string('name');
             $table->string('phone');
