@@ -11,7 +11,7 @@
                                 <div class="swiper-wrapper">
                                     <div class="swiper-slide product-single__image-item">
                                         <img loading="lazy" class="h-auto"
-                                            src="{{ $product->image ? Storage::disk('s3')->url('products/' . $product->image) : asset('uploads/book_placeholder.png') }}"
+                                            src="{{ $product->image ? Storage::disk('s3')->url($product->image) : asset('uploads/book_placeholder.png') }}"
                                             width="674" height="674" alt="Product Image" />
 
                                         <a data-fancybox="gallery"

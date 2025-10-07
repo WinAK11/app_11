@@ -347,7 +347,8 @@
                 </a>
             </div>
 
-            <a href="#" class="header-tools__item header-tools__cart js-open-aside" data-aside="cartDrawer">
+            <a href="{{ route('cart.index') }}" class="header-tools__item header-tools__cart"
+                data-aside="cartDrawer">
                 <svg class="d-block" width="20" height="20" viewBox="0 0 20 20" fill="none"
                     xmlns="http://www.w3.org/2000/svg">
                     <use href="#icon_cart" />
@@ -754,7 +755,7 @@
             </div>
 
             <div class="col-4">
-                <a href="{{ route('home.index') }}"
+                <a href="{{ route('shop.index') }}"
                     class="footer-mobile__link d-flex flex-column align-items-center">
                     <svg class="d-block" width="18" height="18" viewBox="0 0 18 18" fill="none"
                         xmlns="http://www.w3.org/2000/svg">
@@ -765,7 +766,7 @@
             </div>
 
             <div class="col-4">
-                <a href="{{ route('home.index') }}"
+                <a href="{{ route('wishlist.index') }}"
                     class="footer-mobile__link d-flex flex-column align-items-center">
                     <div class="position-relative">
                         <svg class="d-block" width="18" height="18" viewBox="0 0 20 20" fill="none"
@@ -797,6 +798,8 @@
 
 
     <script>
+        var s3BaseUrl = "{{ Storage::disk('s3')->url('') }}";
+        var placeholderImage = "{{ asset('uploads/book_placeholder.png') }}";
         $(function() {
             var searchTimeout;
 
@@ -849,8 +852,8 @@
                                             <ul>
                                                 <li class="product-item gap14 mb-10">
                                                     <div class="image no-bg">
-                                                        <img src="{{ asset('uploads/products/thumbnails') }}/${item.image}" alt="${item.name}"
-                                                             onerror="this.src='{{ asset('uploads/book_placeholder.png') }}'">
+                                                        <img src="${s3BaseUrl}${item.image}" alt="${item.name}"
+                                                            onerror="this.src='${placeholderImage}'">
                                                     </div>
                                                     <div class="flex items-center justify-between gap20 flex-grow">
                                                         <div class="name">
@@ -939,23 +942,6 @@
 
 
     <script src={{ asset('js/sweetalert.min.js') }}></script>
-    <!--Start of Tawk.to Script-->
-    {{-- <script type="text/javascript">
-        var Tawk_API = Tawk_API || {},
-            Tawk_LoadStart = new Date();
-        (function() {
-            var s1 = document.createElement("script"),
-                s0 = document.getElementsByTagName("script")[0];
-            s1.async = true;
-            s1.src = 'https://embed.tawk.to/68567fd273ba95190b1b867b/1iu8u6kia';
-            s1.charset = 'UTF-8';
-            s1.setAttribute('crossorigin', '*');
-            s0.parentNode.insertBefore(s1, s0);
-        })();
-    </script> --}}
-    <!--End of Tawk.to Script-->
-    {{-- @livewire('audio-player') --}}
-    {{-- @livewireScripts --}}
     @stack('scripts')
 </body>
 
